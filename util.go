@@ -73,36 +73,36 @@ func GetFiles() Data {
 				similarFileNames: []string{"LICENSE"},
 			},
 			{
-				fileName: ".github/CODE_OF_CONDUCT.md",
-				// similarFileNames: []string{".github/CODE_OF_CONDUCT.md"},
+				fileName:         ".github/CODE_OF_CONDUCT.md",
+				similarFileNames: []string{},
 			},
 			{
-				fileName: ".github/COMMIT_CONVENTIONS.md",
-				// similarFileNames: []string{".github/COMMIT_CONVENTIONS.md"},
+				fileName:         ".github/COMMIT_CONVENTIONS.md",
+				similarFileNames: []string{},
 			},
 			{
 				fileName:         ".github/CONTRIBUTING.md",
-				similarFileNames: []string{".github/CONTRIBUTING.md"},
+				similarFileNames: []string{},
 			},
 			{
-				fileName: ".github/PULL_REQUEST_TEMPLATE.md",
-				// similarFileNames: []string{".github/PULL_REQUEST_TEMPLATE.md"},
+				fileName:         ".github/PULL_REQUEST_TEMPLATE.md",
+				similarFileNames: []string{},
 			},
 			{
-				fileName: ".github/ISSUE_TEMPLATE/BUG_REPORT.md",
-				// similarFileNames: []string{".github/issue_template/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/bug_report.md"},
+				fileName:         ".github/ISSUE_TEMPLATE/BUG_REPORT.md",
+				similarFileNames: []string{},
 			},
 			{
-				fileName: ".github/ISSUE_TEMPLATE/config.yml",
-				// similarFileNames: []string{".github/issue_template/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/bug_report.md"},
+				fileName:         ".github/ISSUE_TEMPLATE/config.yml",
+				similarFileNames: []string{},
 			},
 			{
-				fileName: ".github/ISSUE_TEMPLATE/FEATURE_REQUEST.md",
-				// similarFileNames: []string{".github/issue_template/FEATURE_REQUEST.md", ".github/ISSUE_TEMPLATE/FEATURE_REQUEST.md", ".github/ISSUE_TEMPLATE/feature_request.md"},
+				fileName:         ".github/ISSUE_TEMPLATE/FEATURE_REQUEST.md",
+				similarFileNames: []string{},
 			},
 			{
-				fileName: ".github/ISSUE_TEMPLATE/QUESTION.md",
-				// similarFileNames: []string{".github/issue_template/QUESTION.md", ".github/ISSUE_TEMPLATE/QUESTION.md", ".github/ISSUE_TEMPLATE/question.md"},
+				fileName:         ".github/ISSUE_TEMPLATE/QUESTION.md",
+				similarFileNames: []string{},
 			},
 		},
 	}

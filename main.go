@@ -29,5 +29,4 @@ func main() {
 
 		CopyFile(file.fileName)
 	}
-
 }
