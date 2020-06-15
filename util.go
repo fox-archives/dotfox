@@ -73,36 +73,36 @@ func GetFiles() Data {
 				similarFileNames: []string{"LICENSE"},
 			},
 			{
-				fileName:         ".github/code_of_conduct.md",
-				similarFileNames: []string{".github/CODE_OF_CONDUCT.md"},
+				fileName: ".github/CODE_OF_CONDUCT.md",
+				// similarFileNames: []string{".github/CODE_OF_CONDUCT.md"},
 			},
 			{
-				fileName:         ".github/commit_conventions.md",
-				similarFileNames: []string{".github/COMMIT_CONVENTIONS.md"},
+				fileName: ".github/COMMIT_CONVENTIONS.md",
+				// similarFileNames: []string{".github/COMMIT_CONVENTIONS.md"},
 			},
 			{
-				fileName:         ".github/contributing.md",
+				fileName:         ".github/CONTRIBUTING.md",
 				similarFileNames: []string{".github/CONTRIBUTING.md"},
 			},
 			{
-				fileName:         ".github/pull_request_template.md",
-				similarFileNames: []string{".github/PULL_REQUEST_TEMPLATE.md"},
+				fileName: ".github/PULL_REQUEST_TEMPLATE.md",
+				// similarFileNames: []string{".github/PULL_REQUEST_TEMPLATE.md"},
 			},
 			{
-				fileName:         ".github/issue_template/bug_report.md",
-				similarFileNames: []string{".github/issue_template/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/bug_report.md"},
+				fileName: ".github/ISSUE_TEMPLATE/BUG_REPORT.md",
+				// similarFileNames: []string{".github/issue_template/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/bug_report.md"},
 			},
 			{
-				fileName:         ".github/issue_template/config.yml",
-				similarFileNames: []string{".github/issue_template/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/bug_report.md"},
+				fileName: ".github/ISSUE_TEMPLATE/config.yml",
+				// similarFileNames: []string{".github/issue_template/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/bug_report.md"},
 			},
 			{
-				fileName:         ".github/issue_template/feature_request.md",
-				similarFileNames: []string{".github/issue_template/FEATURE_REQUEST.md", ".github/ISSUE_TEMPLATE/FEATURE_REQUEST.md", ".github/ISSUE_TEMPLATE/feature_request.md"},
+				fileName: ".github/ISSUE_TEMPLATE/FEATURE_REQUEST.md",
+				// similarFileNames: []string{".github/issue_template/FEATURE_REQUEST.md", ".github/ISSUE_TEMPLATE/FEATURE_REQUEST.md", ".github/ISSUE_TEMPLATE/feature_request.md"},
 			},
 			{
-				fileName:         ".github/issue_template/question.md",
-				similarFileNames: []string{".github/issue_template/QUESTION.md", ".github/ISSUE_TEMPLATE/QUESTION.md", ".github/ISSUE_TEMPLATE/question.md"},
+				fileName: ".github/ISSUE_TEMPLATE/QUESTION.md",
+				// similarFileNames: []string{".github/issue_template/QUESTION.md", ".github/ISSUE_TEMPLATE/QUESTION.md", ".github/ISSUE_TEMPLATE/question.md"},
 			},
 		},
 	}
