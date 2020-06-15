@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"runtime"
 )
 
 type File struct {
@@ -17,23 +18,34 @@ type Data struct {
 	files []File
 }
 
-func CopyFile(src string, dest string) {
+func CopyFile(file string) {
+	_, currentDir, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Fatal("no caller information")
+	}
 	dir, err := os.Getwd()
-	fileDir := path.Join(dir, "files")
-	destDir := path.Join(dir, dest)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	srcFile := path.Join(path.Dir(currentDir), "files", file)
+	destDir := path.Join(dir, file)
 	if err != nil {
 		fmt.Errorf("dir %v does not exists", err)
 	}
-	fmt.Println(dir)
 
-	from, err := os.Open(path.Join(fileDir, src))
+	fmt.Printf("\033[38;5;205mcopying %s to %s\033[m\n", srcFile, destDir)
+
+	// ensure directory exists
+	os.MkdirAll(path.Dir(destDir), 0755)
+
+	from, err := os.Open(srcFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer from.Close()
 
-	to, err := os.OpenFile(destDir, os.O_RDWR|os.O_CREATE, 0666)
+	to, err := os.OpenFile(destDir, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,11 +97,11 @@ func GetFiles() Data {
 				similarFileNames: []string{".github/issue_template/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/BUG_REPORT.md", ".github/ISSUE_TEMPLATE/bug_report.md"},
 			},
 			{
-				fileName:         ".github/issue_template/feature_request",
+				fileName:         ".github/issue_template/feature_request.md",
 				similarFileNames: []string{".github/issue_template/FEATURE_REQUEST.md", ".github/ISSUE_TEMPLATE/FEATURE_REQUEST.md", ".github/ISSUE_TEMPLATE/feature_request.md"},
 			},
 			{
-				fileName:         ".github/issue_template/question",
+				fileName:         ".github/issue_template/question.md",
 				similarFileNames: []string{".github/issue_template/QUESTION.md", ".github/ISSUE_TEMPLATE/QUESTION.md", ".github/ISSUE_TEMPLATE/question.md"},
 			},
 		},

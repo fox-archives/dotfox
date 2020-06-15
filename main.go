@@ -27,7 +27,7 @@ func main() {
 			}
 		}
 
-		CopyFile(".editorconfig", "outputfile")
+		CopyFile(file.fileName)
 	}
 
 }
