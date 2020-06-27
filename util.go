@@ -1,109 +1,157 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"runtime"
+
+	"github.com/mattn/go-isatty"
 )
 
 type File struct {
-	fileName         string
-	similarFileNames []string
+	name string
 }
 
-type Data struct {
-	files []File
-}
-
-func CopyFile(file string) {
-	_, currentDir, _, ok := runtime.Caller(0)
-	if !ok {
-		log.Fatal("no caller information")
+func printInfo(text string, args ...interface{}) {
+	_, isNoColorEnabled := os.LookupEnv("NO_COLOR")
+	if (os.Getenv("TERM") != "dumb") && !isNoColorEnabled &&
+		isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd()) {
+		fmt.Print("\033[32m")
+		fmt.Printf(text, args...)
+		fmt.Print("\033[m")
+	} else {
+		fmt.Printf(text, args...)
 	}
+}
+
+func GetFullPaths(relativePath string) struct {
+	SrcPath  string
+	DestPath string
+} {
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
+	destPath := path.Join(dir, relativePath)
 
-	srcFile := path.Join(path.Dir(currentDir), "files", file)
-	destDir := path.Join(dir, file)
-	if err != nil {
-		fmt.Errorf("dir %v does not exists", err)
+	_, currentFile, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Fatal("no caller information")
 	}
+	srcPath := path.Join(path.Dir(currentFile), "files", relativePath)
 
-	fmt.Printf("\033[38;5;205mcopying %s to %s\033[m\n", srcFile, destDir)
-
-	// ensure directory exists
-	os.MkdirAll(path.Dir(destDir), 0755)
-
-	from, err := os.Open(srcFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer from.Close()
-
-	to, err := os.OpenFile(destDir, os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer to.Close()
-
-	_, err = io.Copy(to, from)
-	if err != nil {
-		log.Fatal(err)
+	return struct {
+		SrcPath  string
+		DestPath string
+	}{
+		SrcPath:  srcPath,
+		DestPath: destPath,
 	}
 }
 
-func GetFiles() Data {
-	return Data{
-		files: []File{
-			{
-				fileName:         ".editorconfig",
-				similarFileNames: []string{},
-			},
-			{
-				fileName:         ".gitattributes",
-				similarFileNames: []string{},
-			},
-			{
-				fileName:         "license",
-				similarFileNames: []string{"LICENSE"},
-			},
-			{
-				fileName:         ".github/CODE_OF_CONDUCT.md",
-				similarFileNames: []string{},
-			},
-			{
-				fileName:         ".github/COMMIT_CONVENTIONS.md",
-				similarFileNames: []string{},
-			},
-			{
-				fileName:         ".github/CONTRIBUTING.md",
-				similarFileNames: []string{},
-			},
-			{
-				fileName:         ".github/PULL_REQUEST_TEMPLATE.md",
-				similarFileNames: []string{},
-			},
-			{
-				fileName:         ".github/ISSUE_TEMPLATE/BUG_REPORT.md",
-				similarFileNames: []string{},
-			},
-			{
-				fileName:         ".github/ISSUE_TEMPLATE/config.yml",
-				similarFileNames: []string{},
-			},
-			{
-				fileName:         ".github/ISSUE_TEMPLATE/FEATURE_REQUEST.md",
-				similarFileNames: []string{},
-			},
-			{
-				fileName:         ".github/ISSUE_TEMPLATE/QUESTION.md",
-				similarFileNames: []string{},
-			},
+func ShouldRemoveExistingFile(path string, relativePath string) bool {
+	printInfo("file '%s' is either old or not needed. remove? (y/n): ", relativePath)
+	r := bufio.NewReader(os.Stdin)
+	c, err := r.ReadByte()
+	if err != nil {
+		panic(err)
+	}
+
+	if c == byte('Y') || c == byte('y') {
+		printInfo("chosen: yes\n")
+		return true
+	} else if c == byte('N') || c == byte('n') {
+		printInfo("chosen: no\n")
+		return false
+	} else {
+		return ShouldRemoveExistingFile(path, relativePath)
+	}
+}
+
+func CopyFile(srcFile string, destFile string, relativePath string) {
+	// ensure directory exists
+	os.MkdirAll(path.Dir(destFile), 0755)
+
+	srcContents, err := ioutil.ReadFile(srcFile)
+	if err != nil {
+		panic(err)
+	}
+
+	// prompt to remove preexisting file if it exists
+	stat, err := os.Stat(destFile)
+	if stat != nil {
+		// if the file buffers are the same, return no need to copy
+		destContents, err := ioutil.ReadFile(destFile)
+		if err != nil {
+			panic(err)
+		}
+
+		if bytes.Compare(srcContents, destContents) == 0 {
+			return
+		}
+
+		// file exists, we ask if we should remove file
+		shouldRemove := ShouldRemoveExistingFile(destFile, relativePath)
+		if shouldRemove == false {
+			return
+		}
+	}
+
+	err = ioutil.WriteFile(destFile, srcContents, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	printInfo("copying %s to %s\n", srcFile, destFile)
+}
+
+func GetFilesThatWereReplaced() []File {
+	return []File{
+		{
+			name: "README.md",
+		},
+	}
+}
+
+func GetFilesToCopy() []File {
+	return []File{
+		{
+			name: ".editorconfig",
+		},
+		{
+			name: ".gitattributes",
+		},
+		{
+			name: "license",
+		},
+		{
+			name: ".github/CODE_OF_CONDUCT.md",
+		},
+		{
+			name: ".github/COMMIT_CONVENTIONS.md",
+		},
+		{
+			name: ".github/CONTRIBUTING.md",
+		},
+		{
+			name: ".github/PULL_REQUEST_TEMPLATE.md",
+		},
+		{
+			name: ".github/ISSUE_TEMPLATE/BUG_REPORT.md",
+		},
+		{
+			name: ".github/ISSUE_TEMPLATE/config.yml",
+		},
+		{
+			name: ".github/ISSUE_TEMPLATE/FEATURE_REQUEST.md",
+		},
+		{
+			name: ".github/ISSUE_TEMPLATE/QUESTION.md",
 		},
 	}
 }

@@ -1,32 +1,26 @@
 package main
 
-import (
-	"log"
-	"os"
-	"path"
-)
+import "os"
 
 func main() {
-	data := GetFiles()
+	for _, relativePath := range GetFilesToCopy() {
+		path := GetFullPaths(relativePath.name)
 
-	for i := 0; i < len(data.files); i++ {
-		file := data.files[i]
+		CopyFile(path.SrcPath, path.DestPath, relativePath.name)
+	}
 
-		// first remove all similarFileNames
-		for _, similarFileName := range file.similarFileNames {
-			dir, err := os.Getwd()
-			if err != nil {
-				log.Fatal(err)
+	for _, relativePath := range GetFilesThatWereReplaced() {
+		path := GetFullPaths(relativePath.name)
+		// prompt to remove preexisting file if it exists
+		stat, _ := os.Stat(path.DestPath)
+		if stat != nil {
+			// file exists, we ask if we should remove file
+			shouldRemove := ShouldRemoveExistingFile(path.DestPath, relativePath.name)
+			if shouldRemove == false {
+				return
 			}
-			fullPath := path.Join(dir, similarFileName)
-			// fmt.Printf("removing %v\n", fullPath)
-			errR := os.Remove(fullPath)
-			if errR != nil {
-				// file doesn't exist. that's okay
-				// fmt.Printf(err)
-			}
+
+			os.Remove(path.DestPath)
 		}
-
-		CopyFile(file.fileName)
 	}
 }

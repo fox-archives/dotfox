@@ -11,8 +11,11 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[{makefile,Makefile}]
+[{makefile,Makefile,*.mk}]
 indent_style = tab
 
 [*.{yaml,yml}]
 indent_style = space
+
+[*.{diff,md}]
+trim_trailing_whitespace = false
