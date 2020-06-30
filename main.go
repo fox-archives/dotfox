@@ -1,10 +1,13 @@
 package main
 
-func CopyOverExistingFiles() {
-	for _, relativePath := range GetFilesToCopyOver() {
-		path := GetFullPaths(relativePath)
+import "fmt"
 
-		CopyFile(path.SrcPath, path.DestPath, relativePath)
+func CopyOverExistingFiles() {
+	for _, file := range getYaml().Files {
+		printInfo("Processing file %s\n", file.Path)
+
+		CopyFile(file)
+		fmt.Println()
 	}
 }
 

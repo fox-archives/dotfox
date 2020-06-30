@@ -1,0 +1,146 @@
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"path"
+
+	"github.com/sergi/go-diff/diffmatchpatch"
+)
+
+type File struct {
+	Path string `json:"path"`
+	For  string `json:"for"`
+}
+
+type Files struct {
+	Files []File
+}
+
+// func GetFilesToCopyOver() Files {
+// 	yamlFile, err := ioutil.ReadFile(_dirname() + "/files.yml")
+// 	if err != nil {
+// 		printError("Failed to read `files.yml` file")
+// 		log.Print(err)
+// 	}
+
+// 	var y Files
+// 	err = yaml.Unmarshal(yamlFile, &y)
+
+// 	absoluteFiles := []string{}
+// 	for _, file := range y.files {
+// 		fullFilePath := _dirname() + "/files" + file.Path
+// 		absoluteFiles = append(absoluteFiles, fullFilePath)
+// 	}
+
+// 	relativeFiles := []string{}
+// 	for _, absoluteFile := range absoluteFiles {
+// 		// skip directories
+// 		{
+// 			stat, err := os.Stat(absoluteFile)
+// 			if err != nil {
+// 				log.Fatalln(err)
+// 			}
+// 			if stat.IsDir() {
+// 				debug("Skipping file: %s", absoluteFile)
+// 				continue
+// 			}
+// 		}
+
+// 		relativeFiles = append(relativeFiles, absoluteFile[len(_dirname()+"/files")+1:])
+// 	}
+
+// 	return relativeFiles
+// }
+
+func GetAbsolutePaths(relativePath string) struct {
+	SrcPath  string
+	DestPath string
+} {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	destPath := path.Join(dir, relativePath)
+
+	srcPath := path.Join(_dirname(), "files", relativePath)
+
+	return struct {
+		SrcPath  string
+		DestPath string
+	}{
+		SrcPath:  srcPath,
+		DestPath: destPath,
+	}
+}
+
+func ShouldRemoveExistingFile(path string, relativePath string, destContents []byte, srcContents []byte) bool {
+	printInfo("File '%s' is outdated. Replace it? (y/d/n): ", relativePath)
+	r := bufio.NewReader(os.Stdin)
+	c, err := r.ReadByte()
+	if err != nil {
+		panic(err)
+	}
+
+	if c == byte('Y') || c == byte('y') {
+		printInfo("chose: yes\n")
+		return true
+	} else if c == byte('N') || c == byte('n') {
+		printInfo("chose: no\n")
+		return false
+	} else if c == byte('D') || c == byte('d') {
+		printInfo("chose: diff\n")
+		dmp := diffmatchpatch.New()
+		diffs := dmp.DiffMain(string(destContents), string(srcContents), true)
+		fmt.Println(dmp.DiffPrettyText(diffs))
+		return ShouldRemoveExistingFile(path, relativePath, destContents, srcContents)
+	} else {
+		return ShouldRemoveExistingFile(path, relativePath, destContents, srcContents)
+	}
+}
+
+func CopyFile(file File) {
+	abs := GetAbsolutePaths(file.Path)
+	srcFile := abs.SrcPath
+	destFile := abs.DestPath
+
+	// ensure parent directory exists
+	os.MkdirAll(path.Dir(destFile), 0755)
+
+	srcContents, err := ioutil.ReadFile(srcFile)
+	if err != nil {
+		panic(err)
+	}
+
+	// prompt to remove preexisting file if it exists
+	stat, err := os.Stat(destFile)
+	if stat != nil {
+		// if the file buffers are the same, return no need to copy
+		destContents, err := ioutil.ReadFile(destFile)
+		if err != nil {
+			panic(err)
+		}
+
+		if bytes.Compare(srcContents, destContents) == 0 {
+			printInfo("Skipping unchanged '" + file.Path + "' file\n")
+			return
+		}
+
+		// file exists, we ask if we should remove file
+		shouldRemove := ShouldRemoveExistingFile(destFile, file.Path, destContents, srcContents)
+		if shouldRemove == false {
+			return
+		}
+	}
+
+	err = ioutil.WriteFile(destFile, srcContents, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	printInfo("Copying %s to %s\n", srcFile, destFile)
+}
