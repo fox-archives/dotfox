@@ -122,7 +122,7 @@ func GetFullPaths(relativePath string) struct {
 }
 
 func ShouldRemoveExistingFile(path string, relativePath string, destContents []byte, srcContents []byte) bool {
-	printInfo("File '%s' is outdated. Remove it? (y/d/n): ", relativePath)
+	printInfo("File '%s' is outdated. Replace it? (y/d/n): ", relativePath)
 	r := bufio.NewReader(os.Stdin)
 	c, err := r.ReadByte()
 	if err != nil {
@@ -181,7 +181,7 @@ func CopyFile(srcFile string, destFile string, relativePath string) {
 		log.Fatal(err)
 	}
 
-	printInfo("copying %s to %s\n", srcFile, destFile)
+	printInfo("Copying %s to %s\n", srcFile, destFile)
 }
 
 func GetFilesThatWereReplaced() []File {

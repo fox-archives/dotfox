@@ -1,12 +1,20 @@
-#!/bin/sh
+#!/bin/sh -aux
 
-requires gorun
+mount | grep -q binfmt_misc || {
+	# see https://www.kernel.org/doc/html/v4.14/admin-guide/binfmt-misc.html
+	echo "You don't have binfmt_misc mounted. This configuration is unsupported"
+	exit 1
+}
 
-# https://blog.cloudflare.com/using-go-as-a-scripting-language-in-linux/
-# https://www.kernel.org/doc/html/latest/admin-guide/binfmt-misc.html
-# https://wiki.ubuntu.com/gorun
+[ -e /proc/sys/fs/binfmt_misc/golang ] && {
+	echo "You already have an 'interpreter' associated with golang"
+	cat /proc/sys/fs/binfmt_misc/golang
+	exit
+}
 
-mount | grep binfmt_misc
 
-echo ':golang:E::go::/usr/local/bin/gorun:OC' | sudo tee /proc/sys/fs/binfmt_misc/register
-:golang:E::go::/usr/local/bin/gorun:OC
+# install gorun
+go get github.com/erning/gorun
+
+# add kernel support for executing go files with the gorun 'interpreter'
+echo ':golang:E::go::gorun:OC' | sudo tee /proc/sys/fs/binfmt_misc/register
