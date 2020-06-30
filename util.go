@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 
 	"github.com/mattn/go-isatty"
@@ -15,6 +16,46 @@ import (
 
 type File struct {
 	name string
+}
+
+func _dirname() string {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Fatalln("could not recover information from call stack")
+	}
+
+	dir := path.Dir(filename)
+	return dir
+}
+
+func isColorEnabled() bool {
+	_, isNoColorEnabled := os.LookupEnv("NO_COLOR")
+	if (os.Getenv("TERM") != "dumb") && !isNoColorEnabled &&
+		isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd()) {
+		return true
+	}
+	return false
+}
+
+func debug(text string, args ...interface{}) {
+	isDebug := func() bool {
+		_, ok := os.LookupEnv("DEBUG")
+		if !ok {
+			return false
+		}
+		return true
+	}
+
+	if isDebug() {
+		if isColorEnabled() {
+			fmt.Print("\033[32m")
+			fmt.Printf(text, args...)
+			fmt.Print("\033[m")
+			return
+		}
+
+		fmt.Printf(text, args...)
+	}
 }
 
 func printInfo(text string, args ...interface{}) {
@@ -29,6 +70,35 @@ func printInfo(text string, args ...interface{}) {
 	}
 }
 
+func GetFilesToCopyOver() []string {
+	absoluteFiles, err := filepath.Glob(_dirname() + "/files/*")
+	t, err := filepath.Glob(_dirname() + "/files/**/**")
+	absoluteFiles = append(absoluteFiles, t...)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	relativeFiles := []string{}
+	for _, absoluteFile := range absoluteFiles {
+		// skip directories
+		{
+			stat, err := os.Stat(absoluteFile)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			if stat.IsDir() {
+				debug("Skipping file: %s", absoluteFile)
+				continue
+			}
+		}
+
+		relativeFiles = append(relativeFiles, absoluteFile[len(_dirname()+"/files")+1:])
+	}
+
+	return relativeFiles
+}
+
 func GetFullPaths(relativePath string) struct {
 	SrcPath  string
 	DestPath string
@@ -39,11 +109,7 @@ func GetFullPaths(relativePath string) struct {
 	}
 	destPath := path.Join(dir, relativePath)
 
-	_, currentFile, _, ok := runtime.Caller(0)
-	if !ok {
-		log.Fatal("no caller information")
-	}
-	srcPath := path.Join(path.Dir(currentFile), "files", relativePath)
+	srcPath := path.Join(_dirname(), "files", relativePath)
 
 	return struct {
 		SrcPath  string
@@ -55,7 +121,7 @@ func GetFullPaths(relativePath string) struct {
 }
 
 func ShouldRemoveExistingFile(path string, relativePath string) bool {
-	printInfo("file '%s' is either old or not needed. remove? (y/n): ", relativePath)
+	printInfo("File '%s' is outdated. Remove it? (y/n): ", relativePath)
 	r := bufio.NewReader(os.Stdin)
 	c, err := r.ReadByte()
 	if err != nil {
@@ -74,7 +140,7 @@ func ShouldRemoveExistingFile(path string, relativePath string) bool {
 }
 
 func CopyFile(srcFile string, destFile string, relativePath string) {
-	// ensure directory exists
+	// ensure parent directory exists
 	os.MkdirAll(path.Dir(destFile), 0755)
 
 	srcContents, err := ioutil.ReadFile(srcFile)
@@ -92,6 +158,7 @@ func CopyFile(srcFile string, destFile string, relativePath string) {
 		}
 
 		if bytes.Compare(srcContents, destContents) == 0 {
+			printInfo("Skipping unchanged '" + relativePath + "' file\n")
 			return
 		}
 
@@ -114,44 +181,6 @@ func GetFilesThatWereReplaced() []File {
 	return []File{
 		{
 			name: "README.md",
-		},
-	}
-}
-
-func GetFilesToCopy() []File {
-	return []File{
-		{
-			name: ".editorconfig",
-		},
-		{
-			name: ".gitattributes",
-		},
-		{
-			name: "license",
-		},
-		{
-			name: ".github/CODE_OF_CONDUCT.md",
-		},
-		{
-			name: ".github/COMMIT_CONVENTIONS.md",
-		},
-		{
-			name: ".github/CONTRIBUTING.md",
-		},
-		{
-			name: ".github/PULL_REQUEST_TEMPLATE.md",
-		},
-		{
-			name: ".github/ISSUE_TEMPLATE/BUG_REPORT.md",
-		},
-		{
-			name: ".github/ISSUE_TEMPLATE/config.yml",
-		},
-		{
-			name: ".github/ISSUE_TEMPLATE/FEATURE_REQUEST.md",
-		},
-		{
-			name: ".github/ISSUE_TEMPLATE/QUESTION.md",
 		},
 	}
 }
