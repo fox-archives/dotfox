@@ -12,6 +12,7 @@ import (
 	"runtime"
 
 	"github.com/mattn/go-isatty"
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 type File struct {
@@ -120,8 +121,8 @@ func GetFullPaths(relativePath string) struct {
 	}
 }
 
-func ShouldRemoveExistingFile(path string, relativePath string) bool {
-	printInfo("File '%s' is outdated. Remove it? (y/n): ", relativePath)
+func ShouldRemoveExistingFile(path string, relativePath string, destContents []byte, srcContents []byte) bool {
+	printInfo("File '%s' is outdated. Remove it? (y/d/n): ", relativePath)
 	r := bufio.NewReader(os.Stdin)
 	c, err := r.ReadByte()
 	if err != nil {
@@ -129,13 +130,19 @@ func ShouldRemoveExistingFile(path string, relativePath string) bool {
 	}
 
 	if c == byte('Y') || c == byte('y') {
-		printInfo("chosen: yes\n")
+		printInfo("chose: yes\n")
 		return true
 	} else if c == byte('N') || c == byte('n') {
-		printInfo("chosen: no\n")
+		printInfo("chose: no\n")
 		return false
+	} else if c == byte('D') || c == byte('d') {
+		printInfo("chose: diff\n")
+		dmp := diffmatchpatch.New()
+		diffs := dmp.DiffMain(string(destContents), string(srcContents), true)
+		fmt.Println(dmp.DiffPrettyText(diffs))
+		return ShouldRemoveExistingFile(path, relativePath, destContents, srcContents)
 	} else {
-		return ShouldRemoveExistingFile(path, relativePath)
+		return ShouldRemoveExistingFile(path, relativePath, destContents, srcContents)
 	}
 }
 
@@ -163,7 +170,7 @@ func CopyFile(srcFile string, destFile string, relativePath string) {
 		}
 
 		// file exists, we ask if we should remove file
-		shouldRemove := ShouldRemoveExistingFile(destFile, relativePath)
+		shouldRemove := ShouldRemoveExistingFile(destFile, relativePath, destContents, srcContents)
 		if shouldRemove == false {
 			return
 		}
