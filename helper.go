@@ -18,44 +18,9 @@ type File struct {
 }
 
 type Files struct {
-	Files []File
+	Files    []File `json: files`
+	OldFiles []File `json: oldFiles`
 }
-
-// func GetFilesToCopyOver() Files {
-// 	yamlFile, err := ioutil.ReadFile(_dirname() + "/files.yml")
-// 	if err != nil {
-// 		printError("Failed to read `files.yml` file")
-// 		log.Print(err)
-// 	}
-
-// 	var y Files
-// 	err = yaml.Unmarshal(yamlFile, &y)
-
-// 	absoluteFiles := []string{}
-// 	for _, file := range y.files {
-// 		fullFilePath := _dirname() + "/files" + file.Path
-// 		absoluteFiles = append(absoluteFiles, fullFilePath)
-// 	}
-
-// 	relativeFiles := []string{}
-// 	for _, absoluteFile := range absoluteFiles {
-// 		// skip directories
-// 		{
-// 			stat, err := os.Stat(absoluteFile)
-// 			if err != nil {
-// 				log.Fatalln(err)
-// 			}
-// 			if stat.IsDir() {
-// 				debug("Skipping file: %s", absoluteFile)
-// 				continue
-// 			}
-// 		}
-
-// 		relativeFiles = append(relativeFiles, absoluteFile[len(_dirname()+"/files")+1:])
-// 	}
-
-// 	return relativeFiles
-// }
 
 func GetAbsolutePaths(relativePath string) struct {
 	SrcPath  string
@@ -143,4 +108,27 @@ func CopyFile(file File) {
 	}
 
 	printInfo("Copying %s to %s\n", srcFile, destFile)
+}
+
+func RemoveFile(file File) {
+	abs := GetAbsolutePaths(file.Path)
+	destFile := abs.DestPath
+
+	err := os.Remove(destFile)
+	if err != nil {
+		fmt.Printf("Error when trying to remove %s. Skipping file", destFile)
+		log.Println(err)
+		return
+	}
+
+	// fileExists, err := FileExists(destFile)
+	// if err != nil {
+	// 	fmt.Printf("Error when checking if %s exists.", file.Path)
+	// 	fmt.Println(err)
+	// 	return
+	// }
+
+	// if fileExists {
+
+	// }
 }

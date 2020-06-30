@@ -11,8 +11,16 @@ func CopyOverExistingFiles() {
 	}
 }
 
-func main() {
-	printInfo("Starting Globe!\n")
+func RemoveWrongFiles() {
+	for _, file := range getYaml().OldFiles {
+		printInfo("Removing bad file %s\n", file.Path)
 
+		RemoveFile(file)
+		fmt.Println()
+	}
+}
+
+func main() {
 	CopyOverExistingFiles()
+	RemoveWrongFiles()
 }

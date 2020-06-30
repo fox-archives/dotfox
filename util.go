@@ -12,6 +12,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+func FileExists(name string) (bool, error) {
+	_, err := os.Stat(name)
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return err != nil, err
+}
+
 func getYaml() Files {
 	yamlFile, err := ioutil.ReadFile(_dirname() + "/files.yml")
 	if err != nil {

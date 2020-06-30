@@ -23,5 +23,7 @@ files:
       for: all
     - path: scripts/go.sh
       for: golang
-
+oldFiles:
+    - path: .github/COMMIT_CONVENTIONS.md
+      for: all
 
