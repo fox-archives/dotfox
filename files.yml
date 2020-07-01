@@ -21,9 +21,11 @@ files:
       for: all
     - path: .github/ISSUE_TEMPLATE/QUESTION.md
       for: all
-    - path: scripts/go.sh
+    - path: scripts/globe/go.sh
       for: golang
 oldFiles:
     - path: .github/COMMIT_CONVENTIONS.md
+      for: all
+    - path: scripts/go.sh
       for: all
 
