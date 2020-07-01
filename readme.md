@@ -1,34 +1,24 @@
 # Globe
 
-A flexible and language-agnostic configuration system for projects.
+A flexible and language-agnostic configuration system for managing multiple independent projects. It automatically manages the modification or bootstrapping of files that are nearly always used in development workflows or project repositories. This is most useful when develvoping with many tens or hundreds of projects, especially if they're hosted on GitHub
 
-## Features
-
-- automatically sets up `.github` COC, Pull Request Templatee, Issue Templates, etc
-- automatically sets up boilerplate `.editorconfig`
-- automatically sets up boilerplate `.gitattributes`
-
-## Supported Systems
-
-Code Collaboration Utilities
+## Configuration that's Automatically Managed
 
 - GitHub
-- ~GitLab~
-
-Language-Agnostic FileEntry Definition Formats
-
 - EditorConfig
-
-Version Control Systems
-
 - Git
+- License
+- common scripts
+
+'common scripts' are scripts I use across my projects. they are local to projects rather than my system to increase code modularity and decrease errors that may spawn from code collaboration and execution across independent or inconsistent environments
 
 ### Limitations
 
-Everything is completley static. So if we want a minimal set of configuration, it's not possible right now
+Some files are long and aren't templated to only have the necessary lines (see issue #2 for details)
 
 ## Installation
 
 ```sh
+git clone https://github.com/eankeen/globe
 go install
 ```
