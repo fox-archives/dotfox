@@ -14,14 +14,14 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-type File struct {
+type FileEntry struct {
 	Path string `json:"path"`
 	For  string `json:"for"`
 }
 
 type Files struct {
-	Files    []File `json: files`
-	OldFiles []File `json: oldFiles`
+	Files    []FileEntry `json: files`
+	OldFiles []FileEntry `json: oldFiles`
 }
 
 func GetAbsolutePaths(relativePath string) struct {
@@ -43,7 +43,7 @@ func GetAbsolutePaths(relativePath string) struct {
 }
 
 func ShouldRemoveExistingFile(path string, relativePath string, destContents []byte, srcContents []byte) bool {
-	printInfo("File '%s' is outdated. Replace it? (y/d/n): ", relativePath)
+	printInfo("FileEntry '%s' is outdated. Replace it? (y/d/n): ", relativePath)
 	r := bufio.NewReader(os.Stdin)
 	c, err := r.ReadByte()
 	if err != nil {
@@ -106,7 +106,7 @@ func projectFilesContain(glob glob.Glob) bool {
 	return doesContain
 }
 
-func isFileRelevant(file File) bool {
+func isFileRelevant(file FileEntry) bool {
 	projectContainsGoFiles := func() bool {
 		if projectFilesContain(glob.MustCompile("*.go")) {
 			return true
@@ -124,11 +124,11 @@ func isFileRelevant(file File) bool {
 		return false
 	}
 
-	debug("File '%s' does not match case statement. Has value %s. Skipping\n", file.Path, file.For)
+	debug("FileEntry '%s' does not match case statement. Has value %s. Skipping\n", file.Path, file.For)
 	return false
 }
 
-func CopyFile(file File) {
+func CopyFile(file FileEntry) {
 	abs := GetAbsolutePaths(file.Path)
 	srcFile := abs.SrcPath
 	destFile := abs.DestPath
@@ -188,7 +188,7 @@ func CopyFile(file File) {
 	printInfo("Copying %s to %s\n", srcFile, destFile)
 }
 
-func RemoveFile(file File) {
+func RemoveFile(file FileEntry) {
 	abs := GetAbsolutePaths(file.Path)
 	destFile := abs.DestPath
 

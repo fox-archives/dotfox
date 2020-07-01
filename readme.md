@@ -15,7 +15,7 @@ Code Collaboration Utilities
 - GitHub
 - ~GitLab~
 
-Language-Agnostic File Definition Formats
+Language-Agnostic FileEntry Definition Formats
 
 - EditorConfig
 
