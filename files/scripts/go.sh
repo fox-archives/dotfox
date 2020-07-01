@@ -1,5 +1,7 @@
 #!/bin/sh -aux
 
+
+
 mount | grep -q binfmt_misc || {
 	# see https://www.kernel.org/doc/html/v4.14/admin-guide/binfmt-misc.html
 	echo "You don't have binfmt_misc mounted. This configuration is unsupported"

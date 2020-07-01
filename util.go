@@ -12,19 +12,21 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func FileExists(name string) (bool, error) {
-	_, err := os.Stat(name)
-	if os.IsNotExist(err) {
-		return false, nil
+// TODO: BUGGY
+func fileExists(name string) (bool, error) {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
 	}
-	return err != nil, err
+	return true, nil
 }
 
 func getYaml() Files {
 	yamlFile, err := ioutil.ReadFile(_dirname() + "/files.yml")
 	if err != nil {
-		printError("failed to read files.yml file")
-		log.Print(err)
+		printError("Failed to read files.yml file")
+		log.Println(err)
 	}
 
 	var y Files

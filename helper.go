@@ -72,6 +72,8 @@ func CopyFile(file File) {
 	abs := GetAbsolutePaths(file.Path)
 	srcFile := abs.SrcPath
 	destFile := abs.DestPath
+	debug("srcFile: %s\n", srcFile)
+	debug("destFile: %s\n", destFile)
 
 	// ensure parent directory exists
 	os.MkdirAll(path.Dir(destFile), 0755)
@@ -82,8 +84,15 @@ func CopyFile(file File) {
 	}
 
 	// prompt to remove preexisting file if it exists
-	stat, err := os.Stat(destFile)
-	if stat != nil {
+	destFileExists, err := fileExists(destFile)
+	if err != nil {
+		fmt.Printf("Error trying to test if '%s' exists. Skipping file", destFile)
+		log.Println(err)
+		return
+	}
+
+	debug("destFileExists: %v\n", destFileExists)
+	if destFileExists {
 		// if the file buffers are the same, return no need to copy
 		destContents, err := ioutil.ReadFile(destFile)
 		if err != nil {
@@ -120,15 +129,4 @@ func RemoveFile(file File) {
 		log.Println(err)
 		return
 	}
-
-	// fileExists, err := FileExists(destFile)
-	// if err != nil {
-	// 	fmt.Printf("Error when checking if %s exists.", file.Path)
-	// 	fmt.Println(err)
-	// 	return
-	// }
-
-	// if fileExists {
-
-	// }
 }
