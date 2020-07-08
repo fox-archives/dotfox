@@ -1,17 +1,16 @@
 #!/bin/sh -aux
 
 mount | grep -q binfmt_misc || {
-	# see https://www.kernel.org/doc/html/v4.14/admin-guide/binfmt-misc.html
-	echo "You don't have binfmt_misc mounted. This configuration is unsupported"
-	exit 1
+        # see https://www.kernel.org/doc/html/v4.14/admin-guide/binfmt-misc.html
+        echo "You don't have binfmt_misc mounted. This configuration is unsupported"
+        exit 1
 }
 
 [ -e /proc/sys/fs/binfmt_misc/golang ] && {
-	echo "You already have an 'interpreter' associated with golang"
-	cat /proc/sys/fs/binfmt_misc/golang
-	exit
+        echo "You already have an 'interpreter' associated with golang"
+        cat /proc/sys/fs/binfmt_misc/golang
+        exit
 }
-
 
 # install gorun
 go get github.com/erning/gorun

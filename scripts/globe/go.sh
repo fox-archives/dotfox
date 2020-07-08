@@ -12,7 +12,6 @@ mount | grep -q binfmt_misc || {
 	exit
 }
 
-
 # install gorun
 go get github.com/erning/gorun
 

@@ -6,24 +6,29 @@ cd licenses
 licenses="$(curl -o- --silent https://github.com/github/choosealicense.com/tree/gh-pages/_licenses \
 	| tac | tac | grep -Pio "(?<=gh-pages/_licenses\/).*(?=.txt\">)")"
 
-function doit {
+function doit() {
 	declare -r license="${1:-"default"}"
-	test "$license" = "default" && { echo "license blank. exiting."; exit 1; }
+	test "$license" = "default" && {
+		echo "license blank. exiting."
+		exit 1
+	}
+
 	year="2020"
 	name="Edwin Kofler"
 
 	printf "\033[0;94m%s\033[0m\n" "working on $license"
-	licenseText="$(curl -o- --silent https://raw.githubusercontent.com/github/choosealicense.com/gh-pages/_licenses/$license.txt)"
+	licenseText="$(curl -o- --silent "https://raw.githubusercontent.com/github/choosealicense.com/gh-pages/_licenses/$license.txt")"
 	licenseText="$(echo "$licenseText" | tr '\n' '~' | sed -E 's/(---~.*---~~)(.*)/\2/g' | tr '~' '\n' | sed "s/\[year\]/$year/" | sed "s/\[fullname\]/$name/")"
-	echo "$licenseText" > "${license}.txt"
+	echo "$licenseText" >"${license}.txt"
 }
+
 # export -f doit
 
 # slow
 # for license in $licenses; do
-	# parallel -P 0 --link --bar --progress --joblog _parallel.log \
-		# --trim lr \
-		# doit ::: "$license"
+# parallel -P 0 --link --bar --progress --joblog _parallel.log \
+# --trim lr \
+# doit ::: "$license"
 # done
 
 for license in $licenses; do
