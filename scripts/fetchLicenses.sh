@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd licenses
+cd ../licenses
 
 licenses="$(curl -o- --silent https://github.com/github/choosealicense.com/tree/gh-pages/_licenses \
 	| tac | tac | grep -Pio "(?<=gh-pages/_licenses\/).*(?=.txt\">)")"
