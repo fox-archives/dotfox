@@ -28,4 +28,3 @@ oldFiles:
       for: all
     - path: scripts/go.sh
       for: all
-
