@@ -1,4 +1,4 @@
-package inspect
+package scan
 
 import (
 	"io/ioutil"
@@ -89,7 +89,7 @@ func createBootstrapFilesFromRaw(bootstrapFilesRaw BootstrapFilesRaw, projectLoc
 	var bootstrapFiles BootstrapFiles
 	for _, oldFile := range bootstrapFilesRaw.OldFiles {
 		oldFile := BootstrapEntry{
-			SrcPath:  path.Join(dirname, "../globe/files", oldFile.Path),
+			SrcPath:  path.Join(dirname, "files", oldFile.Path),
 			DestPath: path.Join(projectLocation, oldFile.Path),
 			RelPath:  oldFile.Path,
 			For:      oldFile.For,
@@ -98,7 +98,7 @@ func createBootstrapFilesFromRaw(bootstrapFilesRaw BootstrapFilesRaw, projectLoc
 	}
 	for _, newFile := range bootstrapFilesRaw.NewFiles {
 		newFile := BootstrapEntry{
-			SrcPath:  path.Join(dirname, "../globe/files", newFile.Path),
+			SrcPath:  path.Join(dirname, "files", newFile.Path),
 			DestPath: path.Join(projectLocation, newFile.Path),
 			RelPath:  newFile.Path,
 			For:      newFile.For,

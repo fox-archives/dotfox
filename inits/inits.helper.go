@@ -1,4 +1,4 @@
-package globe
+package inits
 
 import (
 	"fmt"

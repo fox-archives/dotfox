@@ -1,0 +1,12 @@
+[package]
+name = "package-json"
+version = "0.1.0"
+authors = ["eankeen <24364012+eankeen@users.noreply.github.com>"]
+description = "Add fields to package.json"
+edition = "2018"
+readme = "../../../README.md"
+license-file = "../../../LICENSE"
+
+[dependencies]
+serde = { version = "1.0.104", features = ["derive"] }
+serde_json = "1.0.48"

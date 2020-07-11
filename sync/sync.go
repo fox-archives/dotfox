@@ -1,14 +1,14 @@
-package globe
+package sync
 
 import (
 	"fmt"
 
-	"github.com/eankeen/globe/inspect"
 	"github.com/eankeen/globe/internal/util"
+	"github.com/eankeen/globe/scan"
 )
 
-// Update project with all bootstrap files
-func Update(project inspect.Project) {
+// Sync project with all bootstrap files
+func Sync(project scan.Project) {
 	// NEW FILES
 	{
 		for _, file := range project.BootstrapFiles.NewFiles {

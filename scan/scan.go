@@ -1,4 +1,4 @@
-package inspect
+package scan
 
 import "github.com/eankeen/globe/internal/util"
 
@@ -45,8 +45,8 @@ type Project struct {
 	BootstrapFiles  BootstrapFiles
 }
 
-// Inspect scans for all data related to project
-func Inspect() Project {
+// Scan scans for all data related to project
+func Scan() Project {
 	var project Project
 	projectLocation := getProjectLocation()
 	util.PrintDebug("projectLocation: %s", projectLocation)

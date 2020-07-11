@@ -5,22 +5,23 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/eankeen/globe/globe"
-	"github.com/eankeen/globe/inspect"
+	"github.com/eankeen/globe/inits"
 	"github.com/eankeen/globe/internal/util"
+	"github.com/eankeen/globe/scan"
+	"github.com/eankeen/globe/sync"
 )
 
 // init subcommand
-func initStart() {
-	globe.Init()
+func startInits() {
+	inits.Inits()
 }
 
 // run subcommand
-func updateStart() {
-	project := inspect.Inspect()
+func startSync() {
+	project := scan.Scan()
 
 	util.PrintInfo("Project located at %s\n", project.ProjectLocation)
-	globe.Update(project)
+	sync.Sync(project)
 }
 
 func showHelp() {
@@ -32,7 +33,7 @@ Description:
 
 Commands:
   init     Initiate Globe configuration
-  update   Update configuration and files
+  sync   Update configuration and files
 
 Options:
   --help   Display help menu
@@ -44,8 +45,8 @@ Options:
 func Run() {
 	util.PrintDebug("args: %v\n", os.Args)
 
-	updateCmd := flag.NewFlagSet("update", flag.ExitOnError)
-	updateCmdOverride := updateCmd.Bool("override", false, "Overrides all existing files. Good for a non-interactive mode")
+	syncCmd := flag.NewFlagSet("sync", flag.ExitOnError)
+	syncCmdOverride := syncCmd.Bool("override", false, "Overrides all existing files. Good for a non-interactive mode")
 
 	if len(os.Args) == 1 {
 		util.PrintError("No subcommand found. See `globe --help`\n")
@@ -55,13 +56,13 @@ func Run() {
 
 	switch os.Args[1] {
 	case "init":
-		initStart()
-	case "update":
-		updateCmd.Parse(os.Args[2:])
-		if *updateCmdOverride == true {
-			updateStart()
+		startInits()
+	case "sync":
+		syncCmd.Parse(os.Args[2:])
+		if *syncCmdOverride == true {
+			startSync()
 		} else {
-			updateStart()
+			startSync()
 		}
 	case "--help", "-help", "-h":
 		showHelp()

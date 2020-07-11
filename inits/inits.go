@@ -1,4 +1,4 @@
-package globe
+package inits
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 )
 
 func copyInitFiles(projectLocation string) {
-	src := path.Join(util.Dirname(), "init")
+	src := path.Join(util.Dirname(), "files")
 	dest := path.Join(projectLocation)
 
 	if err := copyDirRecurse(src, dest); err != nil {
@@ -16,8 +16,8 @@ func copyInitFiles(projectLocation string) {
 	}
 }
 
-// Init Globe config
-func Init() {
+// Inits Globe config
+func Inits() {
 	wd, err := os.Getwd()
 	if err != nil {
 		panic(err)

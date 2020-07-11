@@ -1,4 +1,4 @@
-package globe
+package sync
 
 import (
 	"bufio"
@@ -10,8 +10,9 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/eankeen/globe/inspect"
 	"github.com/eankeen/globe/internal/util"
+	"github.com/eankeen/globe/scan"
+
 	"github.com/gobwas/glob"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -59,7 +60,7 @@ func shouldRemoveExistingFile(path string, relativePath string, destContents []b
 	}
 }
 
-func getProjectFiles(project inspect.Project) []string {
+func getProjectFiles(project scan.Project) []string {
 	projectDir := project.ProjectLocation
 
 	matches, err := filepath.Glob(projectDir + "/*")
@@ -76,7 +77,7 @@ func getProjectFiles(project inspect.Project) []string {
 	return append(matches, matches2...)
 }
 
-func projectFilesContain(project inspect.Project, glob glob.Glob) bool {
+func projectFilesContain(project scan.Project, glob glob.Glob) bool {
 	files := getProjectFiles(project)
 
 	var doesContain bool
@@ -91,7 +92,7 @@ func projectFilesContain(project inspect.Project, glob glob.Glob) bool {
 	return doesContain
 }
 
-func isFileRelevant(project inspect.Project, file inspect.BootstrapEntry) bool {
+func isFileRelevant(project scan.Project, file scan.BootstrapEntry) bool {
 	projectContainsGoFiles := func() bool {
 		if projectFilesContain(project, glob.MustCompile("*.go")) {
 			return true
@@ -114,7 +115,7 @@ func isFileRelevant(project inspect.Project, file inspect.BootstrapEntry) bool {
 }
 
 // CopyFile copies a file
-func copyFile(project inspect.Project, file inspect.BootstrapEntry) {
+func copyFile(project scan.Project, file scan.BootstrapEntry) {
 	srcFile := file.SrcPath
 	destFile := file.DestPath
 	util.PrintDebug("srcFile: %s\n", srcFile)
@@ -174,7 +175,7 @@ func copyFile(project inspect.Project, file inspect.BootstrapEntry) {
 }
 
 // RemoveFile removes a file
-func removeFile(project inspect.Project, file inspect.BootstrapEntry) {
+func removeFile(project scan.Project, file scan.BootstrapEntry) {
 	destFile := file.DestPath
 
 	err := os.Remove(destFile)
