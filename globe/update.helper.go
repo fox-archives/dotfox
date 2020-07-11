@@ -1,4 +1,4 @@
-package main
+package globe
 
 import (
 	"bufio"
@@ -10,28 +10,20 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/eankeen/globe/inspect"
+	"github.com/eankeen/globe/internal/util"
 	"github.com/gobwas/glob"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-type FileEntry struct {
-	Path string `json:"path"`
-	For  string `json:"for"`
-}
-
-type Files struct {
-	Files    []FileEntry `json: files`
-	OldFiles []FileEntry `json: oldFiles`
-}
-
-func GetAbsolutePaths(relativePath string) struct {
+func getAbsolutePaths(absolutePath string, relativePath string) struct {
 	SrcPath  string
 	DestPath string
 } {
-	dir := getProjectDir()
+	dir := absolutePath
 	destPath := path.Join(dir, relativePath)
 
-	srcPath := path.Join(_dirname(), "files", relativePath)
+	srcPath := path.Join(util.Dirname(), "files", relativePath)
 
 	return struct {
 		SrcPath  string
@@ -42,8 +34,8 @@ func GetAbsolutePaths(relativePath string) struct {
 	}
 }
 
-func ShouldRemoveExistingFile(path string, relativePath string, destContents []byte, srcContents []byte) bool {
-	printInfo("FileEntry '%s' is outdated. Replace it? (y/d/n): ", relativePath)
+func shouldRemoveExistingFile(path string, relativePath string, destContents []byte, srcContents []byte) bool {
+	util.PrintInfo("FileEntry '%s' is outdated. Replace it? (y/d/n): ", relativePath)
 	r := bufio.NewReader(os.Stdin)
 	c, err := r.ReadByte()
 	if err != nil {
@@ -51,40 +43,32 @@ func ShouldRemoveExistingFile(path string, relativePath string, destContents []b
 	}
 
 	if c == byte('Y') || c == byte('y') {
-		printInfo("chose: yes\n")
+		util.PrintInfo("chose: yes\n")
 		return true
 	} else if c == byte('N') || c == byte('n') {
-		printInfo("chose: no\n")
+		util.PrintInfo("chose: no\n")
 		return false
 	} else if c == byte('D') || c == byte('d') {
-		printInfo("chose: diff\n")
+		util.PrintInfo("chose: diff\n")
 		dmp := diffmatchpatch.New()
 		diffs := dmp.DiffMain(string(destContents), string(srcContents), true)
 		fmt.Println(dmp.DiffPrettyText(diffs))
-		return ShouldRemoveExistingFile(path, relativePath, destContents, srcContents)
+		return shouldRemoveExistingFile(path, relativePath, destContents, srcContents)
 	} else {
-		return ShouldRemoveExistingFile(path, relativePath, destContents, srcContents)
+		return shouldRemoveExistingFile(path, relativePath, destContents, srcContents)
 	}
 }
 
-func getProjectDir() string {
-	wd, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Error when trying to get the working directory")
-		panic(err)
-	}
-	return wd
-}
-
-func getProjectFiles() []string {
-	projectDir := getProjectDir()
+func getProjectFiles(project inspect.Project) []string {
+	projectDir := project.ProjectLocation
 
 	matches, err := filepath.Glob(projectDir + "/*")
 	if err != nil {
 		panic(err)
 	}
 
-	matches2, err := filepath.Glob(projectDir + "/**")
+	// TODO: cleanup
+	matches2, err := filepath.Glob(projectDir + "/**/**/**/**/**")
 	if err != nil {
 		panic(err)
 	}
@@ -92,8 +76,9 @@ func getProjectFiles() []string {
 	return append(matches, matches2...)
 }
 
-func projectFilesContain(glob glob.Glob) bool {
-	files := getProjectFiles()
+func projectFilesContain(project inspect.Project, glob glob.Glob) bool {
+	files := getProjectFiles(project)
+
 	var doesContain bool
 	for _, file := range files {
 		if glob.Match(file) {
@@ -102,13 +87,13 @@ func projectFilesContain(glob glob.Glob) bool {
 		}
 	}
 
-	debug("Does project contain pattern %s?\n", glob)
+	util.PrintDebug("Does project contain pattern %+v?: %t\n", glob, doesContain)
 	return doesContain
 }
 
-func isFileRelevant(file FileEntry) bool {
+func isFileRelevant(project inspect.Project, file inspect.BootstrapEntry) bool {
 	projectContainsGoFiles := func() bool {
-		if projectFilesContain(glob.MustCompile("*.go")) {
+		if projectFilesContain(project, glob.MustCompile("*.go")) {
 			return true
 		}
 		return false
@@ -124,16 +109,16 @@ func isFileRelevant(file FileEntry) bool {
 		return false
 	}
 
-	debug("FileEntry '%s' does not match case statement. Has value %s. Skipping\n", file.Path, file.For)
+	util.PrintDebug("FileEntry '%s' does not match case statement. Has value %s. Skipping\n", file.RelPath, file.For)
 	return false
 }
 
-func CopyFile(file FileEntry) {
-	abs := GetAbsolutePaths(file.Path)
-	srcFile := abs.SrcPath
-	destFile := abs.DestPath
-	debug("srcFile: %s\n", srcFile)
-	debug("destFile: %s\n", destFile)
+// CopyFile copies a file
+func copyFile(project inspect.Project, file inspect.BootstrapEntry) {
+	srcFile := file.SrcPath
+	destFile := file.DestPath
+	util.PrintDebug("srcFile: %s\n", srcFile)
+	util.PrintDebug("destFile: %s\n", destFile)
 
 	// ensure parent directory exists
 	os.MkdirAll(path.Dir(destFile), 0755)
@@ -146,21 +131,21 @@ func CopyFile(file FileEntry) {
 	// check to see if we should even be trying to copy the file
 	// over. for example scripts/go.sh should only be copied when
 	// there are .go files in the repository
-	isFileRelevant := isFileRelevant(file)
+	isFileRelevant := isFileRelevant(project, file)
 	if !isFileRelevant {
-		printInfo("Non-relevant file '%s' is being skipped\n", file.Path)
+		util.PrintInfo("Non-relevant file '%s' is being skipped\n", file.RelPath)
 		return
 	}
 
 	// prompt to remove preexisting file if it exists
-	destFileExists, err := fileExists(destFile)
+	destFileExists, err := util.FileExists(destFile)
 	if err != nil {
 		fmt.Printf("Error trying to test if '%s' exists. Skipping file", destFile)
 		log.Println(err)
 		return
 	}
 
-	debug("destFileExists: %v\n", destFileExists)
+	util.PrintDebug("destFileExists: %v\n", destFileExists)
 	if destFileExists {
 		// if the file buffers are the same, return no need to copy
 		destContents, err := ioutil.ReadFile(destFile)
@@ -169,12 +154,12 @@ func CopyFile(file FileEntry) {
 		}
 
 		if bytes.Compare(srcContents, destContents) == 0 {
-			printInfo("Skipping unchanged '" + file.Path + "' file\n")
+			util.PrintInfo("Skipping unchanged '" + file.RelPath + "' file\n")
 			return
 		}
 
 		// file exists, we ask if we should remove file
-		shouldRemove := ShouldRemoveExistingFile(destFile, file.Path, destContents, srcContents)
+		shouldRemove := shouldRemoveExistingFile(destFile, file.RelPath, destContents, srcContents)
 		if shouldRemove == false {
 			return
 		}
@@ -185,17 +170,17 @@ func CopyFile(file FileEntry) {
 		log.Fatal(err)
 	}
 
-	printInfo("Copying %s to %s\n", srcFile, destFile)
+	util.PrintInfo("Copying %s to %s\n", srcFile, destFile)
 }
 
-func RemoveFile(file FileEntry) {
-	abs := GetAbsolutePaths(file.Path)
-	destFile := abs.DestPath
+// RemoveFile removes a file
+func removeFile(project inspect.Project, file inspect.BootstrapEntry) {
+	destFile := file.DestPath
 
 	err := os.Remove(destFile)
 	if err != nil {
-		fmt.Printf("Error when trying to remove %s. Skipping file", destFile)
-		log.Println(err)
+		// fmt.Printf("Error when trying to remove %s. Skipping file\n", destFile)
+		// log.Println(err)
 		return
 	}
 }

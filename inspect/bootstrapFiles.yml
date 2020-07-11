@@ -1,4 +1,4 @@
-files:
+newFiles:
     - path: .editorconfig
       for: all
     - path: .gitattributes

@@ -23,8 +23,9 @@ trim_trailing_whitespace = false
 
 # used by shfmt
 [*.sh]
-binary_next_line = true
+indent_style = space
+binary_next_line   = true
 switch_case_indent = true
-space_redirects = false
+space_redirects    = true
 keep_padding = true
-function_next_line = false
+function_next_line = true
