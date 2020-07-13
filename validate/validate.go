@@ -4,6 +4,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
 )
 
@@ -13,7 +14,8 @@ type ValidatedArgs struct {
 }
 
 type ValidationValues struct {
-	StoreDir string `json:"omitempty"`
+	StoreDir string
+	Project  config.Project `json:"omitempty"`
 }
 
 // Validate command line arguments and directory structure
@@ -26,12 +28,12 @@ func Validate(values ValidationValues) {
 	}
 
 	// storeDir
-	values.StoreDir = checkFileStore(values.StoreDir)
+	checkFileStore(values.StoreDir)
 
 	// checkCoreFiles(storeDir)
 }
 
-func checkFileStore(storeLocation string) string {
+func checkFileStore(storeLocation string) {
 	stat, err := os.Stat(storeLocation)
 
 	if err != nil {
@@ -56,8 +58,6 @@ func checkFileStore(storeLocation string) string {
 		util.PrintError("fileStoreLocation is empty. This is not supposed to happen. Exiting\n")
 		os.Exit(1)
 	}
-
-	return storeLocation
 }
 
 func checkCoreFiles(storeLocation string) {

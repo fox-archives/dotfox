@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/eankeen/globe/config"
-	"github.com/eankeen/globe/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -35,8 +34,6 @@ func init() {
 			}
 			panic("some error occured")
 		}
-
-		util.PrintInfo("Using config file: '%s'\n", viper.ConfigFileUsed())
 	})
 
 	pf := RootCmd.PersistentFlags()
