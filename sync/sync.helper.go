@@ -8,12 +8,11 @@ import (
 	"log"
 	"os"
 	"path"
-	"path/filepath"
 
 	"github.com/eankeen/globe/internal/util"
 	"github.com/eankeen/globe/scan"
-
 	"github.com/gobwas/glob"
+
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
@@ -60,25 +59,12 @@ func shouldRemoveExistingFile(path string, relativePath string, destContents []b
 	}
 }
 
-func getProjectFiles(project scan.Project) []string {
-	projectDir := project.ProjectLocation
-
-	matches, err := filepath.Glob(projectDir + "/*")
-	if err != nil {
-		panic(err)
-	}
-
-	// TODO: cleanup
-	matches2, err := filepath.Glob(projectDir + "/**/**/**/**/**")
-	if err != nil {
-		panic(err)
-	}
-
-	return append(matches, matches2...)
-}
-
 func projectFilesContain(project scan.Project, glob glob.Glob) bool {
-	files := getProjectFiles(project)
+	dir := path.Join(util.Dirname(), "../scan/files")
+	files, err := util.GetAllChildFolders(dir)
+	if err != nil {
+		panic(err)
+	}
 
 	var doesContain bool
 	for _, file := range files {

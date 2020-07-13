@@ -1,30 +1,44 @@
 newFiles:
-    - path: .editorconfig
-      for: all
-    - path: .gitattributes
-      for: all
-    - path: license
-      for: all
-    - path: .github/CODE_OF_CONDUCT.md
-      for: all
-    - path: .github/COMMIT_CONVENTION.md
-      for: all
-    - path: .github/CONTRIBUTING.md
-      for: all
-    - path: .github/PULL_REQUEST_TEMPLATE.md
-      for: all
-    - path: .github/ISSUE_TEMPLATE/BUG_REPORT.md
-      for: all
-    - path: .github/ISSUE_TEMPLATE/config.yml
-      for: all
-    - path: .github/ISSUE_TEMPLATE/FEATURE_REQUEST.md
-      for: all
-    - path: .github/ISSUE_TEMPLATE/QUESTION.md
-      for: all
-    - path: scripts/globe/go.sh
-      for: golang
+   - path: .editorconfig
+     op: add
+     for: all
+   - path: .gitattributes
+     op: add
+     for: all
+   - path: license
+     op: add
+     for: all
+   - path: .github/CODE_OF_CONDUCT.md
+     op: add
+     for: all
+   - path: .github/COMMIT_CONVENTION.md
+     op: add
+     for: all
+   - path: .github/CONTRIBUTING.md
+     op: add
+     for: all
+   - path: .github/PULL_REQUEST_TEMPLATE.md
+     op: add
+     for: all
+   - path: .github/ISSUE_TEMPLATE/BUG_REPORT.md
+     op: add
+     for: all
+   - path: .github/ISSUE_TEMPLATE/config.yml
+     op: add
+     for: all
+   - path: .github/ISSUE_TEMPLATE/FEATURE_REQUEST.md
+     op: add
+     for: all
+   - path: .github/ISSUE_TEMPLATE/QUESTION.md
+     op: add
+     for: all
+   - path: scripts/globe/go.sh
+     op: add
+     for: golang
 oldFiles:
-    - path: .github/COMMIT_CONVENTIONS.md
-      for: all
-    - path: scripts/go.sh
-      for: all
+   - path: .github/COMMIT_CONVENTIONS.md
+     op: remove
+     for: all
+   - path: scripts/go.sh
+     op: remove
+     for: all

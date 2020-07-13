@@ -9,8 +9,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
-
 // RootCmd is the root command
 var RootCmd = &cobra.Command{
 	Use:   "globe",
@@ -29,7 +27,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(doInit)
 
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "log-level", "", "Level for logging (info, warning (default), error")
+	// RootCmd.PersistentFlags().StringVar("foo", "log-level", "", "Level for logging (info, warning (default), error")
 }
 
 func doInit() {

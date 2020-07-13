@@ -3,6 +3,7 @@ package util
 import (
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 )
 
@@ -27,4 +28,29 @@ func FileExists(name string) (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+// GetAllChildFolders walks all the child files of a directory and returns them
+func GetAllChildFolders(dir string) ([]string, error) {
+	stat, err := os.Stat(dir)
+	// TODO: fileexist?
+	if err != nil {
+		if os.IsNotExist(err) {
+			PrintError("File or folder '%s' does not exist. Exiting.", dir)
+			os.Exit(1)
+		}
+		panic(err)
+	}
+	if !stat.IsDir() {
+		PrintError("The file '%s' is not a directory. Exiting.", dir)
+		os.Exit(1)
+	}
+
+	files := []string{}
+	err = filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		files = append(files, path)
+		return nil
+	})
+
+	return files, err
 }
