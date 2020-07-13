@@ -1,8 +1,14 @@
 # Globe
 
-A flexible and language-agnostic configuration system for managing multiple independent projects. It automatically manages the bootstraping and synchronizing of files that are repetitevly used in development workflows or project repositories. This is most useful when develvoping with many tens or hundreds of projects, especially if they're hosted on GitHub
+Language-agnostic configuration and program management, and build utility
 
-This project also comes with many more specific scripts that just make life easier
+## Description
+
+A language-agnostic generalized programming utility for managing multiple independent projects. It automatically manages the bootstraping and synchronizing of files in addition to the bootstrapping, synchronizing, and installation of programs that are repetitevly used in development workflows or project repositories. This is intended to significantly decrease miscellaneous (yet somewhat common) development tasks when working across many tens or hundreds of projects
+
+![xkcd](https://imgs.xkcd.com/comics/is_it_worth_the_time.png)
+
+Right now, it's not extendable and specific to my situation. I'm working on generalizing this utility so it can be glued together with other independent (but related) tools
 
 ## Table of Contents
 

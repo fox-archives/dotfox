@@ -44,6 +44,11 @@ func getProjectLocation() string {
 	return projectLocation
 }
 
+// GetConfigLocation gets the full path to the configuration file configuration file
+func GetConfigLocation() string {
+	return path.Join(getProjectLocation(), "globe.toml")
+}
+
 func readGlobeConfig(projectLocation string) GlobeConfig {
 	configLocation := path.Join(projectLocation, "globe.toml")
 

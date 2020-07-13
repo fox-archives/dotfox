@@ -1,9 +1,7 @@
 package main
 
-import (
-	"github.com/eankeen/globe/cli"
-)
+import "github.com/eankeen/globe/cmd"
 
 func main() {
-	cli.Run()
+	cmd.Execute()
 }
