@@ -3,11 +3,12 @@ package sync
 import (
 	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
+	"github.com/eankeen/globe/validate"
 )
 
 // Sync project with all bootstrap files
-func Sync() {
-	project := config.GetConfig()
+func Sync(validatedArgs validate.ValidatedArgs) {
+	project := config.GetConfig(validatedArgs.StoreDir)
 	util.PrintInfo("Project located at %s\n", project.ProjectLocation)
 
 	for _, file := range project.BootstrapFiles.Files {
@@ -21,6 +22,6 @@ func Sync() {
 			continue
 		}
 
-		util.PrintError("File '%s's operation could not be read. Exiting.", file.RelPath)
+		util.PrintError("File '%s's operation could not be read. Exiting.\n", file.RelPath)
 	}
 }

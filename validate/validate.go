@@ -1,27 +1,36 @@
 package validate
 
 import (
-	"fmt"
 	"os"
 	"path"
 
-	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
 	"github.com/spf13/cobra"
 )
 
+// ValidatedArgs returns the value of cli arguments
+type ValidatedArgs struct {
+	StoreDir string
+}
+
 // Validate command line arguments and directory structure
-func Validate(cmd *cobra.Command, args []string) {
-	storeLocation := cmd.Flag("store-dir").Value.String()
+func Validate(cmd *cobra.Command, args []string) ValidatedArgs {
+	storeDir := cmd.Flag("store-dir").Value.String()
 
 	// if store location is blank, we want cobra to print out that the store-dir is not set
 	// to do this, we return prematuraly from validate function
-	if storeLocation == "" {
-		return
+	if storeDir == "" {
+		return ValidatedArgs{
+			StoreDir: storeDir,
+		}
 	}
-	storeLocation = checkFileStore(storeLocation)
+	storeDir = checkFileStore(storeDir)
 
-	// checkCoreFiles(storeLocation)
+	// checkCoreFiles(storeDir)
+
+	return ValidatedArgs{
+		StoreDir: storeDir,
+	}
 }
 
 func checkFileStore(storeLocation string) string {
@@ -68,6 +77,6 @@ func checkCoreFiles(storeLocation string) {
 		util.PrintError("Folder '%s' is not a folder. Exiting\n", storeLocation)
 	}
 
-	coreConfig := config.ReadSyncConfig(storeLocation)
-	fmt.Print(coreConfig)
+	// coreConfig := config.ReadSyncConfig(storeDir, storeLocation)
+	// fmt.Print(coreConfig)
 }

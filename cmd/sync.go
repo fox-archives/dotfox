@@ -10,11 +10,9 @@ var syncCommand = &cobra.Command{
 	Use:   "sync",
 	Short: "Sync Globe's configuration files",
 	Long:  `Syncs configuration files`,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		validate.Validate(cmd, args)
-	},
 	Run: func(cmd *cobra.Command, args []string) {
-		sync.Sync()
+		validatedArgs := validate.Validate(cmd, args)
+		sync.Sync(validatedArgs)
 	},
 }
 

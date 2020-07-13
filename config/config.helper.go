@@ -48,8 +48,8 @@ type BootstrapFiles struct {
 }
 
 // ReadSyncConfig reads the local sync.yml configuration file
-func ReadSyncConfig(storeLocation string) SyncConfigRaw {
-	yamlLocation := path.Join(storeLocation, "sync/sync.yml")
+func ReadSyncConfig(storeDir string, storeLocation string) SyncConfigRaw {
+	yamlLocation := path.Join(storeDir, "sync.yml")
 
 	var coreConfig SyncConfigRaw
 	{

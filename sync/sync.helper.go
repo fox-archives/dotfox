@@ -16,8 +16,7 @@ import (
 )
 
 func projectFilesContain(project config.Project, glob glob.Glob) bool {
-	dir := path.Join(util.Dirname(), "../scan/files")
-	files, err := util.GetAllChildFolders(dir)
+	files, err := util.GetAllChildFolders(project.StoreDir)
 	if err != nil {
 		panic(err)
 	}
