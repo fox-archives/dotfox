@@ -12,8 +12,24 @@ import (
 	"github.com/eankeen/globe/internal/util"
 )
 
+func ProcessFiles(project config.Project, files []config.FileEntry) {
+	for _, file := range files {
+		util.PrintInfo("Processing file %s\n", file.RelPath)
+
+		if file.Op == "add" {
+			copyFile(project, file)
+			continue
+		} else if file.Op == "remove" {
+			removeFile(project, file)
+			continue
+		}
+
+		util.PrintError("File '%s's operation could not be read. Exiting.\n", file.RelPath)
+	}
+}
+
 // CopyFile copies a file
-func CopyFile(project config.Project, file config.FileEntry) {
+func copyFile(project config.Project, file config.FileEntry) {
 	srcFile := file.SrcPath
 	destFile := file.DestPath
 	util.PrintDebug("srcFile: %s\n", srcFile)
@@ -73,7 +89,7 @@ func CopyFile(project config.Project, file config.FileEntry) {
 }
 
 // RemoveFile removes a file
-func RemoveFile(project config.Project, file config.FileEntry) {
+func removeFile(project config.Project, file config.FileEntry) {
 	destFile := file.DestPath
 
 	err := os.Remove(destFile)

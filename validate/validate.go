@@ -12,22 +12,23 @@ type ValidatedArgs struct {
 	StoreDir string
 }
 
+type ValidationValues struct {
+	StoreDir string `json:"omitempty"`
+}
+
 // Validate command line arguments and directory structure
-func Validate(storeDir string) ValidatedArgs {
-	// if store location is blank, we want cobra to print out that the store-dir is not set
-	// to do this, we return prematuraly from validate function
-	if storeDir == "" {
-		return ValidatedArgs{
-			StoreDir: storeDir,
-		}
+func Validate(values ValidationValues) {
+	// if store location is blank, we return prematurelly
+	// from this function because want cobra to print out
+	// that the store-dir is not set
+	if values.StoreDir == "" {
+		return
 	}
-	storeDir = checkFileStore(storeDir)
+
+	// storeDir
+	values.StoreDir = checkFileStore(values.StoreDir)
 
 	// checkCoreFiles(storeDir)
-
-	return ValidatedArgs{
-		StoreDir: storeDir,
-	}
 }
 
 func checkFileStore(storeLocation string) string {

@@ -11,7 +11,9 @@ var checkCmd = &cobra.Command{
 	Long:  `Validate to ensure your dotfiles configuration and files are valid. This file also is ran before all other subcommands`,
 	Run: func(cmd *cobra.Command, args []string) {
 		storeDir := cmd.Flag("store-dir").Value.String()
-		validate.Validate(storeDir)
+		validate.Validate(validate.ValidationValues{
+			StoreDir: storeDir,
+		})
 	},
 }
 

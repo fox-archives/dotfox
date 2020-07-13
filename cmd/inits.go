@@ -15,19 +15,17 @@ var initsCmd = &cobra.Command{
 	Long:  `Initiates configuration files to be used by Globe`,
 	Run: func(cmd *cobra.Command, args []string) {
 		storeDir := cmd.Flag("store-dir").Value.String()
-		validate.Validate(storeDir)
+		validate.Validate(validate.ValidationValues{
+			StoreDir: storeDir,
+		})
 
 		projectDir, err := os.Getwd()
 		if err != nil {
 			panic(err)
 		}
-
 		project := config.GetData(projectDir, storeDir)
 
-		// COPY OVER INIT FILES
-		for _, file := range project.InitFiles.Files {
-			sync.CopyFile(project, file)
-		}
+		sync.ProcessFiles(project, project.InitFiles.Files)
 	},
 }
 

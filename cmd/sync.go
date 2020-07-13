@@ -14,25 +14,17 @@ var syncCommand = &cobra.Command{
 	Long:  `Syncs configuration files`,
 	Run: func(cmd *cobra.Command, args []string) {
 		storeDir := cmd.Flag("store-dir").Value.String()
-		validatedArgs := validate.Validate(storeDir)
+		projectDir := config.GetProjectLocation()
 
-		project := config.GetData(config.GetProjectLocation(), validatedArgs.StoreDir)
+		validate.Validate(validate.ValidationValues{
+			StoreDir: storeDir,
+		})
+
+		project := config.GetData(projectDir, storeDir)
 
 		util.PrintInfo("Project located at %s\n", project.ProjectLocation)
 
-		for _, file := range project.SyncFiles.Files {
-			util.PrintInfo("Processing file %s\n", file.RelPath)
-
-			if file.Op == "add" {
-				sync.CopyFile(project, file)
-				continue
-			} else if file.Op == "remove" {
-				sync.RemoveFile(project, file)
-				continue
-			}
-
-			util.PrintError("File '%s's operation could not be read. Exiting.\n", file.RelPath)
-		}
+		sync.ProcessFiles(project, project.SyncFiles.Files)
 	},
 }
 
