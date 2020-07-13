@@ -92,23 +92,15 @@ func createBootstrapFilesFromRaw(bootstrapFilesRaw BootstrapFilesRaw, projectLoc
 	dirname := util.Dirname()
 
 	var bootstrapFiles BootstrapFiles
-	for _, oldFile := range bootstrapFilesRaw.OldFiles {
-		oldFile := BootstrapEntry{
-			SrcPath:  path.Join(dirname, "files", oldFile.Path),
-			DestPath: path.Join(projectLocation, oldFile.Path),
-			RelPath:  oldFile.Path,
-			For:      oldFile.For,
+	for _, file := range bootstrapFilesRaw.Files {
+		file := BootstrapEntry{
+			SrcPath:  path.Join(dirname, "files", file.Path),
+			DestPath: path.Join(projectLocation, file.Path),
+			RelPath:  file.Path,
+			Op:       file.Op,
+			For:      file.For,
 		}
-		bootstrapFiles.OldFiles = append(bootstrapFiles.OldFiles, oldFile)
-	}
-	for _, newFile := range bootstrapFilesRaw.NewFiles {
-		newFile := BootstrapEntry{
-			SrcPath:  path.Join(dirname, "files", newFile.Path),
-			DestPath: path.Join(projectLocation, newFile.Path),
-			RelPath:  newFile.Path,
-			For:      newFile.For,
-		}
-		bootstrapFiles.NewFiles = append(bootstrapFiles.NewFiles, newFile)
+		bootstrapFiles.Files = append(bootstrapFiles.Files, file)
 	}
 
 	return bootstrapFiles

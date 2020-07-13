@@ -1,4 +1,4 @@
-newFiles:
+files:
    - path: .editorconfig
      op: add
      for: all
@@ -35,10 +35,3 @@ newFiles:
    - path: scripts/globe/go.sh
      op: add
      for: golang
-oldFiles:
-   - path: .github/COMMIT_CONVENTIONS.md
-     op: remove
-     for: all
-   - path: scripts/go.sh
-     op: remove
-     for: all

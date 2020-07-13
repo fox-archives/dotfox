@@ -1,31 +1,26 @@
 package sync
 
 import (
-	"fmt"
-
 	"github.com/eankeen/globe/internal/util"
 	"github.com/eankeen/globe/scan"
 )
 
 // Sync project with all bootstrap files
-func Sync(project scan.Project) {
-	// NEW FILES
-	{
-		for _, file := range project.BootstrapFiles.NewFiles {
-			util.PrintInfo("Processing file %s\n", file.RelPath)
+func Sync() {
+	project := scan.Scan()
+	util.PrintInfo("Project located at %s\n", project.ProjectLocation)
 
+	for _, file := range project.BootstrapFiles.Files {
+		util.PrintInfo("Processing file %s\n", file.RelPath)
+
+		if file.Op == "add" {
 			copyFile(project, file)
-			fmt.Println()
-		}
-	}
-
-	// OLD FILES
-	{
-		for _, file := range project.BootstrapFiles.OldFiles {
-			util.PrintInfo("Removing bad file %s\n", file.RelPath)
-
+			continue
+		} else if file.Op == "remove" {
 			removeFile(project, file)
-			fmt.Println()
+			continue
 		}
+
+		util.PrintError("File '%s's operation could not be read. Exiting.", file.RelPath)
 	}
 }

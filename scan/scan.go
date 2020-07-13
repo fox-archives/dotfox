@@ -16,6 +16,7 @@ type GlobeConfig struct {
 type BootstrapEntryRaw struct {
 	Path string `yaml:"path"`
 	For  string `yaml:"for"`
+	Op   string `yaml:"op"`
 }
 
 // BootstrapEntry is the same as BootstrapEntryRaw, except it has been processed
@@ -23,19 +24,18 @@ type BootstrapEntry struct {
 	SrcPath  string `yaml:"srcPath"`
 	DestPath string `yaml:"destPath"`
 	RelPath  string `yaml:"relPath"`
+	Op       string `yaml:"op"`
 	For      string `yaml:"for"`
 }
 
 // BootstrapFilesRaw lists the attributes of each file to bootstrap
 type BootstrapFilesRaw struct {
-	NewFiles []BootstrapEntryRaw `yaml:"newFiles"`
-	OldFiles []BootstrapEntryRaw `yaml:"oldFiles"`
+	Files []BootstrapEntryRaw `yaml:"files"`
 }
 
 // BootstrapFiles is the same as BootstrapFilesRaw except is uses the processed versions
 type BootstrapFiles struct {
-	NewFiles []BootstrapEntry `yaml:"newFiles"`
-	OldFiles []BootstrapEntry `yaml:"oldFiles"`
+	Files []BootstrapEntry `yaml:"files"`
 }
 
 // Project includes all details of the current Project. All information should be found in one pass
