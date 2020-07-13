@@ -10,11 +10,10 @@ var initsCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Init Globe's configuration files",
 	Long:  `Initiates configuration files to be used by Globe`,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		validate.Validate(cmd, args)
-	},
 	Run: func(cmd *cobra.Command, args []string) {
-		inits.Inits()
+		v := validate.Validate(cmd, args)
+
+		inits.Inits(v.StoreDir)
 	},
 }
 
