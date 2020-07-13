@@ -1,13 +1,13 @@
 package sync
 
 import (
+	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
-	"github.com/eankeen/globe/scan"
 )
 
 // Sync project with all bootstrap files
 func Sync() {
-	project := scan.Scan()
+	project := config.GetConfig()
 	util.PrintInfo("Project located at %s\n", project.ProjectLocation)
 
 	for _, file := range project.BootstrapFiles.Files {

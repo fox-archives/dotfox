@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
-	"github.com/eankeen/globe/scan"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -27,7 +27,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(func() {
-		viper.SetConfigFile(scan.GetConfigLocation())
+		viper.SetConfigFile(config.GetConfigLocation())
 
 		if err := viper.ReadInConfig(); err != nil {
 			if _, ok := err.(viper.ConfigFileNotFoundError); ok {

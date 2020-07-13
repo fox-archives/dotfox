@@ -9,57 +9,13 @@ import (
 	"os"
 	"path"
 
+	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
-	"github.com/eankeen/globe/scan"
 	"github.com/gobwas/glob"
-
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-func getAbsolutePaths(absolutePath string, relativePath string) struct {
-	SrcPath  string
-	DestPath string
-} {
-	dir := absolutePath
-	destPath := path.Join(dir, relativePath)
-
-	srcPath := path.Join(util.Dirname(), "files", relativePath)
-
-	return struct {
-		SrcPath  string
-		DestPath string
-	}{
-		SrcPath:  srcPath,
-		DestPath: destPath,
-	}
-}
-
-func shouldRemoveExistingFile(path string, relativePath string, destContents []byte, srcContents []byte) bool {
-	util.PrintInfo("FileEntry '%s' is outdated. Replace it? (y/d/n): ", relativePath)
-	r := bufio.NewReader(os.Stdin)
-	c, err := r.ReadByte()
-	if err != nil {
-		panic(err)
-	}
-
-	if c == byte('Y') || c == byte('y') {
-		util.PrintInfo("chose: yes\n")
-		return true
-	} else if c == byte('N') || c == byte('n') {
-		util.PrintInfo("chose: no\n")
-		return false
-	} else if c == byte('D') || c == byte('d') {
-		util.PrintInfo("chose: diff\n")
-		dmp := diffmatchpatch.New()
-		diffs := dmp.DiffMain(string(destContents), string(srcContents), true)
-		fmt.Println(dmp.DiffPrettyText(diffs))
-		return shouldRemoveExistingFile(path, relativePath, destContents, srcContents)
-	} else {
-		return shouldRemoveExistingFile(path, relativePath, destContents, srcContents)
-	}
-}
-
-func projectFilesContain(project scan.Project, glob glob.Glob) bool {
+func projectFilesContain(project config.Project, glob glob.Glob) bool {
 	dir := path.Join(util.Dirname(), "../scan/files")
 	files, err := util.GetAllChildFolders(dir)
 	if err != nil {
@@ -78,30 +34,8 @@ func projectFilesContain(project scan.Project, glob glob.Glob) bool {
 	return doesContain
 }
 
-func isFileRelevant(project scan.Project, file util.BootstrapEntry) bool {
-	projectContainsGoFiles := func() bool {
-		if projectFilesContain(project, glob.MustCompile("*.go")) {
-			return true
-		}
-		return false
-
-	}
-	switch file.For {
-	case "all":
-		return true
-	case "golang":
-		if projectContainsGoFiles() {
-			return true
-		}
-		return false
-	}
-
-	util.PrintDebug("FileEntry '%s' does not match case statement. Has value %s. Skipping\n", file.RelPath, file.For)
-	return false
-}
-
 // CopyFile copies a file
-func copyFile(project scan.Project, file util.BootstrapEntry) {
+func copyFile(project config.Project, file config.BootstrapEntry) {
 	srcFile := file.SrcPath
 	destFile := file.DestPath
 	util.PrintDebug("srcFile: %s\n", srcFile)
@@ -161,7 +95,7 @@ func copyFile(project scan.Project, file util.BootstrapEntry) {
 }
 
 // RemoveFile removes a file
-func removeFile(project scan.Project, file util.BootstrapEntry) {
+func removeFile(project config.Project, file config.BootstrapEntry) {
 	destFile := file.DestPath
 
 	err := os.Remove(destFile)
@@ -170,4 +104,50 @@ func removeFile(project scan.Project, file util.BootstrapEntry) {
 		// log.Println(err)
 		return
 	}
+}
+
+func shouldRemoveExistingFile(path string, relativePath string, destContents []byte, srcContents []byte) bool {
+	util.PrintInfo("FileEntry '%s' is outdated. Replace it? (y/d/n): ", relativePath)
+	r := bufio.NewReader(os.Stdin)
+	c, err := r.ReadByte()
+	if err != nil {
+		panic(err)
+	}
+
+	if c == byte('Y') || c == byte('y') {
+		util.PrintInfo("chose: yes\n")
+		return true
+	} else if c == byte('N') || c == byte('n') {
+		util.PrintInfo("chose: no\n")
+		return false
+	} else if c == byte('D') || c == byte('d') {
+		util.PrintInfo("chose: diff\n")
+		dmp := diffmatchpatch.New()
+		diffs := dmp.DiffMain(string(destContents), string(srcContents), true)
+		fmt.Println(dmp.DiffPrettyText(diffs))
+		return shouldRemoveExistingFile(path, relativePath, destContents, srcContents)
+	} else {
+		return shouldRemoveExistingFile(path, relativePath, destContents, srcContents)
+	}
+}
+func isFileRelevant(project config.Project, file config.BootstrapEntry) bool {
+	projectContainsGoFiles := func() bool {
+		if projectFilesContain(project, glob.MustCompile("*.go")) {
+			return true
+		}
+		return false
+
+	}
+	switch file.For {
+	case "all":
+		return true
+	case "golang":
+		if projectContainsGoFiles() {
+			return true
+		}
+		return false
+	}
+
+	util.PrintDebug("FileEntry '%s' does not match case statement. Has value %s. Skipping\n", file.RelPath, file.For)
+	return false
 }

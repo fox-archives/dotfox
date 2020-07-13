@@ -42,32 +42,3 @@ func GetAllChildFolders(dir string) ([]string, error) {
 
 	return files, err
 }
-
-func CheckFileStore(storeLocation string) string {
-	stat, err := os.Stat(storeLocation)
-
-	if err != nil {
-		if os.IsNotExist(err) {
-			PrintError("The fileStore '%s'  does not exist. Exiting\n", storeLocation)
-			os.Exit(1)
-		}
-		if os.IsPermission(err) {
-			PrintError("There were permission issues when trying to stat '%s'. Exiting\n", storeLocation)
-			os.Exit(1)
-		}
-		PrintError("An unknown error occured\n")
-		panic(err)
-	}
-
-	if !stat.IsDir() {
-		PrintError("Folder '%s' is not a folder. Exiting\n", storeLocation)
-		os.Exit(1)
-	}
-
-	if storeLocation == "" {
-		PrintError("fileStoreLocation is empty. This is not supposed to happen. Exiting\n")
-		os.Exit(1)
-	}
-
-	return storeLocation
-}
