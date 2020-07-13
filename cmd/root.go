@@ -41,7 +41,12 @@ func init() {
 
 	pf := RootCmd.PersistentFlags()
 	pf.String("store-dir", "", "The location of your dotfiles")
-	if err := cobra.MarkFlagRequired(pf, "store-dir"); err != nil {
+	err := cobra.MarkFlagDirname(pf, "store-dir")
+	if err != nil {
+		panic(err)
+	}
+	err = cobra.MarkFlagRequired(pf, "store-dir")
+	if err != nil {
 		panic(err)
 	}
 
