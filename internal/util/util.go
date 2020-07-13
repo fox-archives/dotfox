@@ -19,8 +19,8 @@ func Dirname() string {
 	return dir
 }
 
-// GetAllChildFolders walks all the child files of a directory and returns them
-func GetAllChildFolders(dir string) ([]string, error) {
+// GetChildFilesRecurse walks all the child files of a directory and returns them
+func GetChildFilesRecurse(dir string) ([]string, error) {
 	stat, err := os.Stat(dir)
 	if err != nil {
 		if os.IsNotExist(err) {

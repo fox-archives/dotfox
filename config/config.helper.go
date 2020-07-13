@@ -16,20 +16,23 @@ type GlobeConfig struct {
 	Globe struct {
 		License string `toml:"license"`
 	} `toml:"globe"`
-	Bootstrap struct {
+	Init struct {
 		Holds []string `toml:"holds"`
-	} `toml:"bootstrap"`
+	} `toml:"init"`
+	Sync struct {
+		Holds []string `toml:"holds"`
+	} `toml:"sync"`
 }
 
-// BootstrapEntryRaw has data about a single file that is meant to be bootstrapped. It's raw because it comes stragith from the bootstrapFiles.yml file
-type BootstrapEntryRaw struct {
+// FileEntryRaw has data about a single file that is meant to be bootstrapped. It's raw because it comes stragith from the bootstrapFiles.yml file
+type FileEntryRaw struct {
 	Path string `yaml:"path"`
 	For  string `yaml:"for"`
 	Op   string `yaml:"op"`
 }
 
-// BootstrapEntry is the same as BootstrapEntryRaw, except it has been processed
-type BootstrapEntry struct {
+// FileEntry is the same as FileEntryRaw, except it has been processed
+type FileEntry struct {
 	SrcPath  string `yaml:"srcPath"`
 	DestPath string `yaml:"destPath"`
 	RelPath  string `yaml:"relPath"`
@@ -37,21 +40,19 @@ type BootstrapEntry struct {
 	For      string `yaml:"for"`
 }
 
-// SyncConfigRaw lists the attributes of each file to bootstrap
-type SyncConfigRaw struct {
-	Files []BootstrapEntryRaw `yaml:"files"`
+type FileListRaw struct {
+	Files []FileEntryRaw `yaml:"files"`
 }
 
-// BootstrapFiles is the same as SyncConfigRaw except is uses the processed versions
-type BootstrapFiles struct {
-	Files []BootstrapEntry `yaml:"files"`
+type FileList struct {
+	Files []FileEntry `yaml:"files"`
 }
 
 // ReadSyncConfig reads the local sync.yml configuration file
-func ReadSyncConfig(storeDir string, storeLocation string) SyncConfigRaw {
+func ReadSyncConfig(storeDir string, storeLocation string) FileListRaw {
 	yamlLocation := path.Join(storeDir, "sync.yml")
 
-	var coreConfig SyncConfigRaw
+	var coreConfig FileListRaw
 	{
 		content, err := ioutil.ReadFile(yamlLocation)
 		if err != nil {
@@ -67,8 +68,8 @@ func ReadSyncConfig(storeDir string, storeLocation string) SyncConfigRaw {
 }
 
 // ReadGlobeConfig reads the local globe.toml config file
-func ReadGlobeConfig(projectLocation string) GlobeConfig {
-	configLocation := path.Join(projectLocation, "globe.toml")
+func ReadGlobeConfig(projectDir string) GlobeConfig {
+	configLocation := path.Join(projectDir, "globe.toml")
 
 	var globeConfig GlobeConfig
 	{
@@ -107,7 +108,7 @@ func walkupFor(startLocation string, filename string) string {
 	return walkupFor(path.Dir(startLocation), filename)
 }
 
-func getProjectLocation() string {
+func GetProjectLocation() string {
 	start, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -115,8 +116,8 @@ func getProjectLocation() string {
 	return walkupFor(start, "globe.toml")
 }
 
-// GetConfigLocation gets the full path to the configuration file configuration file
-func GetConfigLocation() string {
-	projectLocation := getProjectLocation()
-	return path.Join(projectLocation, "globe.toml")
+// GetDataLocation gets the full path to the configuration file configuration file
+func GetDataLocation() string {
+	projectDir := GetProjectLocation()
+	return path.Join(projectDir, "globe.toml")
 }

@@ -1,27 +1,85 @@
 package sync
 
 import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"path"
+
 	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
-	"github.com/eankeen/globe/validate"
 )
 
-// Sync project with all bootstrap files
-func Sync(validatedArgs validate.ValidatedArgs) {
-	project := config.GetConfig(validatedArgs.StoreDir)
-	util.PrintInfo("Project located at %s\n", project.ProjectLocation)
+// CopyFile copies a file
+func CopyFile(project config.Project, file config.FileEntry) {
+	srcFile := file.SrcPath
+	destFile := file.DestPath
+	util.PrintDebug("srcFile: %s\n", srcFile)
+	util.PrintDebug("destFile: %s\n", destFile)
 
-	for _, file := range project.BootstrapFiles.Files {
-		util.PrintInfo("Processing file %s\n", file.RelPath)
+	// ensure parent directory exists
+	os.MkdirAll(path.Dir(destFile), 0755)
 
-		if file.Op == "add" {
-			copyFile(project, file)
-			continue
-		} else if file.Op == "remove" {
-			removeFile(project, file)
-			continue
+	srcContents, err := ioutil.ReadFile(srcFile)
+	if err != nil {
+		panic(err)
+	}
+
+	// validate to see if we should even be trying to copy the file
+	// over. for example scripts/go.sh should only be copied when
+	// there are .go files in the repository
+	isFileRelevant := isFileRelevant(project, file)
+	if !isFileRelevant {
+		util.PrintInfo("Non-relevant file '%s' is being skipped\n", file.RelPath)
+		return
+	}
+
+	// prompt to remove preexisting file if it exists
+	destFileExists, err := util.FileExists(destFile)
+	if err != nil {
+		fmt.Printf("Error trying to test if '%s' exists. Skipping file", destFile)
+		log.Println(err)
+		return
+	}
+
+	util.PrintDebug("destFileExists: %v\n", destFileExists)
+	if destFileExists {
+		// if the file buffers are the same, return no need to copy
+		destContents, err := ioutil.ReadFile(destFile)
+		if err != nil {
+			panic(err)
 		}
 
-		util.PrintError("File '%s's operation could not be read. Exiting.\n", file.RelPath)
+		if bytes.Compare(srcContents, destContents) == 0 {
+			util.PrintInfo("Skipping unchanged '" + file.RelPath + "' file\n")
+			return
+		}
+
+		// file exists, we ask if we should remove file
+		shouldRemove := shouldRemoveExistingFile(destFile, file.RelPath, destContents, srcContents)
+		if shouldRemove == false {
+			return
+		}
+	}
+
+	err = ioutil.WriteFile(destFile, srcContents, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	util.PrintInfo("Copying %s to %s\n", srcFile, destFile)
+}
+
+// RemoveFile removes a file
+func RemoveFile(project config.Project, file config.FileEntry) {
+	destFile := file.DestPath
+
+	err := os.Remove(destFile)
+	if err != nil {
+		// fmt.Printf("Error when trying to remove %s. Skipping file\n", destFile)
+		// log.Println(err)
+		return
 	}
 }

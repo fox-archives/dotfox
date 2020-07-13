@@ -27,7 +27,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(func() {
-		viper.SetConfigFile(config.GetConfigLocation())
+		viper.SetConfigFile(config.GetDataLocation())
 
 		if err := viper.ReadInConfig(); err != nil {
 			if _, ok := err.(viper.ConfigFileNotFoundError); ok {

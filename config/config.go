@@ -11,40 +11,38 @@ type Project struct {
 	ProjectLocation string
 	StoreDir        string
 	GlobeConfig     GlobeConfig
-	BootstrapFiles  BootstrapFiles
+	SyncFiles       FileList
+	InitFiles       FileList
 }
 
-// GetConfig gets the config for all data related to project
-func GetConfig(storeDir string) Project {
+// GetData gets the config for all data related to project
+func GetData(projectDir, storeDir string) Project {
 	var project Project
 	project.StoreDir = storeDir
 
-	projectLocation := getProjectLocation()
-	util.PrintDebug("projectLocation: %s", projectLocation)
-	project.ProjectLocation = projectLocation
+	util.PrintDebug("projectDir: %s", projectDir)
+	project.ProjectLocation = projectDir
 
-	globeConfig := ReadGlobeConfig(projectLocation)
-	util.PrintDebug("globeConfig: %+v\n", globeConfig)
-	project.GlobeConfig = globeConfig
+	project.GlobeConfig = ReadGlobeConfig(projectDir)
+	util.PrintDebug("globeConfig: %+v\n", project.GlobeConfig)
 
-	bootstrapFilesRaw := ReadSyncConfig(storeDir, projectLocation)
+	bootstrapFilesRaw := ReadSyncConfig(storeDir, projectDir)
 	util.PrintDebug("readSyncConfigRaw: %+v\n", bootstrapFilesRaw)
 
-	bootstrapFiles := createBootstrapFilesFromRaw(storeDir, bootstrapFilesRaw, projectLocation)
-	util.PrintDebug("bootstrapFiles: %+v\n", bootstrapFiles)
-	project.BootstrapFiles = bootstrapFiles
+	project.SyncFiles = CreateSyncFilesFromRaw(storeDir, bootstrapFilesRaw, projectDir)
+	util.PrintDebug("bootstrapFiles: %+v\n", project.SyncFiles)
 
 	return project
 }
 
-// Transform the BootstrapEntryRaw to BootstrapRaw
-func createBootstrapFilesFromRaw(storeDir string, bootstrapFilesRaw SyncConfigRaw, projectLocation string) BootstrapFiles {
+// CreateSyncFilesFromRaw the FileEntryRaw to BootstrapRaw
+func CreateSyncFilesFromRaw(storeDir string, bootstrapFilesRaw FileListRaw, projectDir string) FileList {
 
-	var bootstrapFiles BootstrapFiles
+	var bootstrapFiles FileList
 	for _, file := range bootstrapFilesRaw.Files {
-		file := BootstrapEntry{
+		file := FileEntry{
 			SrcPath:  path.Join(storeDir, "sync", file.Path),
-			DestPath: path.Join(projectLocation, file.Path),
+			DestPath: path.Join(projectDir, file.Path),
 			RelPath:  file.Path,
 			Op:       file.Op,
 			For:      file.For,

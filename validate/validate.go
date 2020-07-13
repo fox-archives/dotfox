@@ -5,7 +5,6 @@ import (
 	"path"
 
 	"github.com/eankeen/globe/internal/util"
-	"github.com/spf13/cobra"
 )
 
 // ValidatedArgs returns the value of cli arguments
@@ -14,9 +13,7 @@ type ValidatedArgs struct {
 }
 
 // Validate command line arguments and directory structure
-func Validate(cmd *cobra.Command, args []string) ValidatedArgs {
-	storeDir := cmd.Flag("store-dir").Value.String()
-
+func Validate(storeDir string) ValidatedArgs {
 	// if store location is blank, we want cobra to print out that the store-dir is not set
 	// to do this, we return prematuraly from validate function
 	if storeDir == "" {

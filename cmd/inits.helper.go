@@ -1,4 +1,4 @@
-package inits
+package cmd
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"path"
 )
 
-func ccopyFile(src, dst string) error {
+func copyFileRaw(src, dst string) error {
 	var err error
 	var srcfd *os.File
 	var dstfd *os.File
@@ -33,7 +33,7 @@ func ccopyFile(src, dst string) error {
 	return os.Chmod(dst, srcinfo.Mode())
 }
 
-func copyDirRecurse(src string, dst string) error {
+func copyDirRawRecurse(src string, dst string) error {
 	var err error
 	var fds []os.FileInfo
 	var srcinfo os.FileInfo
@@ -54,11 +54,11 @@ func copyDirRecurse(src string, dst string) error {
 		dstfp := path.Join(dst, fd.Name())
 
 		if fd.IsDir() {
-			if err = copyDirRecurse(srcfp, dstfp); err != nil {
+			if err = copyDirRawRecurse(srcfp, dstfp); err != nil {
 				fmt.Println(err)
 			}
 		} else {
-			if err = ccopyFile(srcfp, dstfp); err != nil {
+			if err = copyFileRaw(srcfp, dstfp); err != nil {
 				fmt.Println(err)
 			}
 		}
