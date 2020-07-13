@@ -6,9 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/BurntSushi/toml"
 	"github.com/eankeen/globe/internal/util"
-	"gopkg.in/yaml.v2"
 )
 
 func walkupFor(startLocation string, filename string) string {
@@ -49,51 +47,13 @@ func GetConfigLocation() string {
 	return path.Join(getProjectLocation(), "globe.toml")
 }
 
-func readGlobeConfig(projectLocation string) GlobeConfig {
-	configLocation := path.Join(projectLocation, "globe.toml")
-
-	var globeConfig GlobeConfig
-	// TODO: globeConfig = util.ReadToml(configLocation) etc.
-	{
-		content, err := ioutil.ReadFile(configLocation)
-		if err != nil {
-			panic(err)
-		}
-
-		if _, err = toml.Decode(string(content), &globeConfig); err != nil {
-			panic(err)
-		}
-	}
-
-	return globeConfig
-}
-
-func readBootstrapFilesRaw(projectLocation string) BootstrapFilesRaw {
-	yamlLocation := path.Join(util.Dirname(), "bootstrapFiles.yml")
-
-	var bootstrapFilesRaw BootstrapFilesRaw
-	// TODO: bootstrapFiles = util.ReadYaml(yamlLocation) etc.
-	{
-		content, err := ioutil.ReadFile(yamlLocation)
-		if err != nil {
-			panic(err)
-		}
-
-		if err := yaml.Unmarshal(content, &bootstrapFilesRaw); err != nil {
-			panic(err)
-		}
-	}
-
-	return bootstrapFilesRaw
-}
-
 // Transform the BootstrapEntryRaw to BootstrapRaw
-func createBootstrapFilesFromRaw(bootstrapFilesRaw BootstrapFilesRaw, projectLocation string) BootstrapFiles {
+func createBootstrapFilesFromRaw(bootstrapFilesRaw util.BootstrapFilesRaw, projectLocation string) util.BootstrapFiles {
 	dirname := util.Dirname()
 
-	var bootstrapFiles BootstrapFiles
+	var bootstrapFiles util.BootstrapFiles
 	for _, file := range bootstrapFilesRaw.Files {
-		file := BootstrapEntry{
+		file := util.BootstrapEntry{
 			SrcPath:  path.Join(dirname, "files", file.Path),
 			DestPath: path.Join(projectLocation, file.Path),
 			RelPath:  file.Path,

@@ -19,21 +19,9 @@ func Dirname() string {
 	return dir
 }
 
-// FileExists test if a file exists
-// TODO: buggy
-func FileExists(name string) (bool, error) {
-	if _, err := os.Stat(name); err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
-		}
-	}
-	return true, nil
-}
-
 // GetAllChildFolders walks all the child files of a directory and returns them
 func GetAllChildFolders(dir string) ([]string, error) {
 	stat, err := os.Stat(dir)
-	// TODO: fileexist?
 	if err != nil {
 		if os.IsNotExist(err) {
 			PrintError("File or folder '%s' does not exist. Exiting.", dir)
@@ -53,4 +41,32 @@ func GetAllChildFolders(dir string) ([]string, error) {
 	})
 
 	return files, err
+}
+
+func CheckFileStore(storeLocation string) string {
+	stat, err := os.Stat(storeLocation)
+	if err != nil {
+		if os.IsNotExist(err) {
+			PrintError("The fileStore '%s'  does not exist. Exiting\n", storeLocation)
+			os.Exit(1)
+		}
+		if os.IsPermission(err) {
+			PrintError("There were permission issues when trying to stat '%s'. Exiting\n", storeLocation)
+			os.Exit(1)
+		}
+		PrintError("An unknown error occured\n")
+		panic(err)
+	}
+
+	if !stat.IsDir() {
+		PrintError("Folder '%s' is not a folder. Exiting\n", storeLocation)
+		os.Exit(1)
+	}
+
+	if storeLocation == "" {
+		PrintError("fileStoreLocation is empty. This is not supposed to happen. Exiting\n")
+		os.Exit(1)
+	}
+
+	return storeLocation
 }

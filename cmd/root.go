@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/eankeen/globe/internal/util"
 	"github.com/eankeen/globe/scan"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -12,8 +13,8 @@ import (
 // RootCmd is the root command
 var RootCmd = &cobra.Command{
 	Use:   "globe",
-	Short: "utility that glues",
-	Long:  "Language-agnostic utility that glues configuration utilities, task runner, and build tasks together",
+	Short: "Utility that glue together workflows",
+	Long:  "Language-agnostic utility that glues configuration forutilities, task runners, and build tasks together",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately
@@ -26,6 +27,12 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(doInit)
+
+	pf := RootCmd.PersistentFlags()
+	pf.String("store-dir", "", "The location of your dotfiles")
+	if err := cobra.MarkFlagRequired(pf, "store-dir"); err != nil {
+		panic(err)
+	}
 
 	// RootCmd.PersistentFlags().StringVar("foo", "log-level", "", "Level for logging (info, warning (default), error")
 }
@@ -40,5 +47,5 @@ func doInit() {
 		panic("some error occured")
 	}
 
-	fmt.Println("Using config file:", viper.ConfigFileUsed())
+	util.PrintInfo("Using config file: '%s'\n", viper.ConfigFileUsed())
 }

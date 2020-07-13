@@ -78,7 +78,7 @@ func projectFilesContain(project scan.Project, glob glob.Glob) bool {
 	return doesContain
 }
 
-func isFileRelevant(project scan.Project, file scan.BootstrapEntry) bool {
+func isFileRelevant(project scan.Project, file util.BootstrapEntry) bool {
 	projectContainsGoFiles := func() bool {
 		if projectFilesContain(project, glob.MustCompile("*.go")) {
 			return true
@@ -101,7 +101,7 @@ func isFileRelevant(project scan.Project, file scan.BootstrapEntry) bool {
 }
 
 // CopyFile copies a file
-func copyFile(project scan.Project, file scan.BootstrapEntry) {
+func copyFile(project scan.Project, file util.BootstrapEntry) {
 	srcFile := file.SrcPath
 	destFile := file.DestPath
 	util.PrintDebug("srcFile: %s\n", srcFile)
@@ -115,7 +115,7 @@ func copyFile(project scan.Project, file scan.BootstrapEntry) {
 		panic(err)
 	}
 
-	// check to see if we should even be trying to copy the file
+	// validate to see if we should even be trying to copy the file
 	// over. for example scripts/go.sh should only be copied when
 	// there are .go files in the repository
 	isFileRelevant := isFileRelevant(project, file)
@@ -161,7 +161,7 @@ func copyFile(project scan.Project, file scan.BootstrapEntry) {
 }
 
 // RemoveFile removes a file
-func removeFile(project scan.Project, file scan.BootstrapEntry) {
+func removeFile(project scan.Project, file util.BootstrapEntry) {
 	destFile := file.DestPath
 
 	err := os.Remove(destFile)
