@@ -45,6 +45,7 @@ func GetAllChildFolders(dir string) ([]string, error) {
 
 func CheckFileStore(storeLocation string) string {
 	stat, err := os.Stat(storeLocation)
+
 	if err != nil {
 		if os.IsNotExist(err) {
 			PrintError("The fileStore '%s'  does not exist. Exiting\n", storeLocation)

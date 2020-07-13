@@ -12,6 +12,12 @@ import (
 // Validate command line arguments and directory structure
 func Validate(cmd *cobra.Command, args []string) {
 	storeLocation := cmd.Flag("store-dir").Value.String()
+
+	// if store location is blank, we want cobra to print out that the store-dir is not set
+	// to do this, we return prematuraly from validate function
+	if storeLocation == "" {
+		return
+	}
 	storeLocation = util.CheckFileStore(storeLocation)
 
 	// checkCoreFiles(storeLocation)

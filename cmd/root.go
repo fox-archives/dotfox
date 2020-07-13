@@ -26,7 +26,18 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(doInit)
+	cobra.OnInitialize(func() {
+		viper.SetConfigFile(scan.GetConfigLocation())
+
+		if err := viper.ReadInConfig(); err != nil {
+			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+				panic("config file not found")
+			}
+			panic("some error occured")
+		}
+
+		util.PrintInfo("Using config file: '%s'\n", viper.ConfigFileUsed())
+	})
 
 	pf := RootCmd.PersistentFlags()
 	pf.String("store-dir", "", "The location of your dotfiles")
@@ -35,17 +46,4 @@ func init() {
 	}
 
 	// RootCmd.PersistentFlags().StringVar("foo", "log-level", "", "Level for logging (info, warning (default), error")
-}
-
-func doInit() {
-	viper.SetConfigFile(scan.GetConfigLocation())
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			panic("config file not found")
-		}
-		panic("some error occured")
-	}
-
-	util.PrintInfo("Using config file: '%s'\n", viper.ConfigFileUsed())
 }
