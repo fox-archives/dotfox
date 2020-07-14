@@ -48,13 +48,10 @@ func GetData(cmd *cobra.Command, projectDir string, storeDir string) Project {
 	}
 
 	syncFilesRaw := ReadSyncConfig(storeDir, projectDir)
-	initFilesRaw := ReadInitConfig(storeDir, projectDir)
 
 	project.SyncFiles = do(syncFilesRaw)
-	project.InitFiles = do(initFilesRaw)
 
 	util.PrintDebug("syncFiles: %+v\n", project.SyncFiles)
-	util.PrintDebug("syncFiles: %+v\n", project.InitFiles)
 
 	return project
 }
