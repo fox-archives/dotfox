@@ -27,7 +27,7 @@ func GetData(cmd *cobra.Command, projectDir string, storeDir string) Project {
 	// if we're not initiating, we read the global config
 	if cmd.Name() != "init" {
 		project.GlobeConfig = ReadGlobeConfig(projectDir)
-		util.PrintError("globeConfig: %+v\n", project.GlobeConfig)
+		util.PrintDebug("globeConfig: %+v\n", project.GlobeConfig)
 	}
 
 	// CONVERT FILE LISTS
