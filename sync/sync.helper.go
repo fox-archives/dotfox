@@ -53,6 +53,7 @@ func shouldRemoveExistingFile(path string, relativePath string, destContents []b
 		return shouldRemoveExistingFile(path, relativePath, destContents, srcContents)
 	}
 }
+
 func isFileRelevant(project config.Project, file config.FileEntry) bool {
 	projectContainsGoFiles := func() bool {
 		if projectFilesContain(project, glob.MustCompile("*.go")) {
@@ -61,6 +62,7 @@ func isFileRelevant(project config.Project, file config.FileEntry) bool {
 		return false
 
 	}
+
 	switch file.For {
 	case "all":
 		return true

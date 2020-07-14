@@ -12,6 +12,7 @@ import (
 	"github.com/eankeen/globe/internal/util"
 )
 
+// ProcessFiles processes each file according to their 'Op' operation specified by the user
 func ProcessFiles(project config.Project, files []config.FileEntry) {
 	for _, file := range files {
 		util.PrintInfo("Processing file %s\n", file.RelPath)
@@ -53,7 +54,7 @@ func copyFile(project config.Project, file config.FileEntry) {
 	}
 
 	// prompt to remove preexisting file if it exists
-	destFileExists, err := util.FileExists(destFile)
+	destFileExists, err := fileExists(destFile)
 	if err != nil {
 
 		fmt.Printf("Error trying to test if '%s' exists. Skipping file\n", destFile)
@@ -99,4 +100,18 @@ func removeFile(project config.Project, file config.FileEntry) {
 		// log.Println(err)
 		return
 	}
+}
+
+// FileExists stops the program if the file does not exist
+func fileExists(name string) (bool, error) {
+	_, err := os.Stat(name)
+
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return true, err
+	}
+
+	return true, nil
 }

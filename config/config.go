@@ -1,12 +1,10 @@
 package config
 
 import (
-	"os"
 	"path"
 
 	"github.com/eankeen/globe/internal/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // Project includes all details of the current Project
@@ -22,28 +20,6 @@ type Project struct {
 func GetData(cmd *cobra.Command, projectDir string, storeDir string) Project {
 	var project Project
 	project.StoreDir = storeDir
-
-	// validate
-	func() {
-		if err := viper.ReadInConfig(); err != nil {
-			if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-				if cmd.Name() != "init" {
-					util.PrintError("Please initiate a Globe project first\n")
-					os.Exit(1)
-				}
-			}
-
-			if os.IsNotExist(err) && cmd.Name() != "init" {
-				util.PrintError("Please initiate a Globe project first\n")
-				os.Exit(1)
-			}
-
-			if cmd.Name() != "init" {
-				util.PrintError("An unknown error occured\n")
-				panic(err)
-			}
-		}
-	}()
 
 	util.PrintDebug("projectDir: %s\n", projectDir)
 	project.ProjectDir = projectDir

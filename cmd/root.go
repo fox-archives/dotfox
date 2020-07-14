@@ -3,11 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path"
 
-	"github.com/eankeen/globe/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // RootCmd is the root command
@@ -26,13 +23,6 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(func() {
-		projectDir := config.GetProjectDir()
-		globeConfig := path.Join(projectDir, "globe.toml")
-
-		viper.SetConfigFile(globeConfig)
-	})
-
 	pf := RootCmd.PersistentFlags()
 	pf.String("store-dir", "", "The location of your dotfiles")
 	err := cobra.MarkFlagDirname(pf, "store-dir")
