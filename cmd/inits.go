@@ -24,6 +24,8 @@ var initsCmd = &cobra.Command{
 			panic(err)
 		}
 
+		util.PrintDebug("Copying '%s' to '%s'\n", srcConfig, destConfig)
+
 		// COPY FILE
 		{
 			sourceFile, err := os.Open(srcConfig)
@@ -33,7 +35,7 @@ var initsCmd = &cobra.Command{
 			defer sourceFile.Close()
 
 			// Create new file
-			newFile, err := os.OpenFile(destConfig, os.O_CREATE|os.O_EXCL, 0644)
+			newFile, err := os.OpenFile(destConfig, os.O_CREATE|os.O_RDWR|os.O_EXCL, 0644)
 			if err != nil {
 				if os.IsExist(err) {
 					util.PrintError("Config file 'globe.toml' file already exists. Not overwriting\n")
