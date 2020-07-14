@@ -42,3 +42,12 @@ func GetChildFilesRecurse(dir string) ([]string, error) {
 
 	return files, err
 }
+
+func Contains(arr []string, str string) bool {
+	for _, el := range arr {
+		if el == str {
+			return true
+		}
+	}
+	return false
+}

@@ -40,10 +40,12 @@ type FileEntry struct {
 	For      string `yaml:"for"`
 }
 
+// FileListRaw is a representation of files to transfer
 type FileListRaw struct {
 	Files []FileEntryRaw `yaml:"files"`
 }
 
+// FileList is a representation of transformed files to transfer
 type FileList struct {
 	Files []FileEntry `yaml:"files"`
 }
@@ -105,6 +107,15 @@ func ReadGlobeConfig(projectDir string) GlobeConfig {
 	return globeConfig
 }
 
+// GetProjectDir gets the root location of the current project, by recursively walking up directory tree until a globe.toml file is found. It stop searching after it reaches the user's home directory, or until a `.git`, `.hg` folder are found
+func GetProjectDir() string {
+	start, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	return walkupFor(start, "globe.toml")
+}
+
 func walkupFor(startLocation string, filename string) string {
 	dirContents, err := ioutil.ReadDir(startLocation)
 	if err != nil {
@@ -115,9 +126,19 @@ func walkupFor(startLocation string, filename string) string {
 	util.PrintDebug("Searching for '%s' in %s\n", filename, startLocation)
 	for _, file := range dirContents {
 		// util.Debug("dir: '%s'\n", file.Name())
+
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			panic(err)
+		}
+
 		if file.Name() == filename {
 			util.PrintDebug("Found '%s' in '%s\n", filename, startLocation)
 			return startLocation
+		} else if file.Name() == homeDir {
+			return ""
+		} else if util.Contains([]string{".git", ".hg"}, file.Name()) {
+			return ""
 		}
 	}
 	if startLocation == "/" {
@@ -125,14 +146,4 @@ func walkupFor(startLocation string, filename string) string {
 	}
 
 	return walkupFor(path.Dir(startLocation), filename)
-}
-
-// GetProjectDir gets the root location of the current project, by recursively walking up directory tree until a globe.toml file is sound
-// TODO: stop the walk at home, or until a .git .hg directory is found
-func GetProjectDir() string {
-	start, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	return walkupFor(start, "globe.toml")
 }

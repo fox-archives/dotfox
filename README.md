@@ -51,4 +51,8 @@ git clone https://github.com/eankeen/globe
 go install
 ```
 
+## Star Chart
+
+[![Stargazers over time](https://starchart.cc/eankeen/fox-suite.svg)](https://starchart.cc/eankeen/fox-suite)
+
 ## License

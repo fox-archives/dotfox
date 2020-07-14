@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"io"
 	"os"
+	"path"
 
-	"github.com/eankeen/globe/config"
-	"github.com/eankeen/globe/sync"
-	"github.com/eankeen/globe/validate"
+	"github.com/eankeen/globe/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -16,20 +16,38 @@ var initsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// get data
 		storeDir := cmd.Flag("store-dir").Value.String()
+		srcConfig := path.Join(storeDir, "globe.toml")
+
 		projectDir, err := os.Getwd()
+		destConfig := path.Join(projectDir, "globe.toml")
 		if err != nil {
 			panic(err)
 		}
-		project := config.GetData(cmd, projectDir, storeDir)
 
-		// validate values
-		validate.Validate(validate.ValidationValues{
-			StoreDir: storeDir,
-			Project:  project,
-		})
+		// COPY FILE
+		{
+			sourceFile, err := os.Open(srcConfig)
+			if err != nil {
+				panic(err)
+			}
+			defer sourceFile.Close()
 
-		// use values
-		sync.ProcessFiles(project, project.InitFiles.Files)
+			// Create new file
+			newFile, err := os.OpenFile(destConfig, os.O_CREATE|os.O_EXCL, 0644)
+			if err != nil {
+				if os.IsExist(err) {
+					util.PrintError("Config file 'globe.toml' file already exists. Not overwriting\n")
+					return
+				}
+				panic(err)
+			}
+			defer newFile.Close()
+
+			_, err = io.Copy(newFile, sourceFile)
+			if err != nil {
+				panic(err)
+			}
+		}
 	},
 }
 

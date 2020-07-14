@@ -23,26 +23,23 @@ func GetData(cmd *cobra.Command, projectDir string, storeDir string) Project {
 	var project Project
 	project.StoreDir = storeDir
 
+	// validate
 	func() {
 		if err := viper.ReadInConfig(); err != nil {
 			if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 				if cmd.Name() != "init" {
-					util.PrintError("Please init first\n")
+					util.PrintError("Please initiate a Globe project first\n")
 					os.Exit(1)
-
-					return
 				}
 			}
 
 			if os.IsNotExist(err) && cmd.Name() != "init" {
-				util.PrintError("Please init first\n")
+				util.PrintError("Please initiate a Globe project first\n")
 				os.Exit(1)
-
-				return
 			}
 
 			if cmd.Name() != "init" {
-				util.PrintError("An unknown error occured")
+				util.PrintError("An unknown error occured\n")
 				panic(err)
 			}
 		}
@@ -51,6 +48,7 @@ func GetData(cmd *cobra.Command, projectDir string, storeDir string) Project {
 	util.PrintDebug("projectDir: %s\n", projectDir)
 	project.ProjectDir = projectDir
 
+	// if we're not initiating, we read the global config
 	if cmd.Name() != "init" {
 		project.GlobeConfig = ReadGlobeConfig(projectDir)
 		util.PrintError("globeConfig: %+v\n", project.GlobeConfig)
@@ -74,30 +72,13 @@ func GetData(cmd *cobra.Command, projectDir string, storeDir string) Project {
 	}
 
 	syncFilesRaw := ReadSyncConfig(storeDir, projectDir)
-	project.SyncFiles = do(syncFilesRaw)
 	initFilesRaw := ReadInitConfig(storeDir, projectDir)
+
+	project.SyncFiles = do(syncFilesRaw)
 	project.InitFiles = do(initFilesRaw)
 
 	util.PrintDebug("syncFiles: %+v\n", project.SyncFiles)
-	// {
-	// 	for _, fileListName := range []string{"SyncFiles", "InitFiles"} {
-	// 		fileListRaw := ReadSyncConfig(storeDir, projectDir)
-	// 		util.PrintDebug("syncFilesRaw: %+v\n", fileListRaw)
-
-	// 		// pointer to struct
-	// 		ps := reflect.ValueOf(&project)
-
-	// 		if ps.Elem().Kind() == reflect.Struct {
-	// 			field := ps.Elem().FieldByName(fileListName)
-	// 			if field.IsValid() && field.CanSet() && field.Kind() == field.Kind() {
-	// 				t := v()
-	// 				field.SetPointer(&t)
-	// 			}
-	// 		}
-
-	// 		util.PrintDebug("syncFiles: %+v\n", project.SyncFiles)
-	// 	}
-	// }
+	util.PrintDebug("syncFiles: %+v\n", project.InitFiles)
 
 	return project
 }

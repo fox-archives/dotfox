@@ -55,6 +55,7 @@ func copyFile(project config.Project, file config.FileEntry) {
 	// prompt to remove preexisting file if it exists
 	destFileExists, err := util.FileExists(destFile)
 	if err != nil {
+
 		fmt.Printf("Error trying to test if '%s' exists. Skipping file\n", destFile)
 		log.Println(err)
 		return
