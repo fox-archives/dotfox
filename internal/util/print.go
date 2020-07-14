@@ -29,7 +29,7 @@ func isColor() bool {
 func PrintInfo(text string, args ...interface{}) {
 	if isColor() {
 		fmt.Print("\033[1;32m")
-		fmt.Print("INFO : ▶ ")
+		fmt.Print("INFRM: ▶ ")
 		fmt.Print("\033[0;32m")
 		fmt.Printf(text, args...)
 		fmt.Print("\033[m")

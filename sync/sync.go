@@ -15,7 +15,7 @@ import (
 // ProcessFiles processes each file according to their 'Op' operation specified by the user
 func ProcessFiles(project config.Project, files []config.FileEntry) {
 	for _, file := range files {
-		util.PrintInfo("Processing file %s\n", file.RelPath)
+		util.PrintDebug("Processing file %s\n", file.RelPath)
 
 		if file.Op == "add" {
 			copyFile(project, file)
@@ -49,7 +49,7 @@ func copyFile(project config.Project, file config.FileEntry) {
 	// there are .go files in the repository
 	isFileRelevant := isFileRelevant(project, file)
 	if !isFileRelevant {
-		util.PrintInfo("Non-relevant file '%s' is being skipped\n", file.RelPath)
+		util.PrintInfo("Skipping irrelevant file '%s'\n", file.RelPath)
 		return
 	}
 
