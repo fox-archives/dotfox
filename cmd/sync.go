@@ -14,8 +14,8 @@ var syncCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// get data
 		storeDir := cmd.Flag("store-dir").Value.String()
-		projectDir := config.GetProjectLocation()
-		project := config.GetData(projectDir, storeDir)
+		projectDir := config.GetProjectDir()
+		project := config.GetData(cmd, projectDir, storeDir)
 
 		// valudate values
 		validate.Validate(validate.ValidationValues{

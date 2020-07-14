@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/eankeen/globe/config"
 	"github.com/spf13/cobra"
@@ -26,14 +27,10 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(func() {
-		viper.SetConfigFile(config.GetDataLocation())
+		projectDir := config.GetProjectDir()
+		globeConfig := path.Join(projectDir, "globe.toml")
 
-		if err := viper.ReadInConfig(); err != nil {
-			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-				panic("config file not found")
-			}
-			panic("some error occured")
-		}
+		viper.SetConfigFile(globeConfig)
 	})
 
 	pf := RootCmd.PersistentFlags()

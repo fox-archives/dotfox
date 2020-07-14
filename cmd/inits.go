@@ -20,7 +20,7 @@ var initsCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		project := config.GetData(projectDir, storeDir)
+		project := config.GetData(cmd, projectDir, storeDir)
 
 		// validate values
 		validate.Validate(validate.ValidationValues{

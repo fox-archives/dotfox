@@ -67,6 +67,25 @@ func ReadSyncConfig(storeDir string, storeLocation string) FileListRaw {
 	return coreConfig
 }
 
+// ReadInitConfig reads the local sync.yml configuration file
+func ReadInitConfig(storeDir string, storeLocation string) FileListRaw {
+	yamlLocation := path.Join(storeDir, "init.yml")
+
+	var coreConfig FileListRaw
+	{
+		content, err := ioutil.ReadFile(yamlLocation)
+		if err != nil {
+			panic(err)
+		}
+
+		if err := yaml.Unmarshal(content, &coreConfig); err != nil {
+			panic(err)
+		}
+	}
+
+	return coreConfig
+}
+
 // ReadGlobeConfig reads the local globe.toml config file
 func ReadGlobeConfig(projectDir string) GlobeConfig {
 	configLocation := path.Join(projectDir, "globe.toml")
@@ -108,16 +127,12 @@ func walkupFor(startLocation string, filename string) string {
 	return walkupFor(path.Dir(startLocation), filename)
 }
 
-func GetProjectLocation() string {
+// GetProjectDir gets the root location of the current project, by recursively walking up directory tree until a globe.toml file is sound
+// TODO: stop the walk at home, or until a .git .hg directory is found
+func GetProjectDir() string {
 	start, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
 	return walkupFor(start, "globe.toml")
-}
-
-// GetDataLocation gets the full path to the configuration file configuration file
-func GetDataLocation() string {
-	projectDir := GetProjectLocation()
-	return path.Join(projectDir, "globe.toml")
 }
