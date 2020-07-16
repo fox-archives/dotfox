@@ -54,9 +54,9 @@ func PrintWarning(text string, args ...interface{}) {
 // PrintError passes params to `fmt.Printf`, colored as red if it's a supporting tty
 func PrintError(text string, args ...interface{}) {
 	if isColor() {
-		fmt.Print("\033[1;36m")
+		fmt.Print("\033[1;31m")
 		fmt.Print("ERROR: ▶ ")
-		fmt.Print("\033[0;36m")
+		fmt.Print("\033[0;31m")
 		fmt.Printf(text, args...)
 		fmt.Print("\033[m")
 	} else {

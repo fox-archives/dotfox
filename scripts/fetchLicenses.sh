@@ -3,8 +3,8 @@ set -euo pipefail
 
 cd ../licenses
 
-licenses="$(curl -o- --silent https://github.com/github/choosealicense.com/tree/gh-pages/_licenses \
-	| tac | tac | grep -Pio "(?<=gh-pages/_licenses\/).*(?=.txt\">)")"
+licenses="$(curl -o- --silent https://github.com/github/choosealicense.com/tree/gh-pages/_licenses |
+	tac | tac | grep -Pio "(?<=gh-pages/_licenses\/).*(?=.txt\">)")"
 
 function doit() {
 	declare -r license="${1:-"default"}"
