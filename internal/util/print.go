@@ -29,7 +29,7 @@ func isColor() bool {
 func PrintInfo(text string, args ...interface{}) {
 	if isColor() {
 		fmt.Print("\033[1;32m")
-		fmt.Print("INFRM: ▶ ")
+		fmt.Print("INFRM ▶ ")
 		fmt.Print("\033[0;32m")
 		fmt.Printf(text, args...)
 		fmt.Print("\033[m")
@@ -42,7 +42,7 @@ func PrintInfo(text string, args ...interface{}) {
 func PrintWarning(text string, args ...interface{}) {
 	if isColor() {
 		fmt.Print("\033[1;33m")
-		fmt.Print("WARNG: ▶ ")
+		fmt.Print("WARNG ▶ ")
 		fmt.Print("\033[0;33m")
 		fmt.Printf(text, args...)
 		fmt.Print("\033[m")
@@ -55,7 +55,7 @@ func PrintWarning(text string, args ...interface{}) {
 func PrintError(text string, args ...interface{}) {
 	if isColor() {
 		fmt.Print("\033[1;31m")
-		fmt.Print("ERROR: ▶ ")
+		fmt.Print("ERROR ▶ ")
 		fmt.Print("\033[0;31m")
 		fmt.Printf(text, args...)
 		fmt.Print("\033[m")
@@ -77,7 +77,7 @@ func PrintDebug(text string, args ...interface{}) {
 	if isDebug() {
 		if isColorEnabled() {
 			fmt.Print("\033[1;36m")
-			fmt.Print("DEBUG: ▶ ")
+			fmt.Print("DEBUG ▶ ")
 			fmt.Print("\033[0;36m")
 			fmt.Printf(text, args...)
 			fmt.Print("\033[m")

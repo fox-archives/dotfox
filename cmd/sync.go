@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/eankeen/globe/config"
-	"github.com/eankeen/globe/sync"
+	"github.com/eankeen/globe/logic"
 	"github.com/eankeen/globe/validate"
 	"github.com/spf13/cobra"
 )
@@ -24,7 +24,7 @@ var syncCommand = &cobra.Command{
 		})
 
 		// process files
-		sync.ProcessFiles(project, project.SyncFiles.Files)
+		logic.ProcessFiles(project, project.SyncFiles.Files)
 	},
 }
 

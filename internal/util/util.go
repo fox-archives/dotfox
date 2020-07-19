@@ -24,7 +24,7 @@ func GetChildFilesRecurse(dir string) ([]string, error) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			PrintError("File or folder '%s' does not exist. Exiting.\n", dir)
-			os.Exit(1)
+			panic(err)
 		}
 		panic(err)
 	}

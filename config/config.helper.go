@@ -107,7 +107,7 @@ func ReadGlobeConfig(projectDir string) GlobeConfig {
 	return globeConfig
 }
 
-// GetProjectDir gets the root location of the current project, by recursively walking up directory tree until a globe.toml file is found. It stop searching after it reaches the user's home directory, or until a `.git`, `.hg` folder are found
+// GetProjectDir gets the root location of the current project, by recursively walking up directory tree until a globe.toml file is found. It stop searching after it reaches the user's home directory
 func GetProjectDir() string {
 	start, err := os.Getwd()
 	if err != nil {
@@ -125,7 +125,7 @@ func walkupFor(startLocation string, filename string) string {
 
 	util.PrintDebug("Searching for '%s' in %s\n", filename, startLocation)
 	for _, file := range dirContents {
-		// util.Debug("dir: '%s'\n", file.Name())
+		util.PrintDebug("dir: '%s'\n", file.Name())
 
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
@@ -136,8 +136,6 @@ func walkupFor(startLocation string, filename string) string {
 			util.PrintDebug("Found '%s' in '%s\n", filename, startLocation)
 			return startLocation
 		} else if file.Name() == homeDir {
-			return ""
-		} else if util.Contains([]string{".git", ".hg"}, file.Name()) {
 			return ""
 		}
 	}

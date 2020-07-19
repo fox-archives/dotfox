@@ -38,7 +38,7 @@ var initsCmd = &cobra.Command{
 			newFile, err := os.OpenFile(destConfig, os.O_CREATE|os.O_RDWR|os.O_EXCL, 0644)
 			if err != nil {
 				if os.IsExist(err) {
-					util.PrintError("Config file 'globe.toml' file already exists. Not overwriting\n")
+					util.PrintWarning("Config file 'globe.toml' file already exists. Not overwriting\n")
 					return
 				}
 				panic(err)

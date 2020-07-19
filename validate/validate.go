@@ -27,6 +27,11 @@ func Validate(values ValidationValues) {
 		return
 	}
 
+	if values.Project.ProjectDir == "" {
+		util.PrintError("projectDir is blank\n")
+		panic("projectDir is blank")
+	}
+
 	// storeDir
 	checkFileStore(values.StoreDir)
 
