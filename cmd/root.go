@@ -33,6 +33,4 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-
-	// RootCmd.PersistentFlags().StringVar("foo", "log-level", "", "Level for logging (info, warning (default), error")
 }

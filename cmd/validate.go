@@ -13,8 +13,7 @@ var checkCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// get data
 		storeDir := cmd.Flag("store-dir").Value.String()
-		projectDir := config.GetProjectDir()
-		project := config.GetData(cmd, projectDir, storeDir)
+		project := config.GetData(cmd, storeDir)
 
 		// validate
 		validate.Validate(validate.ValidationValues{

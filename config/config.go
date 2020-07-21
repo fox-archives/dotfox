@@ -13,11 +13,12 @@ type Project struct {
 	StoreDir    string
 	GlobeConfig GlobeConfig
 	SyncFiles   FileList
-	InitFiles   FileList
 }
 
 // GetData gets the config for all data related to project
-func GetData(cmd *cobra.Command, projectDir string, storeDir string) Project {
+func GetData(cmd *cobra.Command, storeDir string) Project {
+	projectDir := GetProjectDir()
+
 	var project Project
 	project.StoreDir = storeDir
 

@@ -33,17 +33,17 @@ func Validate(values ValidationValues) {
 	}
 
 	// storeDir
-	checkFileStore(values.StoreDir)
+	checkStoreDir(values.StoreDir)
 
 	// checkCoreFiles(storeDir)
 }
 
-func checkFileStore(storeLocation string) {
+func checkStoreDir(storeLocation string) {
 	stat, err := os.Stat(storeLocation)
 
 	if err != nil {
 		if os.IsNotExist(err) {
-			util.PrintError("The fileStore '%s'  does not exist. Exiting\n", storeLocation)
+			util.PrintError("The storeDir '%s'  does not exist. Exiting\n", storeLocation)
 			os.Exit(1)
 		}
 		if os.IsPermission(err) {
