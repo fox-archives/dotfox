@@ -1,6 +1,11 @@
 package cmd
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"os/exec"
+	"path"
+
 	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/fs"
 	"github.com/eankeen/globe/internal/util"
@@ -14,6 +19,9 @@ var syncCommand = &cobra.Command{
 	Short: "Sync Globe's configuration files",
 	Long:  `Syncs configuration files`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// write globe.state
+		writeGlobeState()
+
 		// get data
 		storeDir := cmd.Flag("store-dir").Value.String()
 		project := config.GetData(storeDir)
@@ -98,4 +106,53 @@ func projectFilesContain(files []string, glob glob.Glob) bool {
 
 	util.PrintDebug("Does project contain pattern %+v?: %t\n", glob, doesContain)
 	return doesContain
+}
+
+// GlobeState is the per-project state stored in the `globe.state` file
+type GlobeState struct {
+	OwnerFullname    string `json:"ownerFullname"`
+	RepositoryRemote string `json:"repositoryRemote"`
+	// RepositoryOwner  string `json:"repositoryOwner"`
+	// RepositoryName   string `json:"repositoryName"`
+}
+
+func writeGlobeState() {
+	projectDir := config.GetProjectDir()
+
+	globeDotFolder := path.Join(projectDir, ".globe")
+	doesExist, err := fs.FilePossiblyExists(globeDotFolder)
+	if err != nil {
+		util.PrintError("There was an error determining if there is a `.globe` folder in the project directory\n")
+		panic(err)
+	}
+	if !doesExist {
+		util.PrintError("The golder '.globe' could not be found in the current directory. Did you forget to init?\n")
+		panic("")
+	}
+
+	cmd := exec.Command("git", "remote", "get-url", "origin")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		util.PrintError("There was an error when trying to get repository owner\n")
+		panic(err)
+	}
+
+	globeStateDir := path.Join(globeDotFolder, "globe.state")
+	var globeState = &GlobeState{
+		OwnerFullname:    "Edwin Kofler",
+		RepositoryRemote: string(out),
+		// RepositoryOwner: ,
+		// RepositoryName:  repositoryName,
+	}
+	globeStateText, err := json.Marshal(globeState)
+	if err != nil {
+		util.PrintError("There was a problem marshalling\n")
+		panic(err)
+	}
+
+	err = ioutil.WriteFile(globeStateDir, globeStateText, 0644)
+	if err != nil {
+		util.PrintError("Error writing the 'globe.state' file\n")
+		panic(err)
+	}
 }

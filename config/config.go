@@ -42,9 +42,7 @@ func GetData(storeDir string) Project {
 	}
 
 	syncFilesRaw := ReadSyncConfig(storeDir, projectDir)
-
 	project.SyncFiles = do(syncFilesRaw)
-
 	util.PrintDebug("syncFiles: %+v\n", project.SyncFiles)
 
 	return project

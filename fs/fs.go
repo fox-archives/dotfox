@@ -30,7 +30,7 @@ func CopyFile(srcFile string, destFile string, relFile string) {
 	}
 
 	// prompt to remove preexisting file if it exists
-	destFilePossiblyExists, err := filePossiblyExists(destFile)
+	destFilePossiblyExists, err := FilePossiblyExists(destFile)
 	if err != nil {
 		fmt.Printf("Could not determine if destination file '%s' exists. It could, but we received an error when trying to determine so. Exiting\n", destFile)
 		panic(err)
@@ -82,11 +82,11 @@ func RemoveFile(destFile string) {
 	}
 }
 
-// filePossiblyExists stops the program if the file possiblyExists
+// FilePossiblyExists stops the program if the file possiblyExists
 // If no error is returned, we can be certain that boolean has
 // integrity. If there is an error, then the file _possibly_ exists
 // and the boolean does _not_ have integrity
-func filePossiblyExists(fileName string) (bool, error) {
+func FilePossiblyExists(fileName string) (bool, error) {
 	_, err := os.Stat(fileName)
 
 	if err != nil {
