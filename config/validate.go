@@ -1,10 +1,9 @@
-package validate
+package config
 
 import (
 	"os"
 	"path"
 
-	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
 )
 
@@ -15,7 +14,7 @@ type ValidatedArgs struct {
 
 type ValidationValues struct {
 	StoreDir string
-	Project  config.Project `json:"omitempty"`
+	Project  Project `json:"omitempty"`
 }
 
 // Validate command line arguments and directory structure

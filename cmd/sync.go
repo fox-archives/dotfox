@@ -9,7 +9,6 @@ import (
 	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/fs"
 	"github.com/eankeen/globe/internal/util"
-	"github.com/eankeen/globe/validate"
 	"github.com/gobwas/glob"
 	"github.com/spf13/cobra"
 )
@@ -25,12 +24,6 @@ var syncCommand = &cobra.Command{
 		// get data
 		storeDir := cmd.Flag("store-dir").Value.String()
 		project := config.GetData(storeDir)
-
-		// valudate values
-		validate.Validate(validate.ValidationValues{
-			StoreDir: storeDir,
-			Project:  project,
-		})
 
 		// process files
 		ProcessFiles(project, project.SyncFiles.Files)
@@ -134,7 +127,7 @@ func writeGlobeState() {
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		util.PrintError("There was an error when trying to get repository owner\n")
-		panic(err)
+		//panic(err)
 	}
 
 	globeStateDir := path.Join(globeDotFolder, "globe.state")
