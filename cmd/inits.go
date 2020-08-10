@@ -14,20 +14,18 @@ var initsCmd = &cobra.Command{
 	Short: "Init Globe's configuration files",
 	Long:  `Initiates configuration files to be used by Globe`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// get data
-		storeDir := cmd.Flag("store-dir").Value.String()
-		srcConfig := path.Join(storeDir, "globe.toml")
-
-		projectDir, err := os.Getwd()
-		destConfig := path.Join(projectDir, "globe.toml")
+		wd, err := os.Getwd()
 		if err != nil {
 			panic(err)
 		}
 
-		util.PrintDebug("Copying '%s' to '%s'\n", srcConfig, destConfig)
-
-		// COPY FILE
+		// COPY GLOBE.TOML
 		{
+			storeDir := cmd.Flag("store-dir").Value.String()
+			srcConfig := path.Join(storeDir, "globe.toml")
+			destConfig := path.Join(wd, "globe.toml")
+			util.PrintDebug("Copying '%s' to '%s'\n", srcConfig, destConfig)
+
 			sourceFile, err := os.Open(srcConfig)
 			if err != nil {
 				panic(err)
@@ -39,7 +37,7 @@ var initsCmd = &cobra.Command{
 			if err != nil {
 				if os.IsExist(err) {
 					util.PrintWarning("Config file 'globe.toml' file already exists. Not overwriting\n")
-					return
+					goto createGlobeFolder
 				}
 				panic(err)
 			}
@@ -49,6 +47,22 @@ var initsCmd = &cobra.Command{
 			if err != nil {
 				panic(err)
 			}
+		}
+
+		// CREATE .GLOBE FOLDER
+	createGlobeFolder:
+		{
+			globeDotDir := path.Join(wd, ".globe")
+			err = os.MkdirAll(globeDotDir, 0755)
+			if err != nil {
+				if os.IsExist(err) {
+					util.PrintWarning("Folder `.globe` already exists. Not overwriting\n")
+					return
+				}
+				util.PrintInfo("Error when creating `.globe` folder. Exiting.")
+				panic(err)
+			}
+			util.PrintInfo("")
 		}
 	},
 }

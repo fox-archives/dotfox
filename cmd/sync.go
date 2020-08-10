@@ -112,25 +112,26 @@ type GlobeState struct {
 func writeGlobeState() {
 	projectDir := config.GetProjectDir()
 
-	globeDotFolder := path.Join(projectDir, ".globe")
-	doesExist, err := fs.FilePossiblyExists(globeDotFolder)
+	globeDotDir := path.Join(projectDir, ".globe")
+	globeStateFile := path.Join(globeDotDir, "globe.state")
+
+	doesExist, err := fs.FilePossiblyExists(globeDotDir)
 	if err != nil {
 		util.PrintError("There was an error determining if there is a `.globe` folder in the project directory\n")
 		panic(err)
 	}
 	if !doesExist {
-		util.PrintError("The golder '.globe' could not be found in the current directory. Did you forget to init?\n")
-		panic("")
+		util.PrintError("The folder '.globe' could not be found in the current directory. Did you forget to init?\n")
+		panic("panicing due to unexpected error")
 	}
 
 	cmd := exec.Command("git", "remote", "get-url", "origin")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		util.PrintError("There was an error when trying to get repository owner\n")
-		//panic(err)
+		panic(err)
 	}
 
-	globeStateDir := path.Join(globeDotFolder, "globe.state")
 	var globeState = &GlobeState{
 		OwnerFullname:    "Edwin Kofler",
 		RepositoryRemote: string(out),
@@ -143,7 +144,7 @@ func writeGlobeState() {
 		panic(err)
 	}
 
-	err = ioutil.WriteFile(globeStateDir, globeStateText, 0644)
+	err = ioutil.WriteFile(globeStateFile, globeStateText, 0644)
 	if err != nil {
 		util.PrintError("Error writing the 'globe.state' file\n")
 		panic(err)
