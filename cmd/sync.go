@@ -115,6 +115,7 @@ func panicIfFileDoesNotExit(file string) {
 // GlobeState is the per-project state stored in the `globe.state` file
 type GlobeState struct {
 	OwnerName               string `json:"ownerName"`
+	OwnerEmail              string `json:"ownerEmail"`
 	OwnerWebsite            string `json:"ownerWebsite"`
 	Vcs                     string `json:"vcs"`
 	VcsRemoteUsername       string `json:"vcsRemoteUsername"`
@@ -133,6 +134,12 @@ func writeGlobeState() {
 	var ownerFullname string
 	{
 		ownerFullname = "Edwin Kofler"
+	}
+
+	// OWNEREMAIL
+	var ownerEmail string
+	{
+		ownerEmail = "24364012+eankeen@users.noreply.github.com"
 	}
 
 	// // REPOSITORY REMOTE
@@ -174,6 +181,7 @@ func writeGlobeState() {
 	// CREATE STRUCT, CREATE JSON TEXT, AND WRITE TO DISK
 	var globeState = &GlobeState{
 		OwnerName:               ownerFullname,
+		OwnerEmail:              ownerEmail,
 		OwnerWebsite:            ownerWebsite,
 		Vcs:                     vcs,
 		VcsRemoteUsername:       vcsRemoteUsername,
