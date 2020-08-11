@@ -62,7 +62,6 @@ var initsCmd = &cobra.Command{
 				util.PrintInfo("Error when creating `.globe` folder. Exiting.")
 				panic(err)
 			}
-			util.PrintInfo("")
 		}
 	},
 }

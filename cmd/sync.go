@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"io/ioutil"
-	"os/exec"
 	"path"
 
 	"github.com/eankeen/globe/config"
@@ -101,50 +100,93 @@ func projectFilesContain(files []string, glob glob.Glob) bool {
 	return doesContain
 }
 
+func panicIfFileDoesNotExit(file string) {
+	doesExist, err := fs.FilePossiblyExists(file)
+	if err != nil {
+		util.PrintError("There was an error determining if there is a '%s' file in the project directory\n", file)
+		panic(err)
+	}
+	if !doesExist {
+		util.PrintError("The file '%s' could not be found. Did you forget to init?\n", file)
+		panic("panicing due to unexpected error")
+	}
+}
+
 // GlobeState is the per-project state stored in the `globe.state` file
 type GlobeState struct {
-	OwnerFullname    string `json:"ownerFullname"`
-	RepositoryRemote string `json:"repositoryRemote"`
-	// RepositoryOwner  string `json:"repositoryOwner"`
-	// RepositoryName   string `json:"repositoryName"`
+	OwnerName               string `json:"ownerName"`
+	OwnerWebsite            string `json:"ownerWebsite"`
+	Vcs                     string `json:"vcs"`
+	VcsRemoteUsername       string `json:"vcsRemoteUsername"`
+	VcsRemoteRepositoryName string `json:"vcsRemoteRepositoryName"`
 }
 
 func writeGlobeState() {
 	projectDir := config.GetProjectDir()
 
 	globeDotDir := path.Join(projectDir, ".globe")
-	globeStateFile := path.Join(globeDotDir, "globe.state")
+	globeStateFile := path.Join(globeDotDir, "globe.state.json")
 
-	doesExist, err := fs.FilePossiblyExists(globeDotDir)
-	if err != nil {
-		util.PrintError("There was an error determining if there is a `.globe` folder in the project directory\n")
-		panic(err)
-	}
-	if !doesExist {
-		util.PrintError("The folder '.globe' could not be found in the current directory. Did you forget to init?\n")
-		panic("panicing due to unexpected error")
+	panicIfFileDoesNotExit(globeDotDir)
+
+	// OWNERNAME
+	var ownerFullname string
+	{
+		ownerFullname = "Edwin Kofler"
 	}
 
-	cmd := exec.Command("git", "remote", "get-url", "origin")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		util.PrintError("There was an error when trying to get repository owner\n")
-		panic(err)
+	// // REPOSITORY REMOTE
+	// var remoteRepo []byte
+	// {
+	// 	cmd := exec.Command("git", "remote", "get-url", "origin")
+	// 	var err error
+	// 	remoteRepo, err = cmd.CombinedOutput()
+	// 	if err != nil {
+	// 		util.PrintError("There was an error when trying to get repository owner\n")
+	// 		panic(err)
+	// 	}
+	// }
+
+	// OWNERWEBSITE
+	var ownerWebsite string
+	{
+		ownerWebsite = "https://edwinkofler.com"
 	}
 
+	// VCS
+	var vcs string
+	{
+		vcs = "git"
+	}
+
+	// VCSREMOTEUSERNAME
+	var vcsRemoteUsername string
+	{
+		vcsRemoteUsername = "eankeen"
+	}
+
+	// VCSREMOTEREPOSITORYNAME
+	var vcsRemoteRepositoryName string
+	{
+		vcsRemoteRepositoryName = path.Base(projectDir)
+	}
+
+	// CREATE STRUCT, CREATE JSON TEXT, AND WRITE TO DISK
 	var globeState = &GlobeState{
-		OwnerFullname:    "Edwin Kofler",
-		RepositoryRemote: string(out),
-		// RepositoryOwner: ,
-		// RepositoryName:  repositoryName,
+		OwnerName:               ownerFullname,
+		OwnerWebsite:            ownerWebsite,
+		Vcs:                     vcs,
+		VcsRemoteUsername:       vcsRemoteUsername,
+		VcsRemoteRepositoryName: vcsRemoteRepositoryName,
 	}
-	globeStateText, err := json.Marshal(globeState)
+
+	jsonText, err := json.MarshalIndent(globeState, "", "\t")
 	if err != nil {
 		util.PrintError("There was a problem marshalling\n")
 		panic(err)
 	}
 
-	err = ioutil.WriteFile(globeStateFile, globeStateText, 0644)
+	err = ioutil.WriteFile(globeStateFile, jsonText, 0644)
 	if err != nil {
 		util.PrintError("Error writing the 'globe.state' file\n")
 		panic(err)
