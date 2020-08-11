@@ -188,7 +188,7 @@ func writeGlobeState() {
 
 	err = ioutil.WriteFile(globeStateFile, jsonText, 0644)
 	if err != nil {
-		util.PrintError("Error writing the 'globe.state' file\n")
+		util.PrintError("Error writing the 'globe.state.json' file\n")
 		panic(err)
 	}
 }

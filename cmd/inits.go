@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 
@@ -24,6 +25,7 @@ var initsCmd = &cobra.Command{
 			storeDir := cmd.Flag("store-dir").Value.String()
 			srcConfig := path.Join(storeDir, "globe.toml")
 			destConfig := path.Join(wd, "globe.toml")
+			util.PrintDebug("storeDir: %s\n", storeDir)
 			util.PrintDebug("Copying '%s' to '%s'\n", srcConfig, destConfig)
 
 			sourceFile, err := os.Open(srcConfig)
@@ -57,12 +59,27 @@ var initsCmd = &cobra.Command{
 			if err != nil {
 				if os.IsExist(err) {
 					util.PrintWarning("Folder `.globe` already exists. Not overwriting\n")
-					return
+					goto createGlobeStateJsonFile
 				}
 				util.PrintInfo("Error when creating `.globe` folder. Exiting.")
 				panic(err)
 			}
 		}
+
+		// CREATE GLOBE.STATE.JSON FILE
+	createGlobeStateJsonFile:
+		{
+			globeStateJSONFile := path.Join(wd, ".globe", "globe.state.json")
+			if ioutil.WriteFile(globeStateJSONFile, []byte("{}\n"), 0644); err != nil {
+				if os.IsExist(err) {
+					util.PrintWarning(("File .globe/globe.statea.json already exists. Not overwriting\n"))
+					return
+				}
+				util.PrintError("Could not create .globe/globe.state.json folder")
+				panic(err)
+			}
+		}
+
 	},
 }
 
