@@ -26,18 +26,18 @@ type GlobeConfig struct {
 
 // FileEntryRaw has data about a single file that is meant to be bootstrapped. It's raw because it comes stragith from the bootstrapFiles.yml file
 type FileEntryRaw struct {
-	Path string `yaml:"path"`
-	For  string `yaml:"for"`
-	Op   string `yaml:"op"`
+	Path string   `yaml:"path"`
+	For  []string `yaml:"for"`
+	Op   string   `yaml:"op"`
 }
 
 // FileEntry is the same as FileEntryRaw, except it has been processed
 type FileEntry struct {
-	SrcPath  string `yaml:"srcPath"`
-	DestPath string `yaml:"destPath"`
-	RelPath  string `yaml:"relPath"`
-	Op       string `yaml:"op"`
-	For      string `yaml:"for"`
+	SrcPath  string   `yaml:"srcPath"`
+	DestPath string   `yaml:"destPath"`
+	RelPath  string   `yaml:"relPath"`
+	Op       string   `yaml:"op"`
+	For      []string `yaml:"for"`
 }
 
 // FileListRaw is a representation of files to transfer
@@ -58,10 +58,12 @@ func ReadSyncConfig(storeDir string, storeLocation string) FileListRaw {
 	{
 		content, err := ioutil.ReadFile(yamlLocation)
 		if err != nil {
+			util.PrintError("Could not read sync.yml located at '%s'. Exiting\n", yamlLocation)
 			panic(err)
 		}
 
 		if err := yaml.Unmarshal(content, &coreConfig); err != nil {
+			util.PrintError("Could not parse sync.yml located at '%s' as valid yaml. Exiting\n", yamlLocation)
 			panic(err)
 		}
 	}

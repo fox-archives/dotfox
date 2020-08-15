@@ -49,7 +49,7 @@ func ProcessFiles(project config.Project, files []config.FileEntry) {
 				util.PrintInfo("Skipping irrelevant file '%s'\n", file.RelPath)
 				return
 			}
-			fs.CopyFile(file.SrcPath, file.DestPath, file.RelPath)
+			fs.CopyFile(file.SrcPath, file.DestPath, file.RelPath, project)
 			continue
 		} else if file.Op == "remove" {
 			fs.RemoveFile(file.DestPath)
@@ -61,30 +61,19 @@ func ProcessFiles(project config.Project, files []config.FileEntry) {
 }
 
 func isFileRelevant(projectDir string, file config.FileEntry) bool {
-	projectContainsGoFiles := func() bool {
-		files, err := util.GetChildFilesRecurse(projectDir)
-		if err != nil {
-			panic(err)
-		}
-		if projectFilesContain(files, glob.MustCompile("*.go")) {
-			return true
-		}
-		return false
+	// projectContainsGoFiles := func() bool {
+	// 	files, err := util.GetChildFilesRecurse(projectDir)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	if projectFilesContain(files, glob.MustCompile("*.go")) {
+	// 		return true
+	// 	}
+	// 	return false
+	// }
 
-	}
-
-	switch file.For {
-	case "all":
-		return true
-	case "golang":
-		if projectContainsGoFiles() {
-			return true
-		}
-		return false
-	}
-
-	util.PrintDebug("FileEntry '%s' does not match case statement. Has value %s. Skipping\n", file.RelPath, file.For)
-	return false
+	// util.PrintDebug("FileEntry '%s' does not match case statement. Has value %s. Skipping\n", file.RelPath, file.For)
+	return true
 }
 
 func projectFilesContain(files []string, glob glob.Glob) bool {

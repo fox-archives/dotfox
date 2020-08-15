@@ -3,29 +3,32 @@ package fs
 import (
 	"bytes"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"os"
 	"path"
 
+	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
 )
 
 // CopyFile copies a file from a source to destination. If there are any errors,
 // it prints the error to the screen and immediately panics
-func CopyFile(srcFile string, destFile string, relFile string) {
+func CopyFile(srcFile string, destFile string, relFile string, templateVars config.Project) {
 	util.PrintDebug("srcFile: %s\n", srcFile)
 	util.PrintDebug("destFile: %s\n", destFile)
 
 	// ensure parent directory exists
 	err := os.MkdirAll(path.Dir(destFile), 0755)
 	if err != nil {
-		util.PrintError("An error occured when trying to recurisvely create a directory at '%s'. Exiting", destFile)
+		util.PrintError("An error occured when trying to recurisvely create a directory at '%s'. Exiting\n", destFile)
 		panic(err)
 	}
 
 	srcContents, err := ioutil.ReadFile(srcFile)
+	templatedSrcContents := templateFile(srcContents, templateVars, relFile)
 	if err != nil {
-		util.PrintError("An error occured when trying to read the file '%s'. Exiting", srcFile)
+		util.PrintError("An error occured when trying to read the file '%s'. Exiting\n", srcFile)
 		panic(err)
 	}
 
@@ -46,18 +49,18 @@ func CopyFile(srcFile string, destFile string, relFile string) {
 		// if the file buffers are the same, return no need to copy
 		destContents, err := ioutil.ReadFile(destFile)
 		if err != nil {
-			util.PrintError("An error occured when trying to read the file '%s'. Exiting", destContents)
+			util.PrintError("An error occured when trying to read the file '%s'. Exiting\n", destContents)
 			panic(err)
 		}
 
 		// if the files are the same, don't copy and return
-		if bytes.Compare(srcContents, destContents) == 0 {
+		if bytes.Compare(templatedSrcContents, destContents) == 0 {
 			util.PrintDebug("Skipping unchanged '%s' file\n", relFile)
 			return
 		}
 
 		// file exists and are different, we ask if we should remove file
-		shouldRemove := shouldRemoveExistingFile(destFile, relFile, destContents, srcContents)
+		shouldRemove := shouldRemoveExistingFile(destFile, relFile, destContents, templatedSrcContents)
 		if shouldRemove == false {
 			return
 		}
@@ -68,15 +71,36 @@ func CopyFile(srcFile string, destFile string, relFile string) {
 	util.PrintInfo("Copying %s to %s\n", srcFile, destFile)
 	err = ioutil.WriteFile(destFile, srcContents, 0644)
 	if err != nil {
-		util.PrintError("There was an error trying to write to file '%s' (from original file '%s'). Exiting", destFile, srcContents)
+		util.PrintError("There was an error trying to write to file '%s' (from original file '%s'). Exiting\n", destFile, srcContents)
 		panic(err)
 	}
+}
+
+func templateFile(srcContents []byte, templateVars config.Project, filename string) []byte {
+	template, err := template.New(filename).Parse(string(srcContents))
+	if err != nil {
+		util.PrintError("There was an error when parsing template from file '%s'. Exiting\n", filename)
+		panic(err)
+	}
+
+	buf := new(bytes.Buffer)
+	err = template.Execute(buf, templateVars)
+	if err != nil {
+		util.PrintError("There was an error when executing template from file '%s'. Exiting\n", filename)
+		panic(err)
+	}
+
+	return buf.Bytes()
 }
 
 // RemoveFile removes a file. If there are any errors in doing so, it immediately panics
 func RemoveFile(destFile string) {
 	err := os.Remove(destFile)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return
+		}
+
 		util.PrintError("Error when trying to remove file '%s'. Exiting\n", destFile)
 		panic(err)
 	}

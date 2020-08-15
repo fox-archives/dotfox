@@ -2,7 +2,6 @@ package config
 
 import (
 	"os"
-	"path"
 
 	"github.com/eankeen/globe/internal/util"
 )
@@ -33,8 +32,6 @@ func Validate(values ValidationValues) {
 
 	// storeDir
 	checkStoreDir(values.StoreDir)
-
-	// checkCoreFiles(storeDir)
 }
 
 func checkStoreDir(storeLocation string) {
@@ -62,23 +59,4 @@ func checkStoreDir(storeLocation string) {
 		util.PrintError("fileStoreLocation is empty. This is not supposed to happen. Exiting\n")
 		os.Exit(1)
 	}
-}
-
-func checkCoreFiles(storeLocation string) {
-	coreDir := path.Join(storeLocation, "core")
-	// return if core directory cannot be found
-	stat, err := os.Stat(coreDir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return
-		}
-		util.PrintError("An error occured\n")
-		panic(err)
-	}
-	if !stat.IsDir() {
-		util.PrintError("Folder '%s' is not a folder. Exiting\n", storeLocation)
-	}
-
-	// coreConfig := config.ReadSyncConfig(storeDir, storeLocation)
-	// fmt.Print(coreConfig)
 }
