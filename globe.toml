@@ -1,1 +1,4 @@
-[globe]
+[project]
+tags = [
+	"core", "contrib", "javascript"
+]

@@ -1,6 +1,6 @@
 # Globe
 
-Language-agnostic configuration and program management, and build utility
+🌎 Ensure common configuration across projects
 
 ## Description
 

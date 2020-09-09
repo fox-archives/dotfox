@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 	"github.com/eankeen/globe/internal/util"
@@ -13,22 +14,19 @@ import (
 
 // GlobeConfig is the configuration file used to manage Globe. This is your `globe.toml` file
 type GlobeConfig struct {
-	Globe struct {
-		License string `toml:"license"`
-	} `toml:"globe"`
-	Init struct {
-		Holds []string `toml:"holds"`
-	} `toml:"init"`
-	Sync struct {
-		Holds []string `toml:"holds"`
-	} `toml:"sync"`
+	Project struct {
+		License string   `toml:"license"`
+		Tags    []string `toml:"tags"`
+	} `toml:"project"`
 }
 
-// FileEntryRaw has data about a single file that is meant to be bootstrapped. It's raw because it comes stragith from the bootstrapFiles.yml file
+// FileEntryRaw has data about a single file that is meant to be bootstrapped. It's raw because it comes straight from the bootstrapFiles.yml file
 type FileEntryRaw struct {
-	Path string   `yaml:"path"`
-	For  []string `yaml:"for"`
-	Op   string   `yaml:"op"`
+	Path  string   `yaml:"path"`
+	For   []string `yaml:"for"`
+	Op    string   `yaml:"op"`
+	Tags  []string `yaml:"tags"`
+	Usage string   `yaml:"usage"`
 }
 
 // FileEntry is the same as FileEntryRaw, except it has been processed
@@ -38,6 +36,8 @@ type FileEntry struct {
 	RelPath  string   `yaml:"relPath"`
 	Op       string   `yaml:"op"`
 	For      []string `yaml:"for"`
+	Tags     []string `yaml:"tags"`
+	Usage    string   `yaml:"usage"`
 }
 
 // FileListRaw is a representation of files to transfer
@@ -52,39 +52,19 @@ type FileList struct {
 
 // ReadSyncConfig reads the local sync.yml configuration file
 func ReadSyncConfig(storeDir string, storeLocation string) FileListRaw {
-	yamlLocation := path.Join(storeDir, "sync.yml")
+	// todo
+	yamlLocation := filepath.Join(storeDir, "../project.sync.yml")
 
 	var coreConfig FileListRaw
-	{
-		content, err := ioutil.ReadFile(yamlLocation)
-		if err != nil {
-			util.PrintError("Could not read sync.yml located at '%s'. Exiting\n", yamlLocation)
-			panic(err)
-		}
-
-		if err := yaml.Unmarshal(content, &coreConfig); err != nil {
-			util.PrintError("Could not parse sync.yml located at '%s' as valid yaml. Exiting\n", yamlLocation)
-			panic(err)
-		}
+	content, err := ioutil.ReadFile(yamlLocation)
+	if err != nil {
+		util.PrintError("Could not read sync.yml located at '%s'. Exiting\n", yamlLocation)
+		panic(err)
 	}
 
-	return coreConfig
-}
-
-// ReadInitConfig reads the local sync.yml configuration file
-func ReadInitConfig(storeDir string, storeLocation string) FileListRaw {
-	yamlLocation := path.Join(storeDir, "init.yml")
-
-	var coreConfig FileListRaw
-	{
-		content, err := ioutil.ReadFile(yamlLocation)
-		if err != nil {
-			panic(err)
-		}
-
-		if err := yaml.Unmarshal(content, &coreConfig); err != nil {
-			panic(err)
-		}
+	if err := yaml.Unmarshal(content, &coreConfig); err != nil {
+		util.PrintError("Could not parse sync.yml located at '%s' as valid yaml. Exiting\n", yamlLocation)
+		panic(err)
 	}
 
 	return coreConfig
@@ -95,15 +75,13 @@ func ReadGlobeConfig(projectDir string) GlobeConfig {
 	configLocation := path.Join(projectDir, "globe.toml")
 
 	var globeConfig GlobeConfig
-	{
-		content, err := ioutil.ReadFile(configLocation)
-		if err != nil {
-			panic(err)
-		}
+	content, err := ioutil.ReadFile(configLocation)
+	if err != nil {
+		panic(err)
+	}
 
-		if _, err = toml.Decode(string(content), &globeConfig); err != nil {
-			panic(err)
-		}
+	if _, err = toml.Decode(string(content), &globeConfig); err != nil {
+		panic(err)
 	}
 
 	return globeConfig

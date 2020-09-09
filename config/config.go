@@ -24,16 +24,20 @@ func GetData(storeDir string) Project {
 	util.PrintDebug("projectDir: %s\n", projectDir)
 	project.ProjectDir = projectDir
 
+	project.GlobeConfig = ReadGlobeConfig(project.ProjectDir)
+
 	// CONVERT FILE LISTS
 	do := func(fileListRaw FileListRaw) FileList {
 		var fileList FileList
 		for _, file := range fileListRaw.Files {
 			file := FileEntry{
-				SrcPath:  path.Join(storeDir, "sync", file.Path),
+				SrcPath:  path.Join(storeDir, file.Path),
 				DestPath: path.Join(projectDir, file.Path),
 				RelPath:  file.Path,
 				Op:       file.Op,
 				For:      file.For,
+				Tags:     file.Tags,
+				Usage:    file.Usage,
 			}
 			fileList.Files = append(fileList.Files, file)
 		}
@@ -43,7 +47,7 @@ func GetData(storeDir string) Project {
 
 	syncFilesRaw := ReadSyncConfig(storeDir, projectDir)
 	project.SyncFiles = do(syncFilesRaw)
-	util.PrintDebug("syncFiles: %+v\n", project.SyncFiles)
+	// util.PrintDebug("syncFiles: %+v\n", project.SyncFiles)
 
 	return project
 }

@@ -37,17 +37,13 @@ func init() {
 // 'Op' operation specified by the user
 func ProcessFiles(project config.Project, files []config.FileEntry) {
 	for _, file := range files {
-		util.PrintDebug("Processing file %s\n", file.RelPath)
+		util.PrintInfo("Processing file %s\n", file.RelPath)
 
 		if file.Op == "add" {
-
-			// validate to see if we should even be trying to copy the file
-			// over. for example scripts/go.sh should only be copied when
-			// there are .go files in the repository
-			isFileRelevant := isFileRelevant(project.ProjectDir, file)
+			isFileRelevant := isFileRelevant(project, file)
 			if !isFileRelevant {
 				util.PrintInfo("Skipping irrelevant file '%s'\n", file.RelPath)
-				return
+				continue
 			}
 			fs.CopyFile(file.SrcPath, file.DestPath, file.RelPath, project)
 			continue
@@ -60,20 +56,14 @@ func ProcessFiles(project config.Project, files []config.FileEntry) {
 	}
 }
 
-func isFileRelevant(projectDir string, file config.FileEntry) bool {
-	// projectContainsGoFiles := func() bool {
-	// 	files, err := util.GetChildFilesRecurse(projectDir)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	if projectFilesContain(files, glob.MustCompile("*.go")) {
-	// 		return true
-	// 	}
-	// 	return false
-	// }
-
-	// util.PrintDebug("FileEntry '%s' does not match case statement. Has value %s. Skipping\n", file.RelPath, file.For)
-	return true
+func isFileRelevant(project config.Project, file config.FileEntry) bool {
+	for _, tag := range file.Tags {
+		if util.Contains(project.GlobeConfig.Project.Tags, tag) {
+			util.PrintDebug("tag: %s\n", tag)
+			return true
+		}
+	}
+	return false
 }
 
 func projectFilesContain(files []string, glob glob.Glob) bool {
