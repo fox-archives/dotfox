@@ -8,10 +8,10 @@ import (
 
 // Project includes all details of the current Project
 type Project struct {
-	ProjectDir  string
-	StoreDir    string
-	GlobeConfig GlobeConfig
-	SyncFiles   FileList
+	ProjectDir string
+	StoreDir   string
+	Config     Config
+	Files      []FileEntry
 }
 
 // GetData gets the config for all data related to project
@@ -24,30 +24,31 @@ func GetData(storeDir string) Project {
 	util.PrintDebug("projectDir: %s\n", projectDir)
 	project.ProjectDir = projectDir
 
-	project.GlobeConfig = ReadGlobeConfig(project.ProjectDir)
+	project.Config = ReadConfig(project.ProjectDir)
 
 	// CONVERT FILE LISTS
-	do := func(fileListRaw FileListRaw) FileList {
-		var fileList FileList
-		for _, file := range fileListRaw.Files {
+	do := func(fileListRaw []FileEntryRaw) []FileEntry {
+		var fileList []FileEntry
+
+		for _, file := range fileListRaw {
 			file := FileEntry{
-				SrcPath:  path.Join(storeDir, file.Path),
-				DestPath: path.Join(projectDir, file.Path),
-				RelPath:  file.Path,
 				Op:       file.Op,
 				For:      file.For,
 				Tags:     file.Tags,
 				Usage:    file.Usage,
+				SrcPath:  path.Join(storeDir, file.Path),
+				DestPath: path.Join(projectDir, file.Path),
+				RelPath:  file.Path,
 			}
-			fileList.Files = append(fileList.Files, file)
+			fileList = append(fileList, file)
 		}
 
 		return fileList
 	}
 
-	syncFilesRaw := ReadSyncConfig(storeDir, projectDir)
-	project.SyncFiles = do(syncFilesRaw)
-	// util.PrintDebug("syncFiles: %+v\n", project.SyncFiles)
+	syncFilesRaw := ReadFileConfig(storeDir, projectDir)
+	project.Files = do(syncFilesRaw.Files)
+	// util.PrintDebug("syncFiles: %+v\n", project.Files)
 
 	return project
 }

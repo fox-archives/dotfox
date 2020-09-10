@@ -12,50 +12,55 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// GlobeConfig is the configuration file used to manage Globe. This is your `globe.toml` file
-type GlobeConfig struct {
+// Config is the configuration file used to manage Globe. This is your `globe.toml` file
+type Config struct {
 	Project struct {
 		License string   `toml:"license"`
 		Tags    []string `toml:"tags"`
 	} `toml:"project"`
 }
 
+// AbstractFileEntry contains file entries except for the Path, which is modified
+type AbstractFileEntry struct {
+	// For   []string `yaml:"for"`
+	// Op    string   `yaml:"op"`
+	// Tags  []string `yaml:"tags"`
+	// Usage string   `yaml:"usage"`
+}
+
 // FileEntryRaw has data about a single file that is meant to be bootstrapped. It's raw because it comes straight from the bootstrapFiles.yml file
 type FileEntryRaw struct {
-	Path  string   `yaml:"path"`
 	For   []string `yaml:"for"`
 	Op    string   `yaml:"op"`
 	Tags  []string `yaml:"tags"`
 	Usage string   `yaml:"usage"`
+	// AbstractFileEntry,
+	Path string `yaml:"path"`
 }
 
 // FileEntry is the same as FileEntryRaw, except it has been processed
 type FileEntry struct {
-	SrcPath  string   `yaml:"srcPath"`
-	DestPath string   `yaml:"destPath"`
-	RelPath  string   `yaml:"relPath"`
-	Op       string   `yaml:"op"`
-	For      []string `yaml:"for"`
-	Tags     []string `yaml:"tags"`
-	Usage    string   `yaml:"usage"`
+	For   []string `yaml:"for"`
+	Op    string   `yaml:"op"`
+	Tags  []string `yaml:"tags"`
+	Usage string   `yaml:"usage"`
+	// AbstractFileEntry
+	SrcPath  string `yaml:"srcPath"`
+	DestPath string `yaml:"destPath"`
+	RelPath  string `yaml:"relPath"`
 }
 
-// FileListRaw is a representation of files to transfer
-type FileListRaw struct {
+// FileConfig is a representation of files to transfer
+type FileConfig struct {
 	Files []FileEntryRaw `yaml:"files"`
 }
 
-// FileList is a representation of transformed files to transfer
-type FileList struct {
-	Files []FileEntry `yaml:"files"`
-}
-
-// ReadSyncConfig reads the local sync.yml configuration file
-func ReadSyncConfig(storeDir string, storeLocation string) FileListRaw {
+// ReadFileConfig reads the local sync.yml configuration file
+func ReadFileConfig(storeDir string, storeLocation string) FileConfig {
 	// todo
 	yamlLocation := filepath.Join(storeDir, "../project.sync.yml")
 
-	var coreConfig FileListRaw
+	var coreConfig FileConfig
 	content, err := ioutil.ReadFile(yamlLocation)
 	if err != nil {
 		util.PrintError("Could not read sync.yml located at '%s'. Exiting\n", yamlLocation)
@@ -70,11 +75,11 @@ func ReadSyncConfig(storeDir string, storeLocation string) FileListRaw {
 	return coreConfig
 }
 
-// ReadGlobeConfig reads the local globe.toml config file
-func ReadGlobeConfig(projectDir string) GlobeConfig {
+// ReadConfig reads the local globe.toml config file
+func ReadConfig(projectDir string) Config {
 	configLocation := path.Join(projectDir, "globe.toml")
 
-	var globeConfig GlobeConfig
+	var globeConfig Config
 	content, err := ioutil.ReadFile(configLocation)
 	if err != nil {
 		panic(err)

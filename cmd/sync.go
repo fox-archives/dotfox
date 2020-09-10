@@ -24,8 +24,8 @@ var syncCommand = &cobra.Command{
 		storeDir := cmd.Flag("store-dir").Value.String()
 		project := config.GetData(storeDir)
 
-		// process files
-		ProcessFiles(project, project.SyncFiles.Files)
+		// process filesproject
+		ProcessFiles(project, project.Files)
 	},
 }
 
@@ -58,7 +58,7 @@ func ProcessFiles(project config.Project, files []config.FileEntry) {
 
 func isFileRelevant(project config.Project, file config.FileEntry) bool {
 	for _, tag := range file.Tags {
-		if util.Contains(project.GlobeConfig.Project.Tags, tag) {
+		if util.Contains(project.Config.Project.Tags, tag) {
 			util.PrintDebug("tag: %s\n", tag)
 			return true
 		}
@@ -82,7 +82,7 @@ func projectFilesContain(files []string, glob glob.Glob) bool {
 func panicIfFileDoesNotExit(file string) {
 	doesExist, err := fs.FilePossiblyExists(file)
 	if err != nil {
-		util.PrintError("There was an error determining if there is a '%s' file in the project directory\n", file)
+		util.PrintError("There was an error determining if there is a '%s' file or folder in the project directory\n", file)
 		panic(err)
 	}
 	if !doesExist {

@@ -18,7 +18,7 @@ type ValidationValues struct {
 
 // Validate command line arguments and directory structure
 func Validate(values ValidationValues) {
-	// if store location is blank, we return prematurelly
+	// if store location is blank, we return prematurely
 	// from this function because want cobra to print out
 	// that the store-dir is not set
 	if values.StoreDir == "" {
