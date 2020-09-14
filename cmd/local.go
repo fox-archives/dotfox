@@ -21,7 +21,7 @@ var syncCommand = &cobra.Command{
 		writeGlobeState()
 
 		// get data
-		storeDir := cmd.Flag("store-dir").Value.String()
+		storeDir := cmd.Flag("dot-dir").Value.String()
 		project := config.GetData(storeDir)
 
 		// process filesproject

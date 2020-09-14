@@ -22,7 +22,7 @@ var initsCmd = &cobra.Command{
 
 		// COPY GLOBE.TOML
 		{
-			storeDir := cmd.Flag("store-dir").Value.String()
+			storeDir := cmd.Flag("dot-dir").Value.String()
 			srcConfig := path.Join(storeDir, "globe.toml")
 			destConfig := path.Join(wd, "globe.toml")
 			util.PrintDebug("storeDir: %s\n", storeDir)

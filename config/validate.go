@@ -20,7 +20,7 @@ type ValidationValues struct {
 func Validate(values ValidationValues) {
 	// if store location is blank, we return prematurely
 	// from this function because want cobra to print out
-	// that the store-dir is not set
+	// that the dot-dir is not set
 	if values.StoreDir == "" {
 		return
 	}
