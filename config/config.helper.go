@@ -58,7 +58,7 @@ type FileConfig struct {
 // ReadFileConfig reads the local sync.yml configuration file
 func ReadFileConfig(storeDir string, storeLocation string) FileConfig {
 	// todo
-	yamlLocation := filepath.Join(storeDir, "../project.sync.yml")
+	yamlLocation := filepath.Join(storeDir, "project.sync.yml")
 
 	var coreConfig FileConfig
 	content, err := ioutil.ReadFile(yamlLocation)
