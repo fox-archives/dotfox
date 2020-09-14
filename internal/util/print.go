@@ -7,15 +7,6 @@ import (
 	"github.com/mattn/go-isatty"
 )
 
-func isColorEnabled() bool {
-	_, isNoColorEnabled := os.LookupEnv("NO_COLOR")
-	if (os.Getenv("TERM") != "dumb") && !isNoColorEnabled &&
-		isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd()) {
-		return true
-	}
-	return false
-}
-
 func isColor() bool {
 	_, isNoColorEnabled := os.LookupEnv("NO_COLOR")
 	if (os.Getenv("TERM") != "dumb") && !isNoColorEnabled &&
@@ -75,7 +66,7 @@ func PrintDebug(text string, args ...interface{}) {
 	}
 
 	if isDebug() {
-		if isColorEnabled() {
+		if isColor() {
 			fmt.Print("\033[1;36m")
 			fmt.Print("DEBUG ▶ ")
 			fmt.Print("\033[0;36m")
