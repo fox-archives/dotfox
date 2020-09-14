@@ -13,7 +13,7 @@ import (
 )
 
 var syncCommand = &cobra.Command{
-	Use:   "sync",
+	Use:   "local",
 	Short: "Sync Globe's configuration files",
 	Long:  `Syncs configuration files`,
 	Run: func(cmd *cobra.Command, args []string) {

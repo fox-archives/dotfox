@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"path"
 
 	"github.com/eankeen/globe/internal/util"
@@ -10,6 +11,7 @@ import (
 type Project struct {
 	ProjectDir string
 	StoreDir   string
+	UserDir    string
 	Config     Config
 	Files      []FileEntry
 }
@@ -25,6 +27,12 @@ func GetData(storeDir string) Project {
 	project.ProjectDir = projectDir
 
 	project.Config = ReadConfig(project.ProjectDir)
+
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	project.UserDir = homedir
 
 	// CONVERT FILE LISTS
 	do := func(fileListRaw []FileEntryRaw) []FileEntry {

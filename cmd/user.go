@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/eankeen/globe/config"
 	"github.com/spf13/cobra"
 )
 
@@ -118,14 +119,9 @@ type UserDotsConfig struct {
 	Files []File `toml:"files"`
 }
 
-func readUserDotsToml() error {
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
+func readUserDotsConfig(project config.Project) UserDotsConfig {
+	projectConfig := filepath.Join(project.StoreDir, "user.dots.toml")
 
-	dotfileDir := filepath.Join(homedir, ".dots", "user")
-	projectConfig := filepath.Join(dotfileDir, "../user.dots.toml")
 	raw, err := ioutil.ReadFile(projectConfig)
 	if err != nil {
 		panic(err)
@@ -136,49 +132,7 @@ func readUserDotsToml() error {
 		panic(err)
 	}
 
-	for _, t := range userDotsConfig.Files {
-		fmt.Printf("%+v\n", t)
-	}
-
-	fmt.Println(dotfileDir)
-	err = filepath.Walk(dotfileDir, func(path string, info os.FileInfo, err error) error {
-		// prevent errors in slice
-		if path == dotfileDir {
-			return nil
-		}
-
-		src := path
-		rel := path[len(dotfileDir)+1:]
-		dest := filepath.Join(homedir, rel)
-
-		logger.PrintDebug("src %s\n", src)
-		logger.PrintDebug("rel %s\n", rel)
-		logger.PrintDebug("dest %s\n", dest)
-
-		for _, file := range userDotsConfig.Files {
-			if strings.HasSuffix(src, file.File) {
-				fmt.Println()
-				logger.PrintInfo("Match: %s\n", file.File)
-
-				if info.IsDir() && file.Type == "directory" {
-					resolveDirectory(src, dest, rel)
-				} else if !info.IsDir() && file.Type == "file" {
-					resolveFile(src, dest, rel)
-				} else if info.IsDir() && file.Type == "file" {
-					logger.PrintWarning("'%s' is specified as a file, but at '%s', it is actually a directory\n", file.File, src)
-				} else {
-
-				}
-			}
-		}
-
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return userDotsConfig
 }
 
 var userCmd = &cobra.Command{
@@ -186,7 +140,45 @@ var userCmd = &cobra.Command{
 	Short: "Change User dotfiles",
 	Long:  `Change User dotfiles`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := readUserDotsToml()
+		// get data
+		storeDir := cmd.Flag("store-dir").Value.String()
+		project := config.GetData(storeDir)
+		userDotsConfig := readUserDotsConfig(project)
+
+		dotfileDir := filepath.Join(project.StoreDir, "user")
+		err := filepath.Walk(dotfileDir, func(path string, info os.FileInfo, err error) error {
+			// prevent errors in slice
+			if path == dotfileDir {
+				return nil
+			}
+
+			src := path
+			rel := path[len(dotfileDir)+1:]
+			dest := filepath.Join(project.UserDir, rel)
+
+			logger.PrintDebug("src %s\n", src)
+			logger.PrintDebug("rel %s\n", rel)
+			logger.PrintDebug("dest %s\n", dest)
+
+			for _, file := range userDotsConfig.Files {
+				if strings.HasSuffix(src, file.File) {
+					fmt.Println()
+					logger.PrintInfo("Match: %s\n", file.File)
+
+					if info.IsDir() && file.Type == "directory" {
+						resolveDirectory(src, dest, rel)
+					} else if !info.IsDir() && file.Type == "file" {
+						resolveFile(src, dest, rel)
+					} else if info.IsDir() && file.Type == "file" {
+						logger.PrintWarning("'%s' is specified as a file, but at '%s', it is actually a directory\n", file.File, src)
+					} else {
+
+					}
+				}
+			}
+
+			return nil
+		})
 		if err != nil {
 			panic(err)
 		}
