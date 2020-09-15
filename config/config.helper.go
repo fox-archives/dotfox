@@ -110,7 +110,7 @@ func walkupFor(startLocation string, filename string) string {
 
 	util.PrintDebug("Searching for '%s' in %s\n", filename, startLocation)
 	for _, file := range dirContents {
-		util.PrintDebug("dir: '%s'\n", file.Name())
+		// util.PrintDebug("dir: '%s'\n", file.Name())
 
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
