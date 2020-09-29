@@ -154,7 +154,14 @@ func resolveDirectory(src string, dest string, rel string) {
 	// folder exists and is not a symbolic link
 	err = copy.Copy(dest, src)
 	if err != nil {
-		panic(err)
+		// if file already exists, we don't overwrite
+		// this might want to be changed later
+		if os.IsExist(err) {
+
+		} else {
+			panic(err)
+
+		}
 	}
 
 	err = os.RemoveAll(dest)
@@ -198,8 +205,8 @@ func readUserDotsConfig(project config.Project) UserDotsConfig {
 
 var userCmd = &cobra.Command{
 	Use:   "user",
-	Short: "Change User dotfiles",
-	Long:  `Change User dotfiles`,
+	Short: "Userwide (~) config management",
+	Long:  "Actions to deal with configuration files that apply to a user's session. This may contain Bash startup, Vim config, X resource, etc. files",
 	Run: func(cmd *cobra.Command, args []string) {
 		// get data
 		storeDir := cmd.Flag("dot-dir").Value.String()
@@ -223,20 +230,29 @@ var userCmd = &cobra.Command{
 				}
 
 				if strings.HasSuffix(src, file.File) {
-					logger.PrintInfo("Operating on  File: '%s'", file.File)
+					logger.PrintInfo("Operating on  File: '%s'\n", file.File)
 
-					fmt.Println(info.IsDir(), file.Type)
 					if info.IsDir() && file.Type == "folder" {
 						resolveDirectory(src, dest, rel)
+					} else if info.IsDir() && file.Type != "folder" {
+						logger.PrintWarning("You expected '%s' (%s) to be a directory, but it's not", file.File, src)
 					} else if !info.IsDir() && file.Type == "file" {
 						resolveFile(src, dest, rel)
 					} else if info.IsDir() && file.Type == "file" {
 						logger.PrintWarning("'%s' is specified as a file, but at '%s', it is actually a directory\n", file.File, src)
 					} else {
-						logger.PrintInfo("Unexpected entry '%s'\n", file.File)
+						logger.PrintWarning("Unexpected entry '%s' has type '%s' and isDir?: '%t'\n", file.File, file.Type, info.IsDir())
 					}
+
+					// we use first match
+					return nil
 				}
 			}
+
+			// match was not found
+			// doesn't work because it false positives subdirs / files of folders
+			// specified in configs, and random parent folders
+			// logger.PrintWarning("File or folder '%s' was found in '%s', but it's not present in user.dots.toml\n", rel, dotfileDir)
 
 			return nil
 		})

@@ -14,8 +14,8 @@ import (
 
 var syncCommand = &cobra.Command{
 	Use:   "local",
-	Short: "Sync Globe's configuration files",
-	Long:  `Syncs configuration files`,
+	Short: "Local (., per-project) config management",
+	Long:  `Deal with configuration files contained in an independent project. This may contain EditorConfig, ESLint, Clang-Tidy etc. files`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// write globe.state
 		writeGlobeState()

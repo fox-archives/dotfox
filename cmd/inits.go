@@ -12,8 +12,8 @@ import (
 
 var initsCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Init Globe's configuration files",
-	Long:  `Initiates configuration files to be used by Globe`,
+	Short: "Init Dotty's config files",
+	Long:  "Initializes Dotty's configuration files, usually located at ~/.config/dotty",
 	Run: func(cmd *cobra.Command, args []string) {
 		wd, err := os.Getwd()
 		if err != nil {
