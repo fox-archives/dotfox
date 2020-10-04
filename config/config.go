@@ -1,9 +1,12 @@
 package config
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 
+	"github.com/BurntSushi/toml"
 	"github.com/eankeen/globe/internal/util"
 	logger "github.com/eankeen/go-logger"
 )
@@ -59,4 +62,33 @@ func GetData(storeDir string) Project {
 	// logger.Debug("syncFiles: %+v\n", project.Files)
 
 	return project
+}
+
+// File represents an entry in the `user.dots.toml` file
+type File struct {
+	File       string   `toml:"file"`
+	Tags       []string `toml:"tags"`
+	Type       string   `toml:"type"`
+	Heuristic1 bool
+	Heuristic2 bool
+	Heuristic3 bool
+}
+
+// UserDotsConfig represents the `user.dots.toml` file
+type UserDotsConfig struct {
+	Files []File `toml:"files"`
+}
+
+// GetUserToml gets User (~) data
+func GetUserToml(storeDir string) UserDotsConfig {
+	projectConfig := filepath.Join(storeDir, "user.dots.toml")
+
+	raw, err := ioutil.ReadFile(projectConfig)
+	util.P(err)
+
+	var userDotsConfig UserDotsConfig
+	err = toml.Unmarshal(raw, &userDotsConfig)
+	util.P(err)
+
+	return userDotsConfig
 }
