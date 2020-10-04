@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/BurntSushi/toml v0.3.1
+	github.com/eankeen/go-logger v0.0.0-20201004033532-d3332ce736a9
 	github.com/gobwas/glob v0.2.3
 	github.com/mattn/go-isatty v0.0.12
 	github.com/otiai10/copy v1.2.0

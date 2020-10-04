@@ -5,7 +5,16 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+
+	logger "github.com/eankeen/go-logger"
 )
+
+// P is `if err != nil { panic(err) }`
+func P(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
 
 // Dirname performs same function as `__dirname()` in Node, obtaining the parent folder of the file of the callee of this function
 func Dirname() string {
@@ -23,13 +32,13 @@ func GetChildFilesRecurse(dir string) ([]string, error) {
 	stat, err := os.Stat(dir)
 	if err != nil {
 		if os.IsNotExist(err) {
-			PrintError("File or folder '%s' does not exist. Exiting.\n", dir)
+			logger.Error("File or folder '%s' does not exist. Exiting.\n", dir)
 			panic(err)
 		}
 		panic(err)
 	}
 	if !stat.IsDir() {
-		PrintError("The file '%s' is not a directory. Exiting.\n", dir)
+		logger.Error("The file '%s' is not a directory. Exiting.\n", dir)
 		os.Exit(1)
 	}
 

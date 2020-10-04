@@ -3,7 +3,7 @@ package config
 import (
 	"os"
 
-	"github.com/eankeen/globe/internal/util"
+	logger "github.com/eankeen/go-logger"
 )
 
 // ValidatedArgs returns the value of cli arguments
@@ -26,7 +26,7 @@ func Validate(values ValidationValues) {
 	}
 
 	if values.Project.ProjectDir == "" {
-		util.PrintError("projectDir is blank\n")
+		logger.Error("projectDir is blank\n")
 		panic("projectDir is blank")
 	}
 
@@ -39,24 +39,24 @@ func checkStoreDir(storeLocation string) {
 
 	if err != nil {
 		if os.IsNotExist(err) {
-			util.PrintError("The storeDir '%s'  does not exist. Exiting\n", storeLocation)
+			logger.Error("The storeDir '%s'  does not exist. Exiting\n", storeLocation)
 			os.Exit(1)
 		}
 		if os.IsPermission(err) {
-			util.PrintError("There were permission issues when trying to stat '%s'. Exiting\n", storeLocation)
+			logger.Error("There were permission issues when trying to stat '%s'. Exiting\n", storeLocation)
 			os.Exit(1)
 		}
-		util.PrintError("An unknown error occured\n")
+		logger.Error("An unknown error occured\n")
 		panic(err)
 	}
 
 	if !stat.IsDir() {
-		util.PrintError("Folder '%s' is not a folder. Exiting\n", storeLocation)
+		logger.Error("Folder '%s' is not a folder. Exiting\n", storeLocation)
 		os.Exit(1)
 	}
 
 	if storeLocation == "" {
-		util.PrintError("fileStoreLocation is empty. This is not supposed to happen. Exiting\n")
+		logger.Error("fileStoreLocation is empty. This is not supposed to happen. Exiting\n")
 		os.Exit(1)
 	}
 }

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	"github.com/eankeen/globe/internal/util"
+	logger "github.com/eankeen/go-logger"
 	"gopkg.in/yaml.v2"
 )
 
@@ -63,12 +63,12 @@ func ReadFileConfig(storeDir string, storeLocation string) FileConfig {
 	var coreConfig FileConfig
 	content, err := ioutil.ReadFile(yamlLocation)
 	if err != nil {
-		util.PrintError("Could not read sync.yml located at '%s'. Exiting\n", yamlLocation)
+		logger.Error("Could not read sync.yml located at '%s'. Exiting\n", yamlLocation)
 		panic(err)
 	}
 
 	if err := yaml.Unmarshal(content, &coreConfig); err != nil {
-		util.PrintError("Could not parse sync.yml located at '%s' as valid yaml. Exiting\n", yamlLocation)
+		logger.Error("Could not parse sync.yml located at '%s' as valid yaml. Exiting\n", yamlLocation)
 		panic(err)
 	}
 
@@ -108,9 +108,9 @@ func walkupFor(startLocation string, filename string) string {
 		panic(err)
 	}
 
-	util.PrintDebug("Searching for '%s' in %s\n", filename, startLocation)
+	logger.Debug("Searching for '%s' in %s\n", filename, startLocation)
 	for _, file := range dirContents {
-		// util.PrintDebug("dir: '%s'\n", file.Name())
+		// logger.Debug("dir: '%s'\n", file.Name())
 
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
@@ -118,7 +118,7 @@ func walkupFor(startLocation string, filename string) string {
 		}
 
 		if file.Name() == filename {
-			util.PrintDebug("Found '%s' in '%s\n", filename, startLocation)
+			logger.Debug("Found '%s' in '%s\n", filename, startLocation)
 			return startLocation
 		} else if file.Name() == homeDir {
 			return ""

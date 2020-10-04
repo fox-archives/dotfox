@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/eankeen/globe/internal/util"
+	logger "github.com/eankeen/go-logger"
 )
 
 // Project includes all details of the current Project
@@ -23,15 +24,14 @@ func GetData(storeDir string) Project {
 	var project Project
 	project.StoreDir = storeDir
 
-	util.PrintDebug("projectDir: %s\n", projectDir)
+	logger.Debug("projectDir: %s\n", projectDir)
 	project.ProjectDir = projectDir
 
 	project.Config = ReadConfig(project.ProjectDir)
 
 	homedir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
+	util.P(err)
+
 	project.UserDir = homedir
 
 	// CONVERT FILE LISTS
@@ -56,7 +56,7 @@ func GetData(storeDir string) Project {
 
 	syncFilesRaw := ReadFileConfig(storeDir, projectDir)
 	project.Files = do(syncFilesRaw.Files)
-	// util.PrintDebug("syncFiles: %+v\n", project.Files)
+	// logger.Debug("syncFiles: %+v\n", project.Files)
 
 	return project
 }

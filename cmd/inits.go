@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/eankeen/globe/internal/util"
+	logger "github.com/eankeen/go-logger"
 	"github.com/spf13/cobra"
 )
 
@@ -16,29 +17,25 @@ var initsCmd = &cobra.Command{
 	Long:  "Initializes Dotty's configuration files, usually located at ~/.config/dotty",
 	Run: func(cmd *cobra.Command, args []string) {
 		wd, err := os.Getwd()
-		if err != nil {
-			panic(err)
-		}
+		util.P(err)
 
 		// COPY GLOBE.TOML
 		{
 			storeDir := cmd.Flag("dot-dir").Value.String()
 			srcConfig := path.Join(storeDir, "globe.toml")
 			destConfig := path.Join(wd, "globe.toml")
-			util.PrintDebug("storeDir: %s\n", storeDir)
-			util.PrintDebug("Copying '%s' to '%s'\n", srcConfig, destConfig)
+			logger.Debug("storeDir: %s\n", storeDir)
+			logger.Debug("Copying '%s' to '%s'\n", srcConfig, destConfig)
 
 			sourceFile, err := os.Open(srcConfig)
-			if err != nil {
-				panic(err)
-			}
 			defer sourceFile.Close()
+			util.P(err)
 
 			// Create new file
 			newFile, err := os.OpenFile(destConfig, os.O_CREATE|os.O_RDWR|os.O_EXCL, 0644)
 			if err != nil {
 				if os.IsExist(err) {
-					util.PrintWarning("Config file 'globe.toml' file already exists. Not overwriting\n")
+					logger.Warning("Config file 'globe.toml' file already exists. Not overwriting\n")
 					goto createGlobeFolder
 				}
 				panic(err)
@@ -46,9 +43,7 @@ var initsCmd = &cobra.Command{
 			defer newFile.Close()
 
 			_, err = io.Copy(newFile, sourceFile)
-			if err != nil {
-				panic(err)
-			}
+			util.P(err)
 		}
 
 		// CREATE .GLOBE FOLDER
@@ -58,10 +53,10 @@ var initsCmd = &cobra.Command{
 			err = os.MkdirAll(globeDotDir, 0755)
 			if err != nil {
 				if os.IsExist(err) {
-					util.PrintWarning("Folder `.globe` already exists. Not overwriting\n")
+					logger.Warning("Folder `.globe` already exists. Not overwriting\n")
 					goto createGlobeStateJsonFile
 				}
-				util.PrintInfo("Error when creating `.globe` folder. Exiting.")
+				logger.Informational("Error when creating `.globe` folder. Exiting.")
 				panic(err)
 			}
 		}
@@ -72,10 +67,10 @@ var initsCmd = &cobra.Command{
 			globeStateJSONFile := path.Join(wd, ".globe", "globe.state.json")
 			if ioutil.WriteFile(globeStateJSONFile, []byte("{}\n"), 0644); err != nil {
 				if os.IsExist(err) {
-					util.PrintWarning(("File .globe/globe.statea.json already exists. Not overwriting\n"))
+					logger.Warning(("File .globe/globe.statea.json already exists. Not overwriting\n"))
 					return
 				}
-				util.PrintError("Could not create .globe/globe.state.json folder")
+				logger.Error("Could not create .globe/globe.state.json folder")
 				panic(err)
 			}
 		}
