@@ -15,7 +15,7 @@ import (
 
 var userCheckCmd = &cobra.Command{
 	Use:   "check",
-	Short: "check for inconsistencies / missing files",
+	Short: "Check for inconsistencies / missing files",
 	Run: func(cmd *cobra.Command, args []string) {
 		storeDir := cmd.Flag("dot-dir").Value.String()
 		userConfig := config.GetUserToml(storeDir)

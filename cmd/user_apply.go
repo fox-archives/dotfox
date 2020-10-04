@@ -79,7 +79,10 @@ func resolveFile(src string, dest string, rel string) {
 	if err != nil {
 		// file doesn't exist
 		if os.IsNotExist(err) {
-			err := os.Symlink(src, dest)
+			err := os.MkdirAll(filepath.Dir(dest), 0755)
+			util.P(err)
+
+			err = os.Symlink(src, dest)
 			util.P(err)
 			return
 		}
@@ -121,7 +124,7 @@ func resolveFile(src string, dest string, rel string) {
 
 	// if files have the same content
 	if strings.Compare(string(destContents), string(srcContents)) == 0 {
-		logger.Debug("FILE has same content as thing. Replacing file with symlink")
+		logger.Debug("FILE has same content as thing. Replacing file with symlink\n")
 		err := os.Remove(dest)
 		util.P(err)
 
@@ -131,21 +134,24 @@ func resolveFile(src string, dest string, rel string) {
 	}
 
 	// replace with link
-	logger.Informational("FILE %s exists, is not a symlink and has different content. (remove, skip) ", src)
+	logger.Informational("FILE %s exists, is not a symlink and has different content. (overwrite, skip,overwrite) ", src)
 	var input string
 	_, err = fmt.Scanln(&input)
 	util.P(err)
 
 	switch input {
-	case "remove":
+	case "overwrite":
 		err := os.Remove(dest)
 		util.P(err)
 
 		err = os.Symlink(src, dest)
 		util.P(err)
-
+		break
 	case "skip":
 		logger.Debug("skipping '%s'\n", rel)
+		break
+	default:
+		logger.Informational("Unknown Response\n")
 	}
 
 	return
