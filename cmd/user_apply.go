@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/eankeen/dotty/config"
+	"github.com/eankeen/dotty/fs"
 	"github.com/eankeen/dotty/internal/util"
 	logger "github.com/eankeen/go-logger"
 	"github.com/otiai10/copy"
@@ -82,7 +83,7 @@ func resolveFile(src string, dest string, rel string) {
 		// dest file doesn't exist
 		if os.IsNotExist(err) {
 			logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
-			err := config.CreateNewSymlink(src, dest)
+			err := fs.MkdirThenSymlink(src, dest)
 			util.P(err)
 			return
 		}
@@ -101,7 +102,7 @@ func resolveFile(src string, dest string, rel string) {
 		// if link destination doesn't match src
 		if linkDest != src {
 			logger.Debug("OK: Symlink points to invalid location. Removing and Recreating\n")
-			err := config.FixBrokenSymlink(src, dest)
+			err := fs.RemoveThenSymlink(src, dest)
 			util.P(err)
 			return
 		}
@@ -123,10 +124,7 @@ func resolveFile(src string, dest string, rel string) {
 	// if files have the same content
 	if strings.Compare(string(destContents), string(srcContents)) == 0 {
 		logger.Debug("OK: dest and src have same content. Replacing dest with symlink\n")
-		err := os.Remove(dest)
-		util.P(err)
-
-		err = os.Symlink(src, dest)
+		err := fs.RemoveThenSymlink(src, dest)
 		util.P(err)
 		return
 	}
@@ -164,10 +162,7 @@ promptUserFile:
 
 		goto promptUserFile
 	case "use-src":
-		err := os.Remove(dest)
-		util.P(err)
-
-		err = os.Symlink(src, dest)
+		err := fs.RemoveThenSymlink(src, dest)
 		util.P(err)
 		break
 	case "use-dest":
@@ -185,10 +180,7 @@ promptUserFile:
 		util.P(err)
 
 		// re-symlink
-		err = os.Remove(dest)
-		util.P(err)
-
-		err = os.Symlink(src, dest)
+		err = fs.RemoveThenSymlink(src, dest)
 		util.P(err)
 		break
 	case "skip":
@@ -208,7 +200,7 @@ func resolveDirectory(src string, dest string, rel string) {
 		// dest file doesn't exist
 		if os.IsNotExist(err) {
 			logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
-			err := config.CreateNewSymlink(src, dest)
+			err := fs.MkdirThenSymlink(src, dest)
 			util.P(err)
 			return
 		}
@@ -227,7 +219,7 @@ func resolveDirectory(src string, dest string, rel string) {
 		// if link destination doesn't match src
 		if linkDest != src {
 			logger.Debug("OK: Symlink points to invalid location. Removing and Recreating\n")
-			config.FixBrokenSymlink(src, dest)
+			fs.RemoveThenSymlink(src, dest)
 			util.P(err)
 			return
 		}
@@ -248,13 +240,13 @@ func resolveDirectory(src string, dest string, rel string) {
 	// if both folders are empty, symlink them
 	if len(srcDirs) == 0 && len(destDirs) == 0 {
 		logger.Debug("OK: Replacing folder with symlink\n")
-		err := config.FixBrokenSymlink(src, dest)
+		err := fs.RemoveThenSymlink(src, dest)
 		util.P(err)
 	}
 
 	if len(srcDirs) > 0 && len(destDirs) == 0 {
 		logger.Debug("OK: Replacing folder with symlink\n")
-		err := config.FixBrokenSymlink(src, dest)
+		err := fs.RemoveThenSymlink(src, dest)
 		util.P(err)
 	}
 

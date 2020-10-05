@@ -2,13 +2,11 @@ package config
 
 import (
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/eankeen/dotty/internal/util"
-	logger "github.com/eankeen/go-logger"
 )
 
 // Project includes all details of the current Project
@@ -122,38 +120,4 @@ func FileMatches(src string, file File) (bool, string) {
 
 	// if src is a file
 	return strings.HasSuffix(src, file.File), "file"
-}
-
-// CreateNewSymlink creates a new symlink to a destination. it
-// automatically creates the parent directory structure too
-func CreateNewSymlink(src string, dest string) error {
-	logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
-
-	err := os.MkdirAll(filepath.Dir(dest), 0755)
-	if err != nil {
-		return err
-	}
-
-	err = os.Symlink(src, dest)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// FixBrokenSymlink removes a symlink that points to a wrong
-// location, replacing it with the right one
-func FixBrokenSymlink(src string, dest string) error {
-	err := os.Remove(dest)
-	if err != nil {
-		return err
-	}
-
-	err = os.Symlink(src, dest)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

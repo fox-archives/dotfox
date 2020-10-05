@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/eankeen/dotty/config"
 	logger "github.com/eankeen/go-logger"
@@ -122,4 +123,38 @@ func FilePossiblyExists(fileName string) (bool, error) {
 		return true, err
 	}
 	return true, nil
+}
+
+// MkdirThenSymlink creates a new symlink to a destination. it
+// automatically creates the parent directory structure too
+func MkdirThenSymlink(src string, dest string) error {
+	logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
+
+	err := os.MkdirAll(filepath.Dir(dest), 0755)
+	if err != nil {
+		return err
+	}
+
+	err = os.Symlink(src, dest)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RemoveThenSymlink removes a symlink that points to a wrong
+// location, replacing it with the right one
+func RemoveThenSymlink(src string, dest string) error {
+	err := os.Remove(dest)
+	if err != nil {
+		return err
+	}
+
+	err = os.Symlink(src, dest)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
