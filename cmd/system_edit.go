@@ -6,16 +6,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var userEditCmd = &cobra.Command{
+var systemEditCmd = &cobra.Command{
 	Use:   "edit",
-	Short: "Edit 'user' TOML config",
+	Short: "Edit 'system' TOML config",
 	Run: func(cmd *cobra.Command, args []string) {
 		storeDir := cmd.Flag("dot-dir").Value.String()
 
-		util.OpenEditor(config.GetUserTomlPath(storeDir))
+		util.OpenEditor(config.GetSystemTomlPath(storeDir))
 	},
 }
 
 func init() {
-	userCmd.AddCommand(userEditCmd)
+	systemCmd.AddCommand(systemEditCmd)
 }

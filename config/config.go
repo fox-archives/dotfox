@@ -35,9 +35,9 @@ type SystemDotsConfig struct {
 	Files []File `toml:"files"`
 }
 
-// GetSystemToml gets System (/) config
+// GetSystemToml gets system (/) config
 func GetSystemToml(storeDir string) SystemDotsConfig {
-	projectConfig := filepath.Join(storeDir, "config", "system.dots.toml")
+	projectConfig := GetSystemTomlPath(storeDir)
 
 	raw, err := ioutil.ReadFile(projectConfig)
 	util.P(err)
@@ -49,6 +49,13 @@ func GetSystemToml(storeDir string) SystemDotsConfig {
 	return systemDotsConfig
 }
 
+// GetSystemTomlPath gets location of system (/) config (system.dots.toml)
+func GetSystemTomlPath(storeDir string) string {
+	location := filepath.Join(storeDir, "config", "system.dots.toml")
+
+	return location
+}
+
 // UserDotsConfig represents the `user.dots.toml` file
 type UserDotsConfig struct {
 	Files []File `toml:"files"`
@@ -56,7 +63,7 @@ type UserDotsConfig struct {
 
 // GetUserToml gets user (~) config
 func GetUserToml(storeDir string) UserDotsConfig {
-	projectConfig := filepath.Join(storeDir, "config", "user.dots.toml")
+	projectConfig := GetUserTomlPath(storeDir)
 
 	raw, err := ioutil.ReadFile(projectConfig)
 	util.P(err)
@@ -68,6 +75,13 @@ func GetUserToml(storeDir string) UserDotsConfig {
 	return userDotsConfig
 }
 
+// GetUserTomlPath gets location of user (~) config (user.dots.toml)
+func GetUserTomlPath(storeDir string) string {
+	location := filepath.Join(storeDir, "config", "user.dots.toml")
+
+	return location
+}
+
 // LocalDotsConfig represents the `local.dots.toml` file
 type LocalDotsConfig struct {
 	Files []File `toml:"files"`
@@ -75,7 +89,7 @@ type LocalDotsConfig struct {
 
 // GetLocalToml gets local (.) config
 func GetLocalToml(storeDir string) LocalDotsConfig {
-	projectConfig := filepath.Join(storeDir, "config", "local.dots.toml")
+	projectConfig := GetLocalTomlPath(storeDir)
 
 	raw, err := ioutil.ReadFile(projectConfig)
 	util.P(err)
@@ -85,6 +99,13 @@ func GetLocalToml(storeDir string) LocalDotsConfig {
 	util.P(err)
 
 	return localDotsConfig
+}
+
+// GetLocalTomlPath gets location of local (.) config (local.dots.toml)
+func GetLocalTomlPath(storeDir string) string {
+	location := filepath.Join(storeDir, "config", "local.dots.toml")
+
+	return location
 }
 
 // FileMatches determines a particular file matches

@@ -1,6 +1,8 @@
 package util
 
 import (
+	"os"
+	"os/exec"
 	"path"
 	"runtime"
 	"syscall"
@@ -54,4 +56,21 @@ func Contains(arr []string, str string) bool {
 		}
 	}
 	return false
+}
+
+// OpenEditor opens a file for editing
+func OpenEditor(file string) {
+	editor := os.Getenv("EDITOR")
+	program := "vim"
+	if editor != "" {
+		program = editor
+	}
+
+	cm := exec.Command(program, file)
+	cm.Stdin = os.Stdin
+	cm.Stdout = os.Stdout
+	cm.Stderr = os.Stderr
+
+	err := cm.Run()
+	P(err)
 }

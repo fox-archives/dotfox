@@ -41,6 +41,4 @@ func init() {
 	destDirFlg.String("dest-dir", homedir, "Where to put dotfiles")
 	err = cobra.MarkFlagDirname(destDirFlg, "dest-dir")
 	util.P(err)
-	err = cobra.MarkFlagRequired(destDirFlg, "dest-dir")
-	util.P(err)
 }
