@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/eankeen/globe/config"
+	"github.com/eankeen/dotty/config"
 	logger "github.com/eankeen/go-logger"
 )
 

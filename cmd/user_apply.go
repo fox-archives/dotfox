@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/eankeen/globe/config"
-	"github.com/eankeen/globe/internal/util"
+	"github.com/eankeen/dotty/config"
+	"github.com/eankeen/dotty/internal/util"
 	logger "github.com/eankeen/go-logger"
 	"github.com/otiai10/copy"
 	"github.com/spf13/cobra"
@@ -81,6 +81,7 @@ func resolveFile(src string, dest string, rel string) {
 	if err != nil {
 		// dest file doesn't exist
 		if os.IsNotExist(err) {
+			logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
 			err := config.CreateNewSymlink(src, dest)
 			util.P(err)
 			return
@@ -206,6 +207,7 @@ func resolveDirectory(src string, dest string, rel string) {
 	if err != nil {
 		// dest file doesn't exist
 		if os.IsNotExist(err) {
+			logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
 			err := config.CreateNewSymlink(src, dest)
 			util.P(err)
 			return

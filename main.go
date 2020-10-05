@@ -1,6 +1,6 @@
 package main
 
-import "github.com/eankeen/globe/cmd"
+import "github.com/eankeen/dotty/cmd"
 
 func main() {
 	cmd.Execute()

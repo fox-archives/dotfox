@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/eankeen/globe/internal/util"
+	"github.com/eankeen/dotty/internal/util"
 	logger "github.com/eankeen/go-logger"
 )
 

@@ -6,9 +6,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/eankeen/globe/config"
-	"github.com/eankeen/globe/fs"
-	"github.com/eankeen/globe/internal/util"
+	"github.com/eankeen/dotty/config"
+	"github.com/eankeen/dotty/fs"
+	"github.com/eankeen/dotty/internal/util"
 	logger "github.com/eankeen/go-logger"
 	"github.com/gobwas/glob"
 	"github.com/spf13/cobra"

@@ -1,9 +1,10 @@
-module github.com/eankeen/globe
+module github.com/eankeen/dotty
 
 go 1.14
 
 require (
 	github.com/BurntSushi/toml v0.3.1
+	github.com/eankeen/globe v0.0.0-20201005050815-93feae3daeb6
 	github.com/eankeen/go-logger v0.0.0-20201004033532-d3332ce736a9
 	github.com/gobwas/glob v0.2.3
 	github.com/mattn/go-isatty v0.0.12

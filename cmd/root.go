@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/eankeen/globe/internal/util"
+	"github.com/eankeen/dotty/internal/util"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 )
 
 // RootCmd is the root command
 var RootCmd = &cobra.Command{
-	Use:   "globe",
+	Use:   "dotty",
 	Short: "Dotfile CM Utility",
 	Long:  "A CM (Configuration Management) utility for dotfiles. Used for managing local, user, or system-wide dotfiles",
 }

@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/eankeen/globe/config"
-	"github.com/eankeen/globe/internal/util"
+	"github.com/eankeen/dotty/config"
+	"github.com/eankeen/dotty/internal/util"
 	"github.com/eankeen/go-logger"
 	"github.com/spf13/cobra"
 )
