@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var initsCmd = &cobra.Command{
+var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Init Dotty's config files",
 	Long:  "Initializes Dotty's configuration files, usually located at ~/.config/dotty",
@@ -79,5 +79,5 @@ var initsCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(initsCmd)
+	RootCmd.AddCommand(initCmd)
 }

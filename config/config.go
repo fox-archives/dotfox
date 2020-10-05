@@ -2,7 +2,9 @@ package config
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/eankeen/globe/internal/util"
@@ -82,4 +84,19 @@ func GetLocalToml(storeDir string) LocalDotsConfig {
 	util.P(err)
 
 	return localDotsConfig
+}
+
+// FileMatches determines a particular file matches
+// returned string can either be "folder" or "file"
+func FileMatches(src string, srcInfo os.FileInfo, file File) (bool, string) {
+	lastChar := file.File[len(file.File)-1:]
+
+	// if src is a folder
+	if lastChar == "/" {
+		allButLastChar := file.File[:len(file.File)-1]
+		return strings.HasSuffix(src, allButLastChar), "folder"
+	}
+
+	// if src is a file
+	return strings.HasSuffix(src, file.File), "file"
 }

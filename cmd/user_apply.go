@@ -20,50 +20,42 @@ var userApplyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		storeDir := cmd.Flag("dot-dir").Value.String()
 		destDir := cmd.Flag("dest-dir").Value.String()
-		srcDir := filepath.Join(storeDir, "user")
+		userDir := filepath.Join(storeDir, "user")
 
 		userDotsConfig := config.GetUserToml(storeDir)
 
-		err := filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
+		err := filepath.Walk(userDir, func(src string, srcInfo os.FileInfo, err error) error {
 			// prevent errors in slice
-			if path == srcDir {
+			if src == userDir {
 				return nil
 			}
 
-			src := path
-			rel := path[len(srcDir)+1:]
+			rel := src[len(userDir)+1:]
 			dest := filepath.Join(destDir, rel)
 
 			for _, file := range userDotsConfig.Files {
-				if file.Type == "" {
-					file.Type = "file"
-				}
+				fileMatches, fileType := config.FileMatches(src, srcInfo, file)
 
-				if config.FileMatches(src, file) {
+				if fileMatches && fileType == "file" {
 					logger.Informational("Operating on  File: '%s'\n", file.File)
+					resolveFile(src, dest, rel)
 
-					if info.IsDir() && file.Type == "folder" {
-						resolveDirectory(src, dest, rel)
-					} else if info.IsDir() && file.Type != "folder" {
-						logger.Warning("You expected '%s' (%s) to be a directory, but it's not\n", file.File, src)
-					} else if !info.IsDir() && file.Type == "file" {
-						resolveFile(src, dest, rel)
-					} else if info.IsDir() && file.Type == "file" {
-						logger.Warning("'%s' is specified as a file, but at '%s', it is actually a directory\n", file.File, src)
-					} else {
-						logger.Warning("Unexpected entry '%s' has type '%s' and isDir?: '%t'\n", file.File, file.Type, info.IsDir())
-					}
+					// go to next file (in dotfile folder)
+					return nil
+				} else if fileMatches && fileType == "folder" {
+					logger.Informational("Operating on  Folder: '%s'\n", file.File)
+					resolveDirectory(src, dest, rel)
 
-					// we use first match
+					// go to next file (in dotfile folder)
 					return nil
 				}
+
+				// file in config did not match. continue because
+				// another one might
+				continue
 			}
 
-			// match was not found
-			// doesn't work because it false positives subdirs / files of folders
-			// specified in configs, and random parent folders
-			// logger.Warning("File or folder '%s' was found in '%s', but it's not present in user.dots.toml\n", rel, srcDir)
-
+			// no explicit match was made. it may have already been matched, not match at all, or a parent folder matched instead
 			return nil
 		})
 		util.P(err)

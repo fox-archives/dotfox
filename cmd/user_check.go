@@ -9,7 +9,7 @@ import (
 
 	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
-	"github.com/eankeen/go-logger"
+	logger "github.com/eankeen/go-logger"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +20,14 @@ var userCheckCmd = &cobra.Command{
 		storeDir := cmd.Flag("dot-dir").Value.String()
 		userConfig := config.GetUserToml(storeDir)
 		dotfileDir := filepath.Join(storeDir, "user")
+
+		//  else if info.IsDir() && file.Type != "folder" {
+		// 				logger.Warning("You expected '%s' (%s) to be a directory, but it's not\n", file.File, src)
+		// 			} else if info.IsDir() && file.Type == "file" {
+		// 				logger.Warning("'%s' is specified as a file, but at '%s', it is actually a directory\n", file.File, src)
+		// 			} else {
+		// 				logger.Warning("Unexpected entry '%s' has type '%s' and isDir?: '%t'\n", file.File, file.Type, info.IsDir())
+		// 			}
 
 		walkables := []string{}
 		walkablesFound := []string{}
@@ -82,7 +90,7 @@ var userCheckCmd = &cobra.Command{
 					if !config.FileMatches(src, file) {
 						// TEMPORARILY ignore directories
 						if !info.IsDir() {
-							if !ParentFolderMatches(dotfileDir, info, src, userConfig.Files, file) {
+							if !ParentFolderMatches(dotfileDir, src, info, userConfig.Files, file) {
 								walkablesFound = append(walkablesFound, src)
 
 							}
@@ -129,10 +137,10 @@ func init() {
 }
 
 // ParentFolderMatches to see if any parent folder of a file matches up until dotfileDir
-func ParentFolderMatches(dotfileDir string, info os.FileInfo, src string, files []config.File, file config.File) bool {
+func ParentFolderMatches(dotfileDir string, src string, srcInfo os.FileInfo, files []config.File, file config.File) bool {
 	os := src
 
-	if info.IsDir() {
+	if srcInfo.IsDir() {
 		panic("not supposed to be directory")
 	}
 
@@ -145,7 +153,8 @@ func ParentFolderMatches(dotfileDir string, info os.FileInfo, src string, files 
 		}
 
 		for _, file := range files {
-			if config.FileMatches(src, file) {
+			fileMatches, fileType := config.FileMatches(src, srcInfo, file)
+			if fileMatches && fileType == "folder" {
 				fmt.Printf("CONTAINED: %s\n", os)
 				return true
 			}
