@@ -109,7 +109,8 @@ func GetLocalTomlPath(storeDir string) string {
 }
 
 // FileMatches determines a particular file matches
-// returned string can either be "folder" or "file"
+// returned string can either be "folder" or "file". if bool
+// is false, it can also be empty ("")
 func FileMatches(src string, file File) (bool, string) {
 	lastChar := file.File[len(file.File)-1:]
 
@@ -144,8 +145,6 @@ func CreateNewSymlink(src string, dest string) error {
 // FixBrokenSymlink removes a symlink that points to a wrong
 // location, replacing it with the right one
 func FixBrokenSymlink(src string, dest string) error {
-	logger.Debug("OK: Symlink points to invalid location. Removing and Recreating\n")
-
 	err := os.Remove(dest)
 	if err != nil {
 		return err

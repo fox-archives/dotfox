@@ -6,7 +6,7 @@ cd testdata
 
 cmd="go run ../"
 
-dirs=("basic" "dual-file-exist")
+dirs=("basic" "dual-folder-exist")
 
 for dir in "${dirs[@]}"; do
 	$cmd \

@@ -1,12 +1,15 @@
 package util
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
 	"runtime"
 	"syscall"
 	"unsafe"
+
+	"github.com/eankeen/go-logger"
 )
 
 // P is `if err != nil { panic(err) }`
@@ -73,4 +76,19 @@ func OpenEditor(file string) {
 
 	err := cm.Run()
 	P(err)
+}
+
+// Prompt ensures that we get a valid response
+func Prompt(options []string, printText string, printArgs ...interface{}) string {
+	logger.Informational(printText, printArgs...)
+
+	var input string
+	_, err := fmt.Scanln(&input)
+	P(err)
+
+	if Contains(options, input) {
+		return input
+	}
+
+	return Prompt(options, printText, printArgs)
 }

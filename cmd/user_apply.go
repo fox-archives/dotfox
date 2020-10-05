@@ -35,6 +35,14 @@ var userApplyCmd = &cobra.Command{
 			dest := filepath.Join(destDir, rel)
 
 			for _, file := range userDotsConfig.Files {
+				logger.Debug("src: %s\n", src)
+				logger.Debug("file.File: %s\n", file.File)
+
+				if len(file.File) == 0 {
+					logger.Warning("An entry in your '%s' config does not have a 'name' property. (This message may be repeated multiple times for each entry). Skipping\n", "user.dots.toml")
+					return nil
+				}
+
 				fileMatches, fileType := config.FileMatches(src, file)
 
 				if fileMatches && fileType == "file" {
@@ -91,6 +99,7 @@ func resolveFile(src string, dest string, rel string) {
 		logger.Debug("src: %s\n", src)
 		// if link destination doesn't match src
 		if linkDest != src {
+			logger.Debug("OK: Symlink points to invalid location. Removing and Recreating\n")
 			err := config.FixBrokenSymlink(src, dest)
 			util.P(err)
 			return
@@ -122,9 +131,9 @@ func resolveFile(src string, dest string, rel string) {
 	}
 
 	// files have different content
-	// intelligently prompt user which to keep
-promptUser:
-	input := Prompt([]string{"compare", "use-src", "use-dest", "skip"}, "File %s exists both in your src and dest. (compare, use-src, use-dest, skip) ", rel)
+	// prompt user which to keep
+promptUserFile:
+	input := util.Prompt([]string{"compare", "use-src", "use-dest", "skip"}, "File %s exists both in your src and dest. (compare, use-src, use-dest, skip) ", rel)
 	switch input {
 	case "compare":
 		// TODO: this could be cleaner
@@ -152,7 +161,7 @@ promptUser:
 
 		util.OpenEditor(temp.Name())
 
-		goto promptUser
+		goto promptUserFile
 	case "use-src":
 		err := os.Remove(dest)
 		util.P(err)
@@ -191,21 +200,6 @@ promptUser:
 	return
 }
 
-// Prompt ensures that we get a valid response
-func Prompt(options []string, printText string, printArgs ...interface{}) string {
-	logger.Informational(printText, printArgs...)
-
-	var input string
-	_, err := fmt.Scanln(&input)
-	util.P(err)
-
-	if util.Contains(options, input) {
-		return input
-	}
-
-	return Prompt(options, printText, printArgs)
-}
-
 // assumptions: src directory exists. dest may NOT
 func resolveDirectory(src string, dest string, rel string) {
 	fi, err := os.Lstat(dest)
@@ -230,6 +224,7 @@ func resolveDirectory(src string, dest string, rel string) {
 		logger.Debug("src: %s\n", src)
 		// if link destination doesn't match src
 		if linkDest != src {
+			logger.Debug("OK: Symlink points to invalid location. Removing and Recreating\n")
 			config.FixBrokenSymlink(src, dest)
 			util.P(err)
 			return
@@ -242,27 +237,60 @@ func resolveDirectory(src string, dest string, rel string) {
 
 	// dest folder exists and is NOT a symbolic link
 
-	// make sure the src folder is empty before we copy it
 	srcDirs, err := ioutil.ReadDir(src)
 	util.P(err)
 
-	// srcDir has content. we aren't sure if we want to override it
-	// with content in destDir
-	// TODO: intelligently prompt user
-	if len(srcDirs) != 0 {
-		logger.Warning("Skipping '%s' because the directory has content at %s. Remove the contents, or remove the directory at dest if you don't want that to take precedence", rel, src)
+	destDirs, err := ioutil.ReadDir(dest)
+	util.P(err)
+
+	// if both folders are empty, symlink them
+	if len(srcDirs) == 0 && len(destDirs) == 0 {
+		logger.Debug("OK: Replacing folder with symlink\n")
+		err := config.FixBrokenSymlink(src, dest)
+		util.P(err)
 	}
 
-	// copy the contents to source, and resymlink that
-	err = copy.Copy(dest, src)
-	// TODO: if src already exists, will it error?
-	util.P(err)
+	if len(srcDirs) > 0 && len(destDirs) == 0 {
+		logger.Debug("OK: Replacing folder with symlink\n")
+		err := config.FixBrokenSymlink(src, dest)
+		util.P(err)
+	}
 
-	err = os.RemoveAll(dest)
-	util.P(err)
+	if len(destDirs) > 0 && len(srcDirs) == 0 {
+		// copy the contents to source, and resymlink that
+		err = copy.Copy(dest, src)
+		util.P(err)
 
-	err = os.Symlink(src, dest)
-	util.P(err)
+		err = os.RemoveAll(dest)
+		util.P(err)
+
+		err = os.Symlink(src, dest)
+		util.P(err)
+	}
+
+	// Both srcDir and destDir have content
+	// prompt user for which to keep
+	if len(srcDirs) > 0 && len(destDirs) > 0 {
+	promptUserFile:
+		input := util.Prompt([]string{"compare", "use-src", "use-dest", "skip"}, "Folder %s exists both in your src and dest. (compare, use-src, use-dest, skip) ", rel)
+		switch input {
+		case "compare":
+			fmt.Println("Not Implemented")
+			goto promptUserFile
+			// break
+		case "use-src":
+			fmt.Println("Not Implemented")
+			goto promptUserFile
+			// break
+		case "use-dest":
+			fmt.Println("Not Implemented")
+			goto promptUserFile
+			// break
+		case "skip":
+			logger.Debug("Skipping '%s'\n", rel)
+			break
+		}
+	}
 
 	return
 }
