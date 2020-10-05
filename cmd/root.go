@@ -26,7 +26,7 @@ func Execute() {
 }
 
 func init() {
-	unix.Umask(0664)
+	unix.Umask(664)
 
 	pf := RootCmd.PersistentFlags()
 	pf.String("dot-dir", "", "The location of your dotfiles")

@@ -143,27 +143,14 @@ promptUser:
 		output.Write(destContents)
 		output.WriteString(sep.String())
 
-		fmt.Println(string(output.String()))
+		temp, err := ioutil.TempFile(os.TempDir(), "dotty-")
+		defer os.Remove(temp.Name())
+		util.P(err)
 
-		// TODO: display in a pager
-		// cmd := exec.Command("sh", "-c", "echo '"+output.String()+"' | less")
-		// cmd.Stdin = os.Stdin
-		// cmd.Stdout = os.Stdout
-		// cmd.Stderr = os.Stderr
-		// stderr, _ := cmd.StderrPipe()
+		_, err = temp.Write([]byte(output.String()))
+		util.P(err)
 
-		// err = cmd.Start()
-		// // data, err := cmd.CombinedOutput()
-		// if err != nil {
-		// 	log.Println(err)
-		// }
-		// // fmt.Println(string(data))
-		// scanner := bufio.NewScanner(stderr)
-		// for scanner.Scan() {
-		// 	fmt.Println(scanner.Text())
-		// }
-
-		// fmt.Println(output.String())
+		util.OpenEditor(temp.Name())
 
 		goto promptUser
 	case "use-src":
