@@ -6,6 +6,7 @@ import (
 
 	"github.com/eankeen/globe/internal/util"
 	"github.com/spf13/cobra"
+	"golang.org/x/sys/unix"
 )
 
 // RootCmd is the root command
@@ -25,6 +26,8 @@ func Execute() {
 }
 
 func init() {
+	unix.Umask(0664)
+
 	pf := RootCmd.PersistentFlags()
 	pf.String("dot-dir", "", "The location of your dotfiles")
 	err := cobra.MarkFlagDirname(pf, "dot-dir")

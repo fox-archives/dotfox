@@ -2,10 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
+	"unsafe"
 
 	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
@@ -34,16 +37,16 @@ var userApplyCmd = &cobra.Command{
 			dest := filepath.Join(destDir, rel)
 
 			for _, file := range userDotsConfig.Files {
-				fileMatches, fileType := config.FileMatches(src, srcInfo, file)
+				fileMatches, fileType := config.FileMatches(src, file)
 
 				if fileMatches && fileType == "file" {
-					logger.Informational("Operating on  File: '%s'\n", file.File)
+					logger.Informational("Operating on File: '%s'\n", file.File)
 					resolveFile(src, dest, rel)
 
 					// go to next file (in dotfile folder)
 					return nil
 				} else if fileMatches && fileType == "folder" {
-					logger.Informational("Operating on  Folder: '%s'\n", file.File)
+					logger.Informational("Operating on Folder: '%s'\n", file.File)
 					resolveDirectory(src, dest, rel)
 
 					// go to next file (in dotfile folder)
@@ -66,46 +69,41 @@ func init() {
 	userCmd.AddCommand(userApplyCmd)
 }
 
+// assumptions: src file exists, dest may NOT
 func resolveFile(src string, dest string, rel string) {
 	fi, err := os.Lstat(dest)
 	if err != nil {
-		// file doesn't exist
+		// dest file doesn't exist
 		if os.IsNotExist(err) {
-			err := os.MkdirAll(filepath.Dir(dest), 0755)
-			util.P(err)
-
-			err = os.Symlink(src, dest)
+			err := CreateNewSymlink(src, dest)
 			util.P(err)
 			return
 		}
+
+		// some other issue (permissions, etc.)
 		panic(err)
 	}
 
-	// file exists and is a symbolic link
+	// dest file exists and is a symbolic link
 	if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
 		linkDest, err := os.Readlink(dest)
 		util.P(err)
 
 		logger.Debug("linkDest: %s\n", linkDest)
 		logger.Debug("src: %s\n", src)
-		// symlink points to proper file
+		// if link destination doesn't match src
 		if linkDest != src {
-			logger.Debug("Symlink does not match. Removing and recreating symlink\n")
-			err := os.Remove(dest)
+			err := FixBrokenSymlink(src, dest)
 			util.P(err)
-
-			err = os.Symlink(src, dest)
-			util.P(err)
-
 			return
 		}
 
 		// symlink does point to proper file,
-		// nothing to do here
+		// no need to do anything
 		return
 	}
 
-	// file exists and is NOT a symbolic link
+	// dest file exists and is NOT a symbolic link
 
 	// read dest/src files to determine if they have the same content
 	destContents, err := ioutil.ReadFile(dest)
@@ -116,7 +114,7 @@ func resolveFile(src string, dest string, rel string) {
 
 	// if files have the same content
 	if strings.Compare(string(destContents), string(srcContents)) == 0 {
-		logger.Debug("FILE has same content as thing. Replacing file with symlink\n")
+		logger.Debug("OK: dest and src have same content. Replacing dest with symlink\n")
 		err := os.Remove(dest)
 		util.P(err)
 
@@ -125,22 +123,81 @@ func resolveFile(src string, dest string, rel string) {
 		return
 	}
 
-	// replace with link
-	logger.Informational("FILE %s exists, is not a symlink and has different content. (overwrite, skip,overwrite) ", src)
-	var input string
-	_, err = fmt.Scanln(&input)
-	util.P(err)
-
+	// files have different content
+	// intelligently prompt user which to keep
+promptUser:
+	input := Prompt([]string{"compare", "use-src", "use-dest", "skip"}, "File %s exists both in your src and dest. (compare, use-src, use-dest, skip) ", rel)
 	switch input {
-	case "overwrite":
+	case "compare":
+		// TODO: this could be cleaner
+		var sep strings.Builder
+		for i := 0; i < GetTtyWidth(); i++ {
+			sep.WriteByte('-')
+		}
+
+		var output strings.Builder
+		output.WriteString(fmt.Sprintf("SRC: %s\n", src))
+		output.WriteString(sep.String())
+		output.Write(srcContents)
+		output.WriteString(sep.String())
+		output.WriteString(fmt.Sprintf("\n\nDEST: %s\n", dest))
+		output.WriteString(sep.String())
+		output.Write(destContents)
+		output.WriteString(sep.String())
+
+		fmt.Println(string(output.String()))
+
+		// TODO: display in a pager
+		// cmd := exec.Command("sh", "-c", "echo '"+output.String()+"' | less")
+		// cmd.Stdin = os.Stdin
+		// cmd.Stdout = os.Stdout
+		// cmd.Stderr = os.Stderr
+		// stderr, _ := cmd.StderrPipe()
+
+		// err = cmd.Start()
+		// // data, err := cmd.CombinedOutput()
+		// if err != nil {
+		// 	log.Println(err)
+		// }
+		// // fmt.Println(string(data))
+		// scanner := bufio.NewScanner(stderr)
+		// for scanner.Scan() {
+		// 	fmt.Println(scanner.Text())
+		// }
+
+		// fmt.Println(output.String())
+
+		goto promptUser
+	case "use-src":
 		err := os.Remove(dest)
 		util.P(err)
 
 		err = os.Symlink(src, dest)
 		util.P(err)
 		break
+	case "use-dest":
+		// copy file, replacing src
+		destFile, err := os.Open(dest)
+		util.P(err)
+		defer destFile.Close()
+
+		// umask will be applied after
+		srcFile, err := os.Create(src)
+		util.P(err)
+		defer srcFile.Close()
+
+		_, err = io.Copy(srcFile, destFile)
+		util.P(err)
+
+		// re-symlink
+		err = os.Remove(dest)
+		util.P(err)
+
+		err = os.Symlink(src, dest)
+		util.P(err)
+		break
 	case "skip":
-		logger.Debug("skipping '%s'\n", rel)
+		logger.Debug("Skipping '%s'\n", rel)
 		break
 	default:
 		logger.Informational("Unknown Response\n")
@@ -149,52 +206,93 @@ func resolveFile(src string, dest string, rel string) {
 	return
 }
 
+// GetTtyWidth gets the tty's width, or number of columns
+func GetTtyWidth() int {
+	type winsize struct {
+		Row    uint16
+		Col    uint16
+		Xpixel uint16
+		Ypixel uint16
+	}
+
+	ws := &winsize{}
+	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
+		uintptr(syscall.Stdin),
+		uintptr(syscall.TIOCGWINSZ),
+		uintptr(unsafe.Pointer(ws)))
+
+	if int(retCode) == -1 {
+		panic(errno)
+	}
+	return int(ws.Col)
+}
+
+// Prompt ensures that we get a valid response
+func Prompt(options []string, printText string, printArgs ...interface{}) string {
+	logger.Informational(printText, printArgs...)
+
+	var input string
+	_, err := fmt.Scanln(&input)
+	util.P(err)
+
+	if util.Contains(options, input) {
+		return input
+	}
+
+	return Prompt(options, printText, printArgs)
+}
+
+// assumptions: src directory exists. dest may NOT
 func resolveDirectory(src string, dest string, rel string) {
 	fi, err := os.Lstat(dest)
 	if err != nil {
-		// file doesn't exist
+		// dest file doesn't exist
 		if os.IsNotExist(err) {
-			// create folder symlink
-			logger.Debug("dest '%s' doesn't exist. recreating.\n", dest)
-
-			err = os.Symlink(src, dest)
+			err := CreateNewSymlink(src, dest)
 			util.P(err)
-
 			return
 		}
 
+		// some other issue (permissions, etc.)
 		panic(err)
 	}
 
-	// folder exists and is a symbolic link
+	// dest folder exists and is a symbolic link
 	if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
 		linkDest, err := os.Readlink(dest)
 		util.P(err)
 
+		logger.Debug("linkDest: %s\n", linkDest)
+		logger.Debug("src: %s\n", src)
 		// if link destination doesn't match src
 		if linkDest != src {
-			err := os.Remove(dest)
+			FixBrokenSymlink(src, dest)
 			util.P(err)
-
-			err = os.Symlink(src, dest)
-			util.P(err)
+			return
 		}
 
-		// link has correct dest, no need to do anything
+		// link has correct dest
+		// no need to do anything
 		return
 	}
 
-	// folder exists and is not a symbolic link
-	err = copy.Copy(dest, src)
-	if err != nil {
-		// if file already exists, we don't overwrite
-		// this might want to be changed later
-		if os.IsExist(err) {
+	// dest folder exists and is NOT a symbolic link
 
-		} else {
-			panic(err)
-		}
+	// make sure the src folder is empty before we copy it
+	srcDirs, err := ioutil.ReadDir(src)
+	util.P(err)
+
+	// srcDir has content. we aren't sure if we want to override it
+	// with content in destDir
+	// TODO: intelligently prompt user
+	if len(srcDirs) != 0 {
+		logger.Warning("Skipping '%s' because the directory has content at %s. Remove the contents, or remove the directory at dest if you don't want that to take precedence", rel, src)
 	}
+
+	// copy the contents to source, and resymlink that
+	err = copy.Copy(dest, src)
+	// TODO: if src already exists, will it error?
+	util.P(err)
 
 	err = os.RemoveAll(dest)
 	util.P(err)
@@ -203,4 +301,40 @@ func resolveDirectory(src string, dest string, rel string) {
 	util.P(err)
 
 	return
+}
+
+// CreateNewSymlink creates a new symlink to a destination. it
+// automatically creates the parent directory structure too
+func CreateNewSymlink(src string, dest string) error {
+	logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
+
+	err := os.MkdirAll(filepath.Dir(dest), 0755)
+	if err != nil {
+		return err
+	}
+
+	err = os.Symlink(src, dest)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// FixBrokenSymlink removes a symlink that points to a wrong
+// location, replacing it with the right one
+func FixBrokenSymlink(src string, dest string) error {
+	logger.Debug("OK: Symlink points to invalid location. Removing and Recreating\n")
+
+	err := os.Remove(dest)
+	if err != nil {
+		return err
+	}
+
+	err = os.Symlink(src, dest)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

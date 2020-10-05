@@ -6,11 +6,13 @@ cd testdata
 
 cmd="go run ../"
 
-dirs=("basic")
+dirs=("basic" "dual-file-exist")
 
 for dir in "${dirs[@]}"; do
 	$cmd \
-		--dot-dir "$(pwd)/$dir" \
-		--dest-dir "$(pwd)/$dir/dest" \
+		--dot-dir "$PWD/$dir" \
+		--dest-dir "$PWD/$dir/dest" \
 		user apply
+
+	tree "$PWD/$dir"
 done

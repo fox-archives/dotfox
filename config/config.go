@@ -2,7 +2,6 @@ package config
 
 import (
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -88,7 +87,7 @@ func GetLocalToml(storeDir string) LocalDotsConfig {
 
 // FileMatches determines a particular file matches
 // returned string can either be "folder" or "file"
-func FileMatches(src string, srcInfo os.FileInfo, file File) (bool, string) {
+func FileMatches(src string, file File) (bool, string) {
 	lastChar := file.File[len(file.File)-1:]
 
 	// if src is a folder
