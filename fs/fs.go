@@ -21,14 +21,14 @@ func CopyFile(srcFile string, destFile string, relFile string, templateVars conf
 	// ensure parent directory exists
 	err := os.MkdirAll(path.Dir(destFile), 0755)
 	if err != nil {
-		logger.Error("An error occured when trying to recurisvely create a directory at '%s'. Exiting\n", destFile)
+		logger.Error("An error occurred when trying to recursively create a directory at '%s'. Exiting\n", destFile)
 		panic(err)
 	}
 
 	srcContents, err := ioutil.ReadFile(srcFile)
 	templatedSrcContents := templateFile(srcContents, templateVars, relFile)
 	if err != nil {
-		logger.Error("An error occured when trying to read the file '%s'. Exiting\n", srcFile)
+		logger.Error("An error occurred when trying to read the file '%s'. Exiting\n", srcFile)
 		panic(err)
 	}
 
@@ -49,7 +49,7 @@ func CopyFile(srcFile string, destFile string, relFile string, templateVars conf
 		// if the file buffers are the same, return no need to copy
 		destContents, err := ioutil.ReadFile(destFile)
 		if err != nil {
-			logger.Error("An error occured when trying to read the file '%s'. Exiting\n", destContents)
+			logger.Error("An error occurred when trying to read the file '%s'. Exiting\n", destContents)
 			panic(err)
 		}
 

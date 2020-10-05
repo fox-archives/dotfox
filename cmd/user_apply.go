@@ -18,28 +18,28 @@ var userApplyCmd = &cobra.Command{
 	Use:   "apply",
 	Short: "Apply updates intelligently",
 	Run: func(cmd *cobra.Command, args []string) {
-		// get data
 		storeDir := cmd.Flag("dot-dir").Value.String()
-		project := config.GetData(storeDir)
+		destDir := cmd.Flag("dest-dir").Value.String()
+		srcDir := filepath.Join(storeDir, "user")
+
 		userDotsConfig := config.GetUserToml(storeDir)
 
-		dotfileDir := filepath.Join(project.StoreDir, "user")
-		err := filepath.Walk(dotfileDir, func(path string, info os.FileInfo, err error) error {
+		err := filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
 			// prevent errors in slice
-			if path == dotfileDir {
+			if path == srcDir {
 				return nil
 			}
 
 			src := path
-			rel := path[len(dotfileDir)+1:]
-			dest := filepath.Join(project.UserDir, rel)
+			rel := path[len(srcDir)+1:]
+			dest := filepath.Join(destDir, rel)
 
 			for _, file := range userDotsConfig.Files {
 				if file.Type == "" {
 					file.Type = "file"
 				}
 
-				if strings.HasSuffix(src, file.File) {
+				if config.FileMatches(src, file) {
 					logger.Informational("Operating on  File: '%s'\n", file.File)
 
 					if info.IsDir() && file.Type == "folder" {
@@ -62,7 +62,7 @@ var userApplyCmd = &cobra.Command{
 			// match was not found
 			// doesn't work because it false positives subdirs / files of folders
 			// specified in configs, and random parent folders
-			// logger.Warning("File or folder '%s' was found in '%s', but it's not present in user.dots.toml\n", rel, dotfileDir)
+			// logger.Warning("File or folder '%s' was found in '%s', but it's not present in user.dots.toml\n", rel, srcDir)
 
 			return nil
 		})

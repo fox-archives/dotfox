@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 	logger "github.com/eankeen/go-logger"
@@ -129,4 +130,9 @@ func walkupFor(startLocation string, filename string) string {
 	}
 
 	return walkupFor(path.Dir(startLocation), filename)
+}
+
+// FileMatches determines a particular file matches
+func FileMatches(path string, file File) bool {
+	return strings.HasSuffix(path, file.File)
 }

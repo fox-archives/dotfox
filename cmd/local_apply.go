@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"path"
 
 	"github.com/eankeen/globe/config"
@@ -22,7 +23,44 @@ var localApplyCmd = &cobra.Command{
 
 		// get data
 		storeDir := cmd.Flag("dot-dir").Value.String()
-		project := config.GetData(storeDir)
+		projectDir := config.GetProjectDir()
+
+		var project config.Project
+		project.StoreDir = storeDir
+
+		logger.Debug("projectDir: %s\n", projectDir)
+		project.ProjectDir = projectDir
+
+		project.Config = config.ReadConfig(project.ProjectDir)
+
+		homedir, err := os.UserHomeDir()
+		util.P(err)
+
+		project.UserDir = homedir
+
+		// CONVERT FILE LISTS
+		do := func(fileListRaw []config.FileEntryRaw) []config.FileEntry {
+			var fileList []config.FileEntry
+
+			for _, file := range fileListRaw {
+				file := config.FileEntry{
+					Op:       file.Op,
+					For:      file.For,
+					Tags:     file.Tags,
+					Usage:    file.Usage,
+					SrcPath:  path.Join(storeDir, file.Path),
+					DestPath: path.Join(projectDir, file.Path),
+					RelPath:  file.Path,
+				}
+				fileList = append(fileList, file)
+			}
+
+			return fileList
+
+		}
+
+		syncFilesRaw := config.ReadFileConfig(storeDir, projectDir)
+		project.Files = do(syncFilesRaw.Files)
 
 		// process filesproject
 		ProcessFiles(project, project.Files)

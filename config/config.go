@@ -2,13 +2,10 @@ package config
 
 import (
 	"io/ioutil"
-	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 	"github.com/eankeen/globe/internal/util"
-	logger "github.com/eankeen/go-logger"
 )
 
 // Project includes all details of the current Project
@@ -18,50 +15,6 @@ type Project struct {
 	UserDir    string
 	Config     Config
 	Files      []FileEntry
-}
-
-// GetData gets the config for all data related to project
-func GetData(storeDir string) Project {
-	projectDir := GetProjectDir()
-
-	var project Project
-	project.StoreDir = storeDir
-
-	logger.Debug("projectDir: %s\n", projectDir)
-	project.ProjectDir = projectDir
-
-	project.Config = ReadConfig(project.ProjectDir)
-
-	homedir, err := os.UserHomeDir()
-	util.P(err)
-
-	project.UserDir = homedir
-
-	// CONVERT FILE LISTS
-	do := func(fileListRaw []FileEntryRaw) []FileEntry {
-		var fileList []FileEntry
-
-		for _, file := range fileListRaw {
-			file := FileEntry{
-				Op:       file.Op,
-				For:      file.For,
-				Tags:     file.Tags,
-				Usage:    file.Usage,
-				SrcPath:  path.Join(storeDir, file.Path),
-				DestPath: path.Join(projectDir, file.Path),
-				RelPath:  file.Path,
-			}
-			fileList = append(fileList, file)
-		}
-
-		return fileList
-	}
-
-	syncFilesRaw := ReadFileConfig(storeDir, projectDir)
-	project.Files = do(syncFilesRaw.Files)
-	// logger.Debug("syncFiles: %+v\n", project.Files)
-
-	return project
 }
 
 // File represents an entry in the `user.dots.toml` file
@@ -74,14 +27,33 @@ type File struct {
 	Heuristic3 bool
 }
 
+// SystemDotsConfig represents the `system.dots.toml` file
+type SystemDotsConfig struct {
+	Files []File `toml:"files"`
+}
+
+// GetSystemToml gets System (/) config
+func GetSystemToml(storeDir string) SystemDotsConfig {
+	projectConfig := filepath.Join(storeDir, "config", "system.dots.toml")
+
+	raw, err := ioutil.ReadFile(projectConfig)
+	util.P(err)
+
+	var systemDotsConfig SystemDotsConfig
+	err = toml.Unmarshal(raw, &systemDotsConfig)
+	util.P(err)
+
+	return systemDotsConfig
+}
+
 // UserDotsConfig represents the `user.dots.toml` file
 type UserDotsConfig struct {
 	Files []File `toml:"files"`
 }
 
-// GetUserToml gets User (~) data
+// GetUserToml gets user (~) config
 func GetUserToml(storeDir string) UserDotsConfig {
-	projectConfig := filepath.Join(storeDir, "user.dots.toml")
+	projectConfig := filepath.Join(storeDir, "config", "user.dots.toml")
 
 	raw, err := ioutil.ReadFile(projectConfig)
 	util.P(err)
@@ -91,4 +63,23 @@ func GetUserToml(storeDir string) UserDotsConfig {
 	util.P(err)
 
 	return userDotsConfig
+}
+
+// LocalDotsConfig represents the `local.dots.toml` file
+type LocalDotsConfig struct {
+	Files []File `toml:"files"`
+}
+
+// GetLocalToml gets local (.) config
+func GetLocalToml(storeDir string) LocalDotsConfig {
+	projectConfig := filepath.Join(storeDir, "config", "local.dots.toml")
+
+	raw, err := ioutil.ReadFile(projectConfig)
+	util.P(err)
+
+	var localDotsConfig LocalDotsConfig
+	err = toml.Unmarshal(raw, &localDotsConfig)
+	util.P(err)
+
+	return localDotsConfig
 }

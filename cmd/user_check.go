@@ -54,7 +54,7 @@ var userCheckCmd = &cobra.Command{
 				}
 
 				// 1
-				if strings.HasSuffix(src, file.File) {
+				if config.FileMatches(src, file) {
 					if info.IsDir() && file.Type == "folder" {
 						userConfig.Files[i].Heuristic1 = true
 					} else if !info.IsDir() && file.Type == "file" {
@@ -63,7 +63,7 @@ var userCheckCmd = &cobra.Command{
 				}
 
 				// 2
-				if strings.HasSuffix(src, file.File) {
+				if config.FileMatches(src, file) {
 					if info.IsDir() && file.Type == "folder" {
 						dirs, err := ioutil.ReadDir(src)
 						util.P(err)
@@ -79,7 +79,7 @@ var userCheckCmd = &cobra.Command{
 				if !strings.Contains(src, "fish/functions") || !strings.Contains(src, "oh-my-zsh") || !strings.Contains(src, "bash-it") {
 
 					// file isn't covered in a parent _folder_ symlink
-					if !strings.HasSuffix(src, file.File) {
+					if !config.FileMatches(src, file) {
 						// TEMPORARILY ignore directories
 						if !info.IsDir() {
 							if !ParentFolderMatches(dotfileDir, info, src, userConfig.Files, file) {
@@ -145,7 +145,7 @@ func ParentFolderMatches(dotfileDir string, info os.FileInfo, src string, files 
 		}
 
 		for _, file := range files {
-			if strings.HasSuffix(src, file.File) {
+			if config.FileMatches(src, file) {
 				fmt.Printf("CONTAINED: %s\n", os)
 				return true
 			}
