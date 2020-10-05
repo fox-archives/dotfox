@@ -7,8 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
-	"unsafe"
 
 	"github.com/eankeen/globe/config"
 	"github.com/eankeen/globe/internal/util"
@@ -75,7 +73,7 @@ func resolveFile(src string, dest string, rel string) {
 	if err != nil {
 		// dest file doesn't exist
 		if os.IsNotExist(err) {
-			err := CreateNewSymlink(src, dest)
+			err := config.CreateNewSymlink(src, dest)
 			util.P(err)
 			return
 		}
@@ -93,7 +91,7 @@ func resolveFile(src string, dest string, rel string) {
 		logger.Debug("src: %s\n", src)
 		// if link destination doesn't match src
 		if linkDest != src {
-			err := FixBrokenSymlink(src, dest)
+			err := config.FixBrokenSymlink(src, dest)
 			util.P(err)
 			return
 		}
@@ -131,7 +129,7 @@ promptUser:
 	case "compare":
 		// TODO: this could be cleaner
 		var sep strings.Builder
-		for i := 0; i < GetTtyWidth(); i++ {
+		for i := 0; i < util.GetTtyWidth(); i++ {
 			sep.WriteByte('-')
 		}
 
@@ -206,27 +204,6 @@ promptUser:
 	return
 }
 
-// GetTtyWidth gets the tty's width, or number of columns
-func GetTtyWidth() int {
-	type winsize struct {
-		Row    uint16
-		Col    uint16
-		Xpixel uint16
-		Ypixel uint16
-	}
-
-	ws := &winsize{}
-	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
-		uintptr(syscall.Stdin),
-		uintptr(syscall.TIOCGWINSZ),
-		uintptr(unsafe.Pointer(ws)))
-
-	if int(retCode) == -1 {
-		panic(errno)
-	}
-	return int(ws.Col)
-}
-
 // Prompt ensures that we get a valid response
 func Prompt(options []string, printText string, printArgs ...interface{}) string {
 	logger.Informational(printText, printArgs...)
@@ -248,7 +225,7 @@ func resolveDirectory(src string, dest string, rel string) {
 	if err != nil {
 		// dest file doesn't exist
 		if os.IsNotExist(err) {
-			err := CreateNewSymlink(src, dest)
+			err := config.CreateNewSymlink(src, dest)
 			util.P(err)
 			return
 		}
@@ -266,7 +243,7 @@ func resolveDirectory(src string, dest string, rel string) {
 		logger.Debug("src: %s\n", src)
 		// if link destination doesn't match src
 		if linkDest != src {
-			FixBrokenSymlink(src, dest)
+			config.FixBrokenSymlink(src, dest)
 			util.P(err)
 			return
 		}
@@ -301,40 +278,4 @@ func resolveDirectory(src string, dest string, rel string) {
 	util.P(err)
 
 	return
-}
-
-// CreateNewSymlink creates a new symlink to a destination. it
-// automatically creates the parent directory structure too
-func CreateNewSymlink(src string, dest string) error {
-	logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
-
-	err := os.MkdirAll(filepath.Dir(dest), 0755)
-	if err != nil {
-		return err
-	}
-
-	err = os.Symlink(src, dest)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// FixBrokenSymlink removes a symlink that points to a wrong
-// location, replacing it with the right one
-func FixBrokenSymlink(src string, dest string) error {
-	logger.Debug("OK: Symlink points to invalid location. Removing and Recreating\n")
-
-	err := os.Remove(dest)
-	if err != nil {
-		return err
-	}
-
-	err = os.Symlink(src, dest)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

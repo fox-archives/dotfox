@@ -1,12 +1,10 @@
 package util
 
 import (
-	"os"
 	"path"
-	"path/filepath"
 	"runtime"
-
-	logger "github.com/eankeen/go-logger"
+	"syscall"
+	"unsafe"
 )
 
 // P is `if err != nil { panic(err) }`
@@ -27,28 +25,25 @@ func Dirname() string {
 	return dir
 }
 
-// GetChildFilesRecurse walks all the child files of a directory and returns them
-func GetChildFilesRecurse(dir string) ([]string, error) {
-	stat, err := os.Stat(dir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			logger.Error("File or folder '%s' does not exist. Exiting.\n", dir)
-			panic(err)
-		}
-		panic(err)
-	}
-	if !stat.IsDir() {
-		logger.Error("The file '%s' is not a directory. Exiting.\n", dir)
-		os.Exit(1)
+// GetTtyWidth gets the tty's width, or number of columns
+func GetTtyWidth() int {
+	type winsize struct {
+		Row    uint16
+		Col    uint16
+		Xpixel uint16
+		Ypixel uint16
 	}
 
-	files := []string{}
-	err = filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
-		files = append(files, path)
-		return nil
-	})
+	ws := &winsize{}
+	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
+		uintptr(syscall.Stdin),
+		uintptr(syscall.TIOCGWINSZ),
+		uintptr(unsafe.Pointer(ws)))
 
-	return files, err
+	if int(retCode) == -1 {
+		panic(errno)
+	}
+	return int(ws.Col)
 }
 
 // Contains tests to see if a particular string is in an array
