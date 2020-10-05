@@ -38,8 +38,3 @@ Use "dotty [command] --help" for more information about a command.
 git clone https://github.com/eankeen/dotty
 go install
 ```
-
-## todo
-
-- specify glob pattern or regular expression
-- ignore whole directories

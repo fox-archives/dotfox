@@ -12,7 +12,7 @@ import (
 	"github.com/eankeen/go-logger"
 )
 
-// P is `if err != nil { panic(err) }`
+// P panics if err is not nil
 func P(err error) {
 	if err != nil {
 		panic(err)

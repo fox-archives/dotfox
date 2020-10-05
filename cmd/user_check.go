@@ -57,10 +57,6 @@ var userCheckCmd = &cobra.Command{
 			// 1. _toml folder entry_ present, BUT not present in _dotfile repo_
 			// 2. _toml folder entry_ present, present in _dotfile repo_, BUT does not have any content (applying should fix this)
 			for i, file := range userConfig.Files {
-				if file.Type == "" {
-					file.Type = "file"
-				}
-
 				// 1
 				fileMatches, fileType := config.FileMatches(src, file)
 				if fileMatches {

@@ -9,23 +9,29 @@ import (
 	"github.com/eankeen/dotty/internal/util"
 )
 
-// Project includes all details of the current Project
-type Project struct {
-	ProjectDir string
-	StoreDir   string
-	UserDir    string
-	Config     Config
-	Files      []FileEntry
-}
-
 // File represents an entry in the `user.dots.toml` file
 type File struct {
 	File       string   `toml:"file"`
 	Tags       []string `toml:"tags"`
-	Type       string   `toml:"type"`
 	Heuristic1 bool
 	Heuristic2 bool
 	Heuristic3 bool
+}
+
+// FileMatches determines a particular file matches
+// returned string can either be "folder" or "file". if bool
+// is false, it can also be empty ("")
+func FileMatches(src string, file File) (bool, string) {
+	lastChar := file.File[len(file.File)-1:]
+
+	// if src is a folder
+	if lastChar == "/" {
+		allButLastChar := file.File[:len(file.File)-1]
+		return strings.HasSuffix(src, allButLastChar), "folder"
+	}
+
+	// if src is a file
+	return strings.HasSuffix(src, file.File), "file"
 }
 
 // SystemDotsConfig represents the `system.dots.toml` file
@@ -104,20 +110,4 @@ func GetLocalTomlPath(storeDir string) string {
 	location := filepath.Join(storeDir, "config", "local.dots.toml")
 
 	return location
-}
-
-// FileMatches determines a particular file matches
-// returned string can either be "folder" or "file". if bool
-// is false, it can also be empty ("")
-func FileMatches(src string, file File) (bool, string) {
-	lastChar := file.File[len(file.File)-1:]
-
-	// if src is a folder
-	if lastChar == "/" {
-		allButLastChar := file.File[:len(file.File)-1]
-		return strings.HasSuffix(src, allButLastChar), "folder"
-	}
-
-	// if src is a file
-	return strings.HasSuffix(src, file.File), "file"
 }

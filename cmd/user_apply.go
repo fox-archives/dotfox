@@ -242,12 +242,14 @@ func resolveDirectory(src string, dest string, rel string) {
 		logger.Debug("OK: Replacing folder with symlink\n")
 		err := fs.RemoveThenSymlink(src, dest)
 		util.P(err)
+		return
 	}
 
 	if len(srcDirs) > 0 && len(destDirs) == 0 {
 		logger.Debug("OK: Replacing folder with symlink\n")
 		err := fs.RemoveThenSymlink(src, dest)
 		util.P(err)
+		return
 	}
 
 	if len(destDirs) > 0 && len(srcDirs) == 0 {
@@ -260,6 +262,7 @@ func resolveDirectory(src string, dest string, rel string) {
 
 		err = os.Symlink(src, dest)
 		util.P(err)
+		return
 	}
 
 	// Both srcDir and destDir have content
@@ -285,6 +288,4 @@ func resolveDirectory(src string, dest string, rel string) {
 			break
 		}
 	}
-
-	return
 }
