@@ -156,7 +156,7 @@ func resolveFile(src string, dest string, rel string) {
 	// files have different content
 	// prompt user which to keep
 promptUserFile:
-	input := Prompt([]string{"diff", "diff2", "use-src", "use-dest", "skip"}, "File %s exists both in your src and dest. (diff, diff2, use-src, use-dest, skip) ", rel)
+	input := util.Prompt([]string{"diff", "diff2", "use-src", "use-dest", "skip"}, "File %s exists both in your src and dest. (diff, diff2, use-src, use-dest, skip) ", rel)
 	switch input {
 	case "diff":
 		cmd := exec.Command("colordiff", src, dest)
