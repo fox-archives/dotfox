@@ -44,7 +44,7 @@ func GetSystemToml(storeDir string) SystemDotsConfig {
 	projectConfig := GetSystemTomlPath(storeDir)
 
 	raw, err := ioutil.ReadFile(projectConfig)
-	util.P(err)
+	util.HandleFsError(err)
 
 	var systemDotsConfig SystemDotsConfig
 	err = toml.Unmarshal(raw, &systemDotsConfig)
@@ -70,7 +70,7 @@ func GetUserToml(storeDir string) UserDotsConfig {
 	projectConfig := GetUserTomlPath(storeDir)
 
 	raw, err := ioutil.ReadFile(projectConfig)
-	util.P(err)
+	util.HandleFsError(err)
 
 	var userDotsConfig UserDotsConfig
 	err = toml.Unmarshal(raw, &userDotsConfig)
@@ -96,11 +96,11 @@ func GetLocalToml(storeDir string) LocalDotsConfig {
 	projectConfig := GetLocalTomlPath(storeDir)
 
 	raw, err := ioutil.ReadFile(projectConfig)
-	util.P(err)
+	util.HandleFsError(err)
 
 	var localDotsConfig LocalDotsConfig
 	err = toml.Unmarshal(raw, &localDotsConfig)
-	util.P(err)
+	util.HandleFsError(err)
 
 	return localDotsConfig
 }

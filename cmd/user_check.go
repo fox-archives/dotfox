@@ -72,7 +72,7 @@ var userCheckCmd = &cobra.Command{
 				if fileMatches {
 					if fileType == "folder" {
 						dirs, err := ioutil.ReadDir(src)
-						util.P(err)
+						util.HandleFsError(err)
 
 						if len(dirs) == 0 {
 							userConfig.Files[i].Heuristic2 = true
@@ -102,7 +102,7 @@ var userCheckCmd = &cobra.Command{
 
 			return nil
 		})
-		util.P(err)
+		util.HandleFsError(err)
 
 		// now display
 		fmt.Println("Fails if you have an entry in your .toml file, but no file/folder was matched in your dotfile repo")

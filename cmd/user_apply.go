@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -68,7 +68,7 @@ var userApplyCmd = &cobra.Command{
 			// no explicit match was made. it may have already been matched, not match at all, or a parent folder matched instead
 			return nil
 		})
-		util.P(err)
+		util.HandleFsError(err)
 	},
 }
 
@@ -84,7 +84,7 @@ func resolveFile(src string, dest string, rel string) {
 		if os.IsNotExist(err) {
 			logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
 			err := fs.MkdirThenSymlink(src, dest)
-			util.P(err)
+			util.HandleFsError(err)
 			return
 		}
 
@@ -95,7 +95,7 @@ func resolveFile(src string, dest string, rel string) {
 	// dest file exists and is a symbolic link
 	if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
 		linkDest, err := os.Readlink(dest)
-		util.P(err)
+		util.HandleFsError(err)
 
 		logger.Debug("linkDest: %s\n", linkDest)
 		logger.Debug("src: %s\n", src)
@@ -103,7 +103,7 @@ func resolveFile(src string, dest string, rel string) {
 		if linkDest != src {
 			logger.Debug("OK: Symlink points to invalid location. Removing and Recreating\n")
 			err := fs.RemoveThenSymlink(src, dest)
-			util.P(err)
+			util.HandleFsError(err)
 			return
 		}
 
@@ -116,72 +116,69 @@ func resolveFile(src string, dest string, rel string) {
 
 	// read dest/src files to determine if they have the same content
 	destContents, err := ioutil.ReadFile(dest)
-	util.P(err)
+	util.HandleFsError(err)
 
 	srcContents, err := ioutil.ReadFile(src)
-	util.P(err)
+	util.HandleFsError(err)
 
 	// if files have the same content
 	if strings.Compare(string(destContents), string(srcContents)) == 0 {
 		logger.Debug("OK: dest and src have same content. Replacing dest with symlink\n")
 		err := fs.RemoveThenSymlink(src, dest)
-		util.P(err)
+		util.HandleFsError(err)
 		return
 	}
 
 	// files have different content
 	// prompt user which to keep
 promptUserFile:
-	input := util.Prompt([]string{"compare", "use-src", "use-dest", "skip"}, "File %s exists both in your src and dest. (compare, use-src, use-dest, skip) ", rel)
+	input := util.Prompt([]string{"diff", "diff2", "use-src", "use-dest", "skip"}, "File %s exists both in your src and dest. (diff, diff2, use-src, use-dest, skip) ", rel)
 	switch input {
-	case "compare":
-		// TODO: this could be cleaner
-		var sep strings.Builder
-		for i := 0; i < util.GetTtyWidth(); i++ {
-			sep.WriteByte('-')
+	case "diff":
+		cmd := exec.Command("colordiff", src, dest)
+
+		output, err := cmd.Output()
+		if err != nil && err.Error() != "exit status 1" {
+			panic(err)
 		}
 
-		var output strings.Builder
-		output.WriteString(fmt.Sprintf("SRC: %s\n", src))
-		output.WriteString(sep.String())
-		output.Write(srcContents)
-		output.WriteString(sep.String())
-		output.WriteString(fmt.Sprintf("\n\nDEST: %s\n", dest))
-		output.WriteString(sep.String())
-		output.Write(destContents)
-		output.WriteString(sep.String())
+		file := fs.WriteTemp(output)
+		util.OpenPager(file.Name())
 
-		temp, err := ioutil.TempFile(os.TempDir(), "dotty-")
-		defer os.Remove(temp.Name())
-		util.P(err)
+		goto promptUserFile
+	case "diff2":
+		cmd := exec.Command("colordiff", "--side-by-side", src, dest)
 
-		_, err = temp.Write([]byte(output.String()))
-		util.P(err)
+		output, err := cmd.Output()
+		if err != nil && err.Error() != "exit status 1" {
+			panic(err)
+		}
 
-		util.OpenEditor(temp.Name())
+		file := fs.WriteTemp(output)
+		util.OpenPager(file.Name())
 
 		goto promptUserFile
 	case "use-src":
 		err := fs.RemoveThenSymlink(src, dest)
-		util.P(err)
+		util.HandleFsError(err)
 		break
 	case "use-dest":
 		// copy file, replacing src
 		destFile, err := os.Open(dest)
-		util.P(err)
 		defer destFile.Close()
+		util.HandleFsError(err)
 
 		// umask will be applied after
 		srcFile, err := os.Create(src)
-		util.P(err)
 		defer srcFile.Close()
+		util.HandleFsError(err)
 
 		_, err = io.Copy(srcFile, destFile)
-		util.P(err)
+		util.HandleFsError(err)
 
 		// re-symlink
 		err = fs.RemoveThenSymlink(src, dest)
-		util.P(err)
+		util.HandleFsError(err)
 		break
 	case "skip":
 		logger.Debug("Skipping '%s'\n", rel)
@@ -201,7 +198,7 @@ func resolveDirectory(src string, dest string, rel string) {
 		if os.IsNotExist(err) {
 			logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
 			err := fs.MkdirThenSymlink(src, dest)
-			util.P(err)
+			util.HandleFsError(err)
 			return
 		}
 
@@ -212,7 +209,7 @@ func resolveDirectory(src string, dest string, rel string) {
 	// dest folder exists and is a symbolic link
 	if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
 		linkDest, err := os.Readlink(dest)
-		util.P(err)
+		util.HandleFsError(err)
 
 		logger.Debug("linkDest: %s\n", linkDest)
 		logger.Debug("src: %s\n", src)
@@ -220,7 +217,7 @@ func resolveDirectory(src string, dest string, rel string) {
 		if linkDest != src {
 			logger.Debug("OK: Symlink points to invalid location. Removing and Recreating\n")
 			fs.RemoveThenSymlink(src, dest)
-			util.P(err)
+			util.HandleFsError(err)
 			return
 		}
 
@@ -232,57 +229,85 @@ func resolveDirectory(src string, dest string, rel string) {
 	// dest folder exists and is NOT a symbolic link
 
 	srcDirs, err := ioutil.ReadDir(src)
-	util.P(err)
+	util.HandleFsError(err)
 
 	destDirs, err := ioutil.ReadDir(dest)
-	util.P(err)
+	util.HandleFsError(err)
 
 	// if both folders are empty, symlink them
 	if len(srcDirs) == 0 && len(destDirs) == 0 {
 		logger.Debug("OK: Replacing folder with symlink\n")
 		err := fs.RemoveThenSymlink(src, dest)
-		util.P(err)
+		util.HandleFsError(err)
 		return
 	}
 
 	if len(srcDirs) > 0 && len(destDirs) == 0 {
 		logger.Debug("OK: Replacing folder with symlink\n")
 		err := fs.RemoveThenSymlink(src, dest)
-		util.P(err)
+		util.HandleFsError(err)
 		return
 	}
 
 	if len(destDirs) > 0 && len(srcDirs) == 0 {
-		// copy the contents to source, and resymlink that
+		// copy the contents to source, and re-symlink that
 		err = copy.Copy(dest, src)
-		util.P(err)
+		util.HandleFsError(err)
 
 		err = os.RemoveAll(dest)
-		util.P(err)
+		util.HandleFsError(err)
 
 		err = os.Symlink(src, dest)
-		util.P(err)
+		util.HandleFsError(err)
 		return
 	}
 
 	// Both srcDir and destDir have content
 	// prompt user for which to keep
 	if len(srcDirs) > 0 && len(destDirs) > 0 {
-	promptUserFile:
-		input := util.Prompt([]string{"compare", "use-src", "use-dest", "skip"}, "Folder %s exists both in your src and dest. (compare, use-src, use-dest, skip) ", rel)
+	promptUserFolder:
+		input := util.Prompt([]string{"diff", "use-src", "use-dest", "skip"}, "Folder %s exists both in your src and dest. (diff, use-src, use-dest, skip) ", rel)
 		switch input {
-		case "compare":
-			fmt.Println("Not Implemented")
-			goto promptUserFile
+		case "diff":
+			cmd := exec.Command("tree", src)
+
+			output, err := cmd.Output()
+			util.P(err)
+
+			cmd2 := exec.Command("tree", dest)
+			output2, err2 := cmd2.Output()
+			util.P(err2)
+
+			content := append(output, "\n\n"...)
+			content = append(content, output2...)
+
+			file := fs.WriteTemp(content)
+			util.OpenPager(file.Name())
+
+			goto promptUserFolder
 			// break
 		case "use-src":
-			fmt.Println("Not Implemented")
-			goto promptUserFile
-			// break
+			err := os.RemoveAll(dest)
+			util.HandleFsError(err)
+
+			err = os.Symlink(src, dest)
+			util.HandleFsError(err)
+
+			break
 		case "use-dest":
-			fmt.Println("Not Implemented")
-			goto promptUserFile
-			// break
+			err := os.RemoveAll(src)
+			util.HandleFsError(err)
+
+			err = copy.Copy(dest, src)
+			util.HandleFsError(err)
+
+			err = os.RemoveAll(dest)
+			util.HandleFsError(err)
+
+			err = os.Symlink(src, dest)
+			util.HandleFsError(err)
+
+			break
 		case "skip":
 			logger.Debug("Skipping '%s'\n", rel)
 			break

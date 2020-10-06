@@ -28,7 +28,7 @@ var systemApplyCmd = &cobra.Command{
 			dst := file.File
 
 			srcFi, err := os.Stat(src)
-			util.P(err)
+			util.HandleFsError(err)
 
 			if srcFi.IsDir() {
 				logger.Informational("Skipping directory %s\n", file.File)
@@ -38,10 +38,10 @@ var systemApplyCmd = &cobra.Command{
 			// if is file
 			logger.Informational("Processing %s\n", file.File)
 			srcContents, err := ioutil.ReadFile(src)
-			util.P(err)
+			util.HandleFsError(err)
 
 			err = ioutil.WriteFile(dst, srcContents, 0644)
-			util.P(err)
+			util.HandleFsError(err)
 		}
 
 	},

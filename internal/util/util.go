@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -69,12 +70,28 @@ func OpenEditor(file string) {
 		program = editor
 	}
 
-	cm := exec.Command(program, file)
-	cm.Stdin = os.Stdin
-	cm.Stdout = os.Stdout
-	cm.Stderr = os.Stderr
+	cmd := exec.Command(program, file)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-	err := cm.Run()
+	err := cmd.Run()
+	P(err)
+}
+
+func OpenPager(file string) {
+	pager := os.Getenv("PAGER")
+	program := "less"
+	if pager != "" {
+		program = pager
+	}
+
+	cmd := exec.Command(program, file)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err := cmd.Run()
 	P(err)
 }
 
@@ -91,4 +108,28 @@ func Prompt(options []string, printText string, printArgs ...interface{}) string
 	}
 
 	return Prompt(options, printText, printArgs)
+}
+
+func HandleFsError(err error) {
+	if err == nil {
+		return
+	}
+
+	if os.IsPermission(err) {
+		logger.Critical("You do not have permission to access the file or folder\n")
+		log.Fatalln(err)
+	}
+
+	if os.IsNotExist(err) {
+		logger.Critical("File does not exist\n")
+		log.Fatalln(err)
+	}
+
+	if os.IsExist(err) {
+		logger.Critical("File exists\n")
+		log.Fatalln(err)
+	}
+
+	logger.Critical("An unknown error occured\n")
+	log.Fatalln(err)
 }

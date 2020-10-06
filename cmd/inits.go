@@ -17,7 +17,7 @@ var initCmd = &cobra.Command{
 	Long:  "Initializes Dotty's configuration files, usually located at ~/.config/dotty",
 	Run: func(cmd *cobra.Command, args []string) {
 		wd, err := os.Getwd()
-		util.P(err)
+		util.HandleFsError(err)
 
 		// COPY GLOBE.TOML
 		{
@@ -29,7 +29,7 @@ var initCmd = &cobra.Command{
 
 			sourceFile, err := os.Open(srcConfig)
 			defer sourceFile.Close()
-			util.P(err)
+			util.HandleFsError(err)
 
 			// Create new file
 			newFile, err := os.OpenFile(destConfig, os.O_CREATE|os.O_RDWR|os.O_EXCL, 0644)
@@ -43,7 +43,7 @@ var initCmd = &cobra.Command{
 			defer newFile.Close()
 
 			_, err = io.Copy(newFile, sourceFile)
-			util.P(err)
+			util.HandleFsError(err)
 		}
 
 		// CREATE .GLOBE FOLDER

@@ -8,6 +8,13 @@ A CM (Configuration Management) utility for dotfiles. It's used for managing loc
 
 For example, you can manage your "local" `.editorconfig`'s, `.eslintrc.js`'s, `.clang-format`'s, your "user" `~/.bashrc`'s, `~/.inpurc`'s, or your "system" `/boot/efi/EFI/refind/refind.conf`, `/root/.nanorc` files.
 
+## Features
+
+- Human readable config format
+- Prompts user on conflicts
+- Uses symlinks
+- Use the same utility to manage three different types of dotfiles
+
 ## Usage
 
 ```txt

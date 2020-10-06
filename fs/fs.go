@@ -1,9 +1,11 @@
 package fs
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
+	"github.com/eankeen/dotty/internal/util"
 	logger "github.com/eankeen/go-logger"
 )
 
@@ -41,8 +43,6 @@ func FilePossiblyExists(fileName string) (bool, error) {
 // MkdirThenSymlink creates a new symlink to a destination. it
 // automatically creates the parent directory structure too
 func MkdirThenSymlink(src string, dest string) error {
-	logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
-
 	err := os.MkdirAll(filepath.Dir(dest), 0755)
 	if err != nil {
 		return err
@@ -70,4 +70,14 @@ func RemoveThenSymlink(src string, dest string) error {
 	}
 
 	return nil
+}
+
+func WriteTemp(content []byte) os.File {
+	tempFile, err := ioutil.TempFile(os.TempDir(), "dotty-")
+	util.HandleFsError(err)
+
+	_, err = tempFile.Write(content)
+	util.HandleFsError(err)
+
+	return *tempFile
 }
