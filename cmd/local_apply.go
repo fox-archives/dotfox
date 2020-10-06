@@ -13,7 +13,8 @@ import (
 
 var localApplyCmd = &cobra.Command{
 	Use:   "apply",
-	Short: "Apply config intelligently",
+	Short: "Synchronize local dotfiles",
+	Long:  "Synchronize local dotfiles. You will be prompted on conflicts",
 	Run: func(cmd *cobra.Command, args []string) {
 		writeGlobeState()
 	},

@@ -69,7 +69,7 @@ func GetSystemToml(dotDir string) SystemDotsConfig {
 
 	var systemDotsConfig SystemDotsConfig
 	err = toml.Unmarshal(raw, &systemDotsConfig)
-	util.P(err)
+	util.HandleError(err)
 
 	return systemDotsConfig
 }
@@ -96,7 +96,7 @@ func GetUserToml(dotDir string) UserDotsConfig {
 
 	var userDotsConfig UserDotsConfig
 	err = toml.Unmarshal(raw, &userDotsConfig)
-	util.P(err)
+	util.HandleError(err)
 
 	return userDotsConfig
 }

@@ -17,7 +17,7 @@ var localInitCmd = &cobra.Command{
 	Long:  "Initializes Dotty's config files for 'local' project",
 	Run: func(cmd *cobra.Command, args []string) {
 		wd, err := os.Getwd()
-		util.P(err)
+		util.HandleError(err)
 
 		// COPY GLOBE.TOML
 		{

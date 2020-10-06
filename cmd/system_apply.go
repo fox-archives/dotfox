@@ -13,7 +13,8 @@ import (
 
 var systemApplyCmd = &cobra.Command{
 	Use:   "apply",
-	Short: "Apply updates intelligently",
+	Short: "Synchronize system dotfiles",
+	Long:  "Synchronize system dotfiles. You will be prompted on conflicts",
 	Run: func(cmd *cobra.Command, args []string) {
 		if os.Getuid() != 0 {
 			logger.Error("Must run as root. Exiting\n")

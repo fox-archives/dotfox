@@ -18,7 +18,8 @@ import (
 
 var userApplyCmd = &cobra.Command{
 	Use:   "apply",
-	Short: "Apply updates intelligently",
+	Short: "Synchronize user dotfiles",
+	Long:  "Synchronize user dotfiles. You will be prompted on conflicts",
 	Run: func(cmd *cobra.Command, args []string) {
 		dotDir := cmd.Flag("dot-dir").Value.String()
 		destDir := cmd.Flag("user-dir").Value.String()
@@ -155,7 +156,7 @@ func resolveFile(src string, dest string, rel string) {
 	// files have different content
 	// prompt user which to keep
 promptUserFile:
-	input := util.Prompt([]string{"diff", "diff2", "use-src", "use-dest", "skip"}, "File %s exists both in your src and dest. (diff, diff2, use-src, use-dest, skip) ", rel)
+	input := Prompt([]string{"diff", "diff2", "use-src", "use-dest", "skip"}, "File %s exists both in your src and dest. (diff, diff2, use-src, use-dest, skip) ", rel)
 	switch input {
 	case "diff":
 		cmd := exec.Command("colordiff", src, dest)
@@ -295,11 +296,11 @@ func resolveDirectory(src string, dest string, rel string) {
 			cmd := exec.Command("tree", src)
 
 			output, err := cmd.Output()
-			util.P(err)
+			util.HandleError(err)
 
 			cmd2 := exec.Command("tree", dest)
 			output2, err2 := cmd2.Output()
-			util.P(err2)
+			util.HandleError(err2)
 
 			content := append(output, "\n\n"...)
 			content = append(content, output2...)

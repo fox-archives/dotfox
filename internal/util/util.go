@@ -13,9 +13,10 @@ import (
 	"github.com/eankeen/go-logger"
 )
 
-// P panics if err is not nil
-func P(err error) {
+// HandleError panics if err is not nil
+func HandleError(err error) {
 	if err != nil {
+		logger.Critical("%s", err)
 		panic(err)
 	}
 }
@@ -76,7 +77,7 @@ func OpenEditor(file string) {
 	cmd.Stderr = os.Stderr
 
 	err := cmd.Run()
-	P(err)
+	HandleError(err)
 }
 
 func OpenPager(file string) {
@@ -92,7 +93,7 @@ func OpenPager(file string) {
 	cmd.Stderr = os.Stderr
 
 	err := cmd.Run()
-	P(err)
+	HandleError(err)
 }
 
 // Prompt ensures that we get a valid response
@@ -101,7 +102,7 @@ func Prompt(options []string, printText string, printArgs ...interface{}) string
 
 	var input string
 	_, err := fmt.Scanln(&input)
-	P(err)
+	HandleError(err)
 
 	if Contains(options, input) {
 		return input

@@ -31,7 +31,7 @@ var userCheckCmd = &cobra.Command{
 
 			// TODO
 			// homedir, err := os.UserHomeDir()
-			// util.P(err)
+			// util.HandleError(err)
 
 			src := path
 			// rel := path[len(dotfileDir)+1:]
