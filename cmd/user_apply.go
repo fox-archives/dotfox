@@ -21,7 +21,8 @@ var userApplyCmd = &cobra.Command{
 	Short: "Apply updates intelligently",
 	Run: func(cmd *cobra.Command, args []string) {
 		storeDir := cmd.Flag("dot-dir").Value.String()
-		destDir := cmd.Flag("dest-dir").Value.String()
+		destDir := cmd.Flag("user-dir").Value.String()
+
 		userDir := filepath.Join(storeDir, "user")
 
 		userDotsConfig := config.GetUserToml(storeDir)
@@ -39,6 +40,16 @@ var userApplyCmd = &cobra.Command{
 				logger.Debug("src: %s\n", src)
 				logger.Debug("file.File: %s\n", file.File)
 
+				// if path has a part in ignores, then we skip the whole file
+				for _, ignore := range userDotsConfig.Ignores {
+					ignoreEntryMatches, _ := config.IgnoreMatches(src, ignore)
+
+					if ignoreEntryMatches {
+						logger.Debug("Ignoring '%s'\n", src)
+						return nil
+					}
+				}
+
 				if len(file.File) == 0 {
 					logger.Warning("An entry in your '%s' config does not have a 'name' property. (This message may be repeated multiple times for each entry). Skipping\n", "user.dots.toml")
 					return nil
@@ -48,12 +59,24 @@ var userApplyCmd = &cobra.Command{
 
 				if fileMatches && fileType == "file" {
 					logger.Informational("Operating on File: '%s'\n", file.File)
+
+					if srcInfo.IsDir() {
+						logger.Warning("Your '%s' entry has a match, but it actually is a folder (%s) instead of a file. Did you mean to append a slash? Skipping file", file.File, src)
+						return nil
+					}
+
 					resolveFile(src, dest, rel)
 
 					// go to next file (in dotfile folder)
 					return nil
 				} else if fileMatches && fileType == "folder" {
 					logger.Informational("Operating on Folder: '%s'\n", file.File)
+
+					if !srcInfo.IsDir() {
+						logger.Warning("Your '%s' entry has a match, but it actually matches a file (%s) instead of a folder. Did you mean to remove the trailing slack? Skipping file\n", file.File, src)
+						return nil
+					}
+
 					resolveDirectory(src, dest, rel)
 
 					// go to next file (in dotfile folder)

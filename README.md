@@ -45,3 +45,9 @@ Use "dotty [command] --help" for more information about a command.
 git clone https://github.com/eankeen/dotty
 go install
 ```
+
+I recommend having something like this in your ~/.profile`
+
+```sh
+alias dotty='dotty --dot-dir=$HOME/.dots'
+```
