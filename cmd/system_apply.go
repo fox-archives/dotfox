@@ -20,11 +20,11 @@ var systemApplyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		storeDir := cmd.Flag("dot-dir").Value.String()
-		systemToml := config.GetSystemToml(storeDir)
+		dotDir := cmd.Flag("dot-dir").Value.String()
+		systemToml := config.GetSystemToml(dotDir)
 
 		for _, file := range systemToml.Files {
-			src := filepath.Join(storeDir, "system", file.File)
+			src := filepath.Join(dotDir, "system", file.File)
 			dst := file.File
 
 			srcFi, err := os.Stat(src)

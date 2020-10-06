@@ -11,20 +11,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var initCmd = &cobra.Command{
+var localInitCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Init Dotty's config files",
-	Long:  "Initializes Dotty's configuration files, usually located at ~/.config/dotty",
+	Short: "Init local Dotty files",
+	Long:  "Initializes Dotty's config files for 'local' project",
 	Run: func(cmd *cobra.Command, args []string) {
 		wd, err := os.Getwd()
-		util.HandleFsError(err)
+		util.P(err)
 
 		// COPY GLOBE.TOML
 		{
-			storeDir := cmd.Flag("dot-dir").Value.String()
-			srcConfig := path.Join(storeDir, "globe.toml")
+			dotDir := cmd.Flag("dot-dir").Value.String()
+			srcConfig := path.Join(dotDir, "globe.toml")
 			destConfig := path.Join(wd, "globe.toml")
-			logger.Debug("storeDir: %s\n", storeDir)
+			logger.Debug("dotDir: %s\n", dotDir)
 			logger.Debug("Copying '%s' to '%s'\n", srcConfig, destConfig)
 
 			sourceFile, err := os.Open(srcConfig)
@@ -67,7 +67,7 @@ var initCmd = &cobra.Command{
 			globeStateJSONFile := path.Join(wd, ".globe", "globe.state.json")
 			if ioutil.WriteFile(globeStateJSONFile, []byte("{}\n"), 0644); err != nil {
 				if os.IsExist(err) {
-					logger.Warning(("File .globe/globe.statea.json already exists. Not overwriting\n"))
+					logger.Warning(("File .globe/globe.state.json already exists. Not overwriting\n"))
 					return
 				}
 				logger.Error("Could not create .globe/globe.state.json folder")
@@ -79,5 +79,5 @@ var initCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(initCmd)
+	localCmd.AddCommand(localInitCmd)
 }

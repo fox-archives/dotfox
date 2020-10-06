@@ -10,9 +10,9 @@ var userEditCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Edit 'user' TOML config",
 	Run: func(cmd *cobra.Command, args []string) {
-		storeDir := cmd.Flag("dot-dir").Value.String()
+		dotDir := cmd.Flag("dot-dir").Value.String()
 
-		util.OpenEditor(config.GetUserTomlPath(storeDir))
+		util.OpenEditor(config.GetUserTomlPath(dotDir))
 	},
 }
 

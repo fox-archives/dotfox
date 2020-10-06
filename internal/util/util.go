@@ -97,7 +97,7 @@ func OpenPager(file string) {
 
 // Prompt ensures that we get a valid response
 func Prompt(options []string, printText string, printArgs ...interface{}) string {
-	logger.Informational(printText, printArgs...)
+	logger.Notice(printText, printArgs...)
 
 	var input string
 	_, err := fmt.Scanln(&input)
@@ -130,6 +130,6 @@ func HandleFsError(err error) {
 		log.Fatalln(err)
 	}
 
-	logger.Critical("An unknown error occured\n")
+	logger.Critical("An unknown error occurred\n")
 	log.Fatalln(err)
 }

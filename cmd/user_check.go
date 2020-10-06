@@ -17,17 +17,9 @@ var userCheckCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Check for inconsistencies / missing files",
 	Run: func(cmd *cobra.Command, args []string) {
-		storeDir := cmd.Flag("dot-dir").Value.String()
-		userConfig := config.GetUserToml(storeDir)
-		dotfileDir := filepath.Join(storeDir, "user")
-
-		//  else if info.IsDir() && file.Type != "folder" {
-		// 				logger.Warning("You expected '%s' (%s) to be a directory, but it's not\n", file.File, src)
-		// 			} else if info.IsDir() && file.Type == "file" {
-		// 				logger.Warning("'%s' is specified as a file, but at '%s', it is actually a directory\n", file.File, src)
-		// 			} else {
-		// 				logger.Warning("Unexpected entry '%s' has type '%s' and isDir?: '%t'\n", file.File, file.Type, info.IsDir())
-		// 			}
+		dotDir := cmd.Flag("dot-dir").Value.String()
+		userConfig := config.GetUserToml(dotDir)
+		dotfileDir := filepath.Join(dotDir, "user")
 
 		walkables := []string{}
 		walkablesFound := []string{}

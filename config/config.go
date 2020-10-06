@@ -61,8 +61,8 @@ type SystemDotsConfig struct {
 }
 
 // GetSystemToml gets system (/) config
-func GetSystemToml(storeDir string) SystemDotsConfig {
-	projectConfig := GetSystemTomlPath(storeDir)
+func GetSystemToml(dotDir string) SystemDotsConfig {
+	projectConfig := GetSystemTomlPath(dotDir)
 
 	raw, err := ioutil.ReadFile(projectConfig)
 	util.HandleFsError(err)
@@ -75,8 +75,8 @@ func GetSystemToml(storeDir string) SystemDotsConfig {
 }
 
 // GetSystemTomlPath gets location of system (/) config (system.dots.toml)
-func GetSystemTomlPath(storeDir string) string {
-	location := filepath.Join(storeDir, "config", "system.dots.toml")
+func GetSystemTomlPath(dotDir string) string {
+	location := filepath.Join(dotDir, "config", "system.dots.toml")
 
 	return location
 }
@@ -88,8 +88,8 @@ type UserDotsConfig struct {
 }
 
 // GetUserToml gets user (~) config
-func GetUserToml(storeDir string) UserDotsConfig {
-	projectConfig := GetUserTomlPath(storeDir)
+func GetUserToml(dotDir string) UserDotsConfig {
+	projectConfig := GetUserTomlPath(dotDir)
 
 	raw, err := ioutil.ReadFile(projectConfig)
 	util.HandleFsError(err)
@@ -102,8 +102,8 @@ func GetUserToml(storeDir string) UserDotsConfig {
 }
 
 // GetUserTomlPath gets location of user (~) config (user.dots.toml)
-func GetUserTomlPath(storeDir string) string {
-	location := filepath.Join(storeDir, "config", "user.dots.toml")
+func GetUserTomlPath(dotDir string) string {
+	location := filepath.Join(dotDir, "config", "user.dots.toml")
 
 	return location
 }
@@ -114,8 +114,8 @@ type LocalDotsConfig struct {
 }
 
 // GetLocalToml gets local (.) config
-func GetLocalToml(storeDir string) LocalDotsConfig {
-	projectConfig := GetLocalTomlPath(storeDir)
+func GetLocalToml(dotDir string) LocalDotsConfig {
+	projectConfig := GetLocalTomlPath(dotDir)
 
 	raw, err := ioutil.ReadFile(projectConfig)
 	util.HandleFsError(err)
@@ -128,8 +128,8 @@ func GetLocalToml(storeDir string) LocalDotsConfig {
 }
 
 // GetLocalTomlPath gets location of local (.) config (local.dots.toml)
-func GetLocalTomlPath(storeDir string) string {
-	location := filepath.Join(storeDir, "config", "local.dots.toml")
+func GetLocalTomlPath(dotDir string) string {
+	location := filepath.Join(dotDir, "config", "local.dots.toml")
 
 	return location
 }

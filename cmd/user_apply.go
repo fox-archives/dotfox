@@ -20,12 +20,12 @@ var userApplyCmd = &cobra.Command{
 	Use:   "apply",
 	Short: "Apply updates intelligently",
 	Run: func(cmd *cobra.Command, args []string) {
-		storeDir := cmd.Flag("dot-dir").Value.String()
+		dotDir := cmd.Flag("dot-dir").Value.String()
 		destDir := cmd.Flag("user-dir").Value.String()
 
-		userDir := filepath.Join(storeDir, "user")
+		userDir := filepath.Join(dotDir, "user")
 
-		userDotsConfig := config.GetUserToml(storeDir)
+		userDotsConfig := config.GetUserToml(dotDir)
 
 		err := filepath.Walk(userDir, func(src string, srcInfo os.FileInfo, err error) error {
 			// prevent errors in slice
