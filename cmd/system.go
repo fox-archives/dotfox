@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/eankeen/dotty/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -12,11 +11,5 @@ var systemCmd = &cobra.Command{
 }
 
 func init() {
-	pf := systemCmd.PersistentFlags()
-	pf.String("system-dir", "/", "Where to put dotfiles")
-
-	err := cobra.MarkFlagDirname(pf, "system-dir")
-	util.P(err)
-
 	RootCmd.AddCommand(systemCmd)
 }

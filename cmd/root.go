@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/eankeen/dotty/internal/util"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 )
@@ -29,11 +28,19 @@ func init() {
 	unix.Umask(664)
 
 	pf := RootCmd.PersistentFlags()
+
 	pf.String("dot-dir", "", "The location of your dotfiles")
+	cobra.MarkFlagRequired(pf, "dot-dir")
+	cobra.MarkFlagDirname(pf, "dot-dir")
 
-	err := cobra.MarkFlagRequired(pf, "dot-dir")
-	util.P(err)
+	pf.String("system-dir", "/", "Destination of 'system' dotfiles")
+	cobra.MarkFlagDirname(pf, "system-dir")
 
-	err = cobra.MarkFlagDirname(pf, "dot-dir")
-	util.P(err)
+	homedir, _ := os.UserHomeDir()
+	pf.String("user-dir", homedir, "Destination of 'user' dotfiles")
+	cobra.MarkFlagDirname(pf, "user-dir")
+
+	wd, _ := os.Getwd()
+	pf.String("local-dir", wd, "Destination of 'local' dotfiles")
+	cobra.MarkFlagDirname(pf, "local-dir")
 }

@@ -295,6 +295,7 @@ func resolveDirectory(src string, dest string, rel string) {
 
 			break
 		case "use-dest":
+			// TODO: fix this (getting permissions errors)
 			err := os.RemoveAll(src)
 			util.HandleFsError(err)
 
