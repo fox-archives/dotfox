@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -22,28 +22,77 @@ var systemApplyCmd = &cobra.Command{
 		}
 
 		dotDir := cmd.Flag("dot-dir").Value.String()
+		destDir := cmd.Flag("system-dir").Value.String()
+
+		systemDir := filepath.Join(dotDir, "system")
 		systemToml := config.GetSystemToml(dotDir)
 
-		for _, file := range systemToml.Files {
-			src := filepath.Join(dotDir, "system", file.File)
-			dst := file.File
-
-			srcFi, err := os.Stat(src)
-			util.HandleFsError(err)
-
-			if srcFi.IsDir() {
-				logger.Informational("Skipping directory %s\n", file.File)
-				continue
+		err := filepath.Walk(systemDir, func(src string, srcInfo os.FileInfo, err error) error {
+			// prevent errors in slice
+			if src == systemDir {
+				return nil
 			}
 
-			// if is file
-			logger.Informational("Processing %s\n", file.File)
-			srcContents, err := ioutil.ReadFile(src)
-			util.HandleFsError(err)
+			rel := src[len(systemDir)+1:]
+			dest := filepath.Join(destDir, rel)
 
-			err = ioutil.WriteFile(dst, srcContents, 0644)
-			util.HandleFsError(err)
-		}
+			fmt.Println(rel)
+
+			for _, file := range systemToml.Files {
+				logger.Debug("src: %s\n", src)
+				logger.Debug("file.File: %s\n", file.File)
+
+				// if path has a part in ignores, then we skip the whole file
+				for _, ignore := range systemToml.Ignores {
+					ignoreEntryMatches, _ := config.IgnoreMatches(src, ignore)
+
+					if ignoreEntryMatches {
+						logger.Debug("Ignoring '%s'\n", src)
+						return nil
+					}
+				}
+
+				if len(file.File) == 0 {
+					logger.Warning("An entry in your '%s' config does not have a 'name' property. (This message may be repeated multiple times for each entry). Skipping\n", "system.dots.toml")
+					return nil
+				}
+
+				fileMatches, fileType := config.FileMatches(src, file)
+
+				if fileMatches && fileType == "file" {
+					logger.Informational("Operating on File: '%s'\n", file.File)
+
+					if srcInfo.IsDir() {
+						logger.Warning("Your '%s' entry has a match, but it actually is a folder (%s) instead of a file. Did you mean to append a slash? Skipping file", file.File, src)
+						return nil
+					}
+
+					resolveFile(src, dest, rel)
+
+					// go to next file (in dotfile folder)
+					return nil
+				} else if fileMatches && fileType == "folder" {
+					logger.Informational("Operating on Folder: '%s'\n", file.File)
+
+					if !srcInfo.IsDir() {
+						logger.Warning("Your '%s' entry has a match, but it actually matches a file (%s) instead of a folder. Did you mean to remove the trailing slack? Skipping file\n", file.File, src)
+						return nil
+					}
+
+					resolveDirectory(src, dest, rel)
+
+					// go to next file (in dotfile folder)
+					return nil
+				}
+
+				// file in config did not match. continue because
+				// another one might
+			}
+
+			// no explicit match was made. it may have already been matched, not match at all, or a parent folder matched instead
+			return nil
+		})
+		util.HandleFsError(err)
 
 	},
 }

@@ -25,8 +25,7 @@ var userApplyCmd = &cobra.Command{
 		destDir := cmd.Flag("user-dir").Value.String()
 
 		userDir := filepath.Join(dotDir, "user")
-
-		userDotsConfig := config.GetUserToml(dotDir)
+		userToml := config.GetUserToml(dotDir)
 
 		err := filepath.Walk(userDir, func(src string, srcInfo os.FileInfo, err error) error {
 			// prevent errors in slice
@@ -37,12 +36,12 @@ var userApplyCmd = &cobra.Command{
 			rel := src[len(userDir)+1:]
 			dest := filepath.Join(destDir, rel)
 
-			for _, file := range userDotsConfig.Files {
+			for _, file := range userToml.Files {
 				logger.Debug("src: %s\n", src)
 				logger.Debug("file.File: %s\n", file.File)
 
 				// if path has a part in ignores, then we skip the whole file
-				for _, ignore := range userDotsConfig.Ignores {
+				for _, ignore := range userToml.Ignores {
 					ignoreEntryMatches, _ := config.IgnoreMatches(src, ignore)
 
 					if ignoreEntryMatches {
@@ -86,7 +85,6 @@ var userApplyCmd = &cobra.Command{
 
 				// file in config did not match. continue because
 				// another one might
-				continue
 			}
 
 			// no explicit match was made. it may have already been matched, not match at all, or a parent folder matched instead

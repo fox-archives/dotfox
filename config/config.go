@@ -57,7 +57,8 @@ func IgnoreMatches(src string, file Ignore) (bool, string) {
 
 // SystemDotsConfig represents the `system.dots.toml` file
 type SystemDotsConfig struct {
-	Files []File `toml:"files"`
+	Files   []File   `toml:"files"`
+	Ignores []Ignore `toml:"ignores"`
 }
 
 // GetSystemToml gets system (/) config

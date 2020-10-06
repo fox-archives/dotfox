@@ -117,20 +117,20 @@ func HandleFsError(err error) {
 	}
 
 	if os.IsPermission(err) {
-		logger.Critical("You do not have permission to access the file or folder\n")
+		logger.Error("You do not have permission to access the file or folder\n")
 		log.Fatalln(err)
 	}
 
 	if os.IsNotExist(err) {
-		logger.Critical("File does not exist\n")
+		logger.Error("File does not exist\n")
 		log.Fatalln(err)
 	}
 
 	if os.IsExist(err) {
-		logger.Critical("File exists\n")
+		logger.Error("File exists\n")
 		log.Fatalln(err)
 	}
 
 	logger.Critical("An unknown error occurred\n")
-	log.Fatalln(err)
+	log.Panicln(err)
 }
