@@ -25,7 +25,7 @@ func Execute() {
 }
 
 func init() {
-	unix.Umask(664)
+	unix.Umask(0022)
 
 	pf := RootCmd.PersistentFlags()
 
