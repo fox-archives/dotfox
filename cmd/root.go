@@ -8,8 +8,8 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// RootCmd is the root command
-var RootCmd = &cobra.Command{
+// rootCmd is the root command
+var rootCmd = &cobra.Command{
 	Use:   "dotty",
 	Short: "Dotfile CM Utility",
 	Long:  "A CM (Configuration Management) utility for dotfiles. Used for managing local, user, or system-wide dotfiles",
@@ -17,7 +17,7 @@ var RootCmd = &cobra.Command{
 
 // Execute adds all child commands to the root command and sets flags appropriately
 func Execute() {
-	err := RootCmd.Execute()
+	err := rootCmd.Execute()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -27,7 +27,7 @@ func Execute() {
 func init() {
 	unix.Umask(0022)
 
-	pf := RootCmd.PersistentFlags()
+	pf := rootCmd.PersistentFlags()
 
 	pf.String("dot-dir", "", "The location of your dotfiles")
 	cobra.MarkFlagRequired(pf, "dot-dir")

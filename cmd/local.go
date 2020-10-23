@@ -11,5 +11,5 @@ var localCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(localCmd)
+	rootCmd.AddCommand(localCmd)
 }

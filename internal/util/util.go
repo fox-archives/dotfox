@@ -16,7 +16,7 @@ import (
 // HandleError panics if err is not nil
 func HandleError(err error) {
 	if err != nil {
-		logger.Critical("%s", err)
+		logger.Critical("%s\n", err)
 		panic(err)
 	}
 }

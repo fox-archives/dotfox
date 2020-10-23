@@ -106,6 +106,9 @@ func resolveFile(src string, dest string, rel string) {
 		if os.IsNotExist(err) {
 			logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
 			err := fs.MkdirThenSymlink(src, dest)
+			// if err != nil {
+			// 	panic(err)
+			// }
 			util.HandleFsError(err)
 			return
 		}
