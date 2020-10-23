@@ -25,11 +25,11 @@ func Walk(dotDir string, srcDir string, destDir string, onFile func(src string, 
 		}
 
 		rel := src[len(srcDir)+1:]
-		dest := filepath.Join(srcDir, rel)
+		dest := filepath.Join(destDir, rel)
 
 		for _, file := range userToml.Files {
-			logger.Debug("src: %s\n", src)
-			logger.Debug("file.File: %s\n", file.File)
+			// logger.Debug("src: %s\n", src)
+			// logger.Debug("file.File: %s\n", file.File)
 
 			// if path has a part in ignores, then we skip the whole file
 			for _, ignore := range userToml.Ignores {
@@ -218,6 +218,8 @@ func ApplyFolder(src string, dest string, rel string) {
 	}
 
 	// dest folder exists and is a symbolic link
+	fmt.Println(dest)
+	fmt.Print("EEEE", fi.Mode()&os.ModeSymlink == os.ModeSymlink, "\n")
 	if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
 		linkDest, err := os.Readlink(dest)
 		util.HandleFsError(err)
@@ -328,17 +330,13 @@ func ApplyFolder(src string, dest string, rel string) {
 }
 
 func UnapplyFile(src string, dest string, rel string) {
-
-}
-
-func UnapplyFolder(src string, dest string, rel string) {
 	fi, err := os.Lstat(dest)
 	if os.IsNotExist(err) {
 		return
 	}
 	util.HandleFsError(err)
 
-	if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
+	if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
 		logger.Error("Skipping: Not a Symlink: '%s'\n", dest)
 		return
 	}
@@ -349,6 +347,26 @@ func UnapplyFolder(src string, dest string, rel string) {
 		fmt.Println(res)
 		util.HandleError(err)
 	}
+}
+
+func UnapplyFolder(src string, dest string, rel string) {
+	// fi, err := os.Lstat(dest)
+	// if os.IsNotExist(err) {
+	// 	return
+	// }
+	// util.HandleFsError(err)
+
+	// if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
+	// 	logger.Error("Skipping: Not a Symlink: '%s'\n", dest)
+	// 	return
+	// }
+
+	// cmd := exec.Command("unlink", dest)
+	// res, err := cmd.CombinedOutput()
+	// if err != nil {
+	// 	fmt.Println(res)
+	// 	util.HandleError(err)
+	// }
 
 	// if fi.IsDir() {
 	// 	return

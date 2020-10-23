@@ -30,5 +30,4 @@ var userUnapplyCmd = &cobra.Command{
 
 func init() {
 	userCmd.AddCommand(userUnapplyCmd)
-
 }
