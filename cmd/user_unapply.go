@@ -1,12 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/eankeen/dotty/config"
+	"github.com/eankeen/dotty/fs"
 	"github.com/eankeen/dotty/internal/util"
 	logger "github.com/eankeen/go-logger"
 	"github.com/spf13/cobra"
@@ -61,7 +60,7 @@ var userUnapplyCmd = &cobra.Command{
 						return nil
 					}
 
-					resolveFile(src, dest, rel)
+					fs.ApplyFile(src, dest, rel)
 
 					// go to next file (in dotfile folder)
 					return nil
@@ -73,7 +72,7 @@ var userUnapplyCmd = &cobra.Command{
 						return nil
 					}
 
-					unapplyDirectory(src, dest, rel)
+					fs.UnapplyDirectory(src, dest, rel)
 
 					// go to next file (in dotfile folder)
 					return nil
@@ -93,35 +92,4 @@ var userUnapplyCmd = &cobra.Command{
 func init() {
 	userCmd.AddCommand(userUnapplyCmd)
 
-}
-
-func unapplyDirectory(src string, dest string, rel string) {
-	fi, err := os.Lstat(dest)
-	if os.IsNotExist(err) {
-		return
-	}
-	util.HandleFsError(err)
-
-	if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
-		logger.Error("Skipping: Not a Symlink: '%s'\n", dest)
-		return
-	}
-
-	cmd := exec.Command("unlink", dest)
-	res, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Println(res)
-		util.HandleError(err)
-	}
-
-	// if fi.IsDir() {
-	// 	return
-	// }
-
-	// realDest, err := os.Readlink(dest)
-	// util.HandleFsError(err)
-
-	// fmt.Println(realDest)
-	// err = syscall.Unlink(realDest)
-	// util.HandleError(err)
 }

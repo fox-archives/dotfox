@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/eankeen/dotty/config"
+	"github.com/eankeen/dotty/fs"
 	"github.com/eankeen/dotty/internal/util"
 	"github.com/eankeen/go-logger"
 	"github.com/spf13/cobra"
@@ -67,7 +68,7 @@ var systemApplyCmd = &cobra.Command{
 						return nil
 					}
 
-					resolveFile(src, dest, rel)
+					fs.ApplyFile(src, dest, rel)
 
 					// go to next file (in dotfile folder)
 					return nil
@@ -79,7 +80,7 @@ var systemApplyCmd = &cobra.Command{
 						return nil
 					}
 
-					resolveDirectory(src, dest, rel)
+					fs.ApplyDirectory(src, dest, rel)
 
 					// go to next file (in dotfile folder)
 					return nil
