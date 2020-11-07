@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/eankeen/dotty/config"
 	"github.com/eankeen/dotty/internal/util"
@@ -218,8 +219,6 @@ func ApplyFolder(src string, dest string, rel string) {
 	}
 
 	// dest folder exists and is a symbolic link
-	fmt.Println(dest)
-	fmt.Print("EEEE", fi.Mode()&os.ModeSymlink == os.ModeSymlink, "\n")
 	if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
 		linkDest, err := os.Readlink(dest)
 		util.HandleFsError(err)
@@ -336,7 +335,7 @@ func UnapplyFile(src string, dest string, rel string) {
 	}
 	util.HandleFsError(err)
 
-	if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
+	if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
 		logger.Error("Skipping: Not a Symlink: '%s'\n", dest)
 		return
 	}
@@ -350,32 +349,32 @@ func UnapplyFile(src string, dest string, rel string) {
 }
 
 func UnapplyFolder(src string, dest string, rel string) {
-	// fi, err := os.Lstat(dest)
-	// if os.IsNotExist(err) {
-	// 	return
-	// }
-	// util.HandleFsError(err)
+	fi, err := os.Lstat(dest)
+	if os.IsNotExist(err) {
+		return
+	}
+	util.HandleFsError(err)
 
-	// if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
-	// 	logger.Error("Skipping: Not a Symlink: '%s'\n", dest)
-	// 	return
-	// }
+	if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
+		logger.Error("Skipping: Not a Symlink: '%s'\n", dest)
+		return
+	}
 
-	// cmd := exec.Command("unlink", dest)
-	// res, err := cmd.CombinedOutput()
-	// if err != nil {
-	// 	fmt.Println(res)
-	// 	util.HandleError(err)
-	// }
+	cmd := exec.Command("unlink", dest)
+	res, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(res)
+		util.HandleError(err)
+	}
 
-	// if fi.IsDir() {
-	// 	return
-	// }
+	if fi.IsDir() {
+		return
+	}
 
-	// realDest, err := os.Readlink(dest)
-	// util.HandleFsError(err)
+	realDest, err := os.Readlink(dest)
+	util.HandleFsError(err)
 
-	// fmt.Println(realDest)
-	// err = syscall.Unlink(realDest)
-	// util.HandleError(err)
+	fmt.Println(realDest)
+	err = syscall.Unlink(realDest)
+	util.HandleError(err)
 }
