@@ -149,7 +149,6 @@ func pathExpand(dotfilesDir string, rawPath string) string {
 	}
 
 	if isAbsolute(rawPath) {
-		fmt.Println("abs", rawPath)
 		return rawPath
 	}
 
