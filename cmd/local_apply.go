@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"path"
 
 	"github.com/eankeen/dotty/config"
@@ -28,11 +29,11 @@ func panicIfFileDoesNotExit(file string) {
 	doesExist, err := fs.FilePossiblyExists(file)
 	if err != nil {
 		logger.Error("There was an error determining if there is a '%s' file or folder in the project directory\n", file)
-		panic(err)
+		log.Panicln(err)
 	}
 	if !doesExist {
 		logger.Error("The file '%s' could not be found. Did you forget to init?\n", file)
-		panic("panicing due to unexpected error")
+		log.Panicln("panicing due to unexpected error")
 	}
 }
 
@@ -54,73 +55,25 @@ func writeGlobeState() {
 
 	panicIfFileDoesNotExit(globeDotDir)
 
-	// OWNERNAME
-	var ownerFullname string
-	{
-		ownerFullname = "Edwin Kofler"
-	}
-
-	// OWNEREMAIL
-	var ownerEmail string
-	{
-		ownerEmail = "24364012+eankeen@users.noreply.github.com"
-	}
-
-	// // REPOSITORY REMOTE
-	// var remoteRepo []byte
-	// {
-	// 	cmd := exec.Command("git", "remote", "get-url", "origin")
-	// 	var err error
-	// 	remoteRepo, err = cmd.CombinedOutput()
-	// 	if err != nil {
-	// 		logger.Error("There was an error when trying to get repository owner\n")
-	// 		panic(err)
-	// 	}
-	// }
-
-	// OWNERWEBSITE
-	var ownerWebsite string
-	{
-		ownerWebsite = "https://edwinkofler.com"
-	}
-
-	// VCS
-	var vcs string
-	{
-		vcs = "git"
-	}
-
-	// VCSREMOTEUSERNAME
-	var vcsRemoteUsername string
-	{
-		vcsRemoteUsername = "eankeen"
-	}
-
-	// VCSREMOTEREPOSITORYNAME
-	var vcsRemoteRepositoryName string
-	{
-		vcsRemoteRepositoryName = path.Base(projectDir)
-	}
-
 	// CREATE STRUCT, CREATE JSON TEXT, AND WRITE TO DISK
 	var globeState = &GlobeState{
-		OwnerName:               ownerFullname,
-		OwnerEmail:              ownerEmail,
-		OwnerWebsite:            ownerWebsite,
-		Vcs:                     vcs,
-		VcsRemoteUsername:       vcsRemoteUsername,
-		VcsRemoteRepositoryName: vcsRemoteRepositoryName,
+		OwnerName:               "Edwin Kofler",
+		OwnerEmail:              "24364012+eankeen@users.noreply.github.com",
+		OwnerWebsite:            "https://edwinkofler.com",
+		Vcs:                     "git",
+		VcsRemoteUsername:       "eankeen",
+		VcsRemoteRepositoryName: path.Base(projectDir),
 	}
 
 	jsonText, err := json.MarshalIndent(globeState, "", "\t")
 	if err != nil {
 		logger.Error("There was a problem marshalling\n")
-		panic(err)
+		log.Panicln(err)
 	}
 
 	err = ioutil.WriteFile(globeStateFile, jsonText, 0644)
 	if err != nil {
 		logger.Error("Error writing the 'globe.state.json' file\n")
-		panic(err)
+		log.Panicln(err)
 	}
 }
