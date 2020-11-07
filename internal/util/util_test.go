@@ -1,7 +1,6 @@
 package util
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,28 +15,27 @@ func TestContains(t *testing.T) {
 	}
 }
 
-func TestCreatePath(t *testing.T) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Panicln(homeDir)
-	}
+func TestPathExpand(t *testing.T) {
+	homeDir, _ := os.UserHomeDir()
 
 	root := filepath.Join(homeDir, ".my-dotfiles")
 
 	paths := []struct {
-		Input  string
-		Output string
+		Input    string
+		Expected string
 	}{
-		{"~", "/home/edwin"},
+		{"~", os.Getenv("HOME")},
+		{"$XDG_CONFIG_HOME/folder", filepath.Join(os.Getenv("XDG_CONFIG_HOME"), "folder")},
+		{"$HOME/folder2", filepath.Join(os.Getenv("HOME"), "folder2")},
 		{"/", "/"},
 		{"system", filepath.Join(root, "system")},
 	}
 
 	for _, path := range paths {
-		newPath := CreatePath(root, path.Input)
+		actual := pathExpand(root, path.Input)
 
-		if newPath != path.Output {
-			t.Errorf("'%s' is not '%s'", newPath)
+		if actual != path.Expected {
+			t.Errorf("\nInput: '%s'\nExpected: '%s'\nActual: '%s'", path.Input, path.Expected, actual)
 		}
 	}
 }

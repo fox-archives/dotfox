@@ -2,7 +2,6 @@ package config
 
 import (
 	"io/ioutil"
-	"log"
 	"path/filepath"
 	"strings"
 
@@ -89,7 +88,7 @@ func DottyCfg(dotfilesDir string) t.DottyConfig {
 
 // SystemCfg gets system (/) config
 func SystemCfg(dotfilesDir string) SystemDotsConfig {
-	file := GetCfgFile("system", dotfilesDir)
+	file := filepath.Join(dotfilesDir, DottyCfg(dotfilesDir).ConfigDir, "system.dots.toml")
 	raw, err := ioutil.ReadFile(file)
 	util.HandleFsError(err)
 
@@ -102,7 +101,7 @@ func SystemCfg(dotfilesDir string) SystemDotsConfig {
 
 // UserCfg gets user (~) config
 func UserCfg(dotfilesDir string) UserDotsConfig {
-	file := GetCfgFile("user", dotfilesDir)
+	file := filepath.Join(dotfilesDir, DottyCfg(dotfilesDir).ConfigDir, "user.dots.toml")
 	raw, err := ioutil.ReadFile(file)
 	util.HandleFsError(err)
 
@@ -115,7 +114,8 @@ func UserCfg(dotfilesDir string) UserDotsConfig {
 
 // LocalCfg gets local (.) config
 func LocalCfg(dotfilesDir string) LocalDotsConfig {
-	file := GetCfgFile("local", dotfilesDir)
+	file := filepath.Join(dotfilesDir, DottyCfg(dotfilesDir).ConfigDir, "local.dots.toml")
+
 	raw, err := ioutil.ReadFile(file)
 	util.HandleFsError(err)
 
@@ -124,30 +124,4 @@ func LocalCfg(dotfilesDir string) LocalDotsConfig {
 	util.HandleFsError(err)
 
 	return cfg
-}
-
-// GetCfgFile gets the location of a particular dotfile (/, ~, or .) (system, user, or local)
-func GetCfgFile(typ string, dotfilesDir string) string {
-	configDir := DottyCfg(dotfilesDir).ConfigDir
-
-	switch typ {
-	case "system":
-		location := filepath.Join(dotfilesDir, configDir, "system.dots.toml")
-		return location
-
-	case "user":
-		location := filepath.Join(dotfilesDir, configDir, "user.dots.toml")
-		return location
-
-	case "local":
-		location := filepath.Join(dotfilesDir, configDir, "local.dots.toml")
-		return location
-
-	default:
-		log.Panicf("'%s' is not a valid type for GetConfigPath", typ)
-		break
-	}
-
-	log.Panicf("'%s' is not a valid type for GetConfigPath", typ)
-	return ""
 }

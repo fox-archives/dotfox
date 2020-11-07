@@ -20,10 +20,11 @@ import (
 func HandleError(err error) {
 	if err != nil {
 		logger.Critical("%s\n", err)
-		panic(err)
+		log.Panicln(err)
 	}
 }
 
+// HandleFsError lists any FS errors in human readable format. It exist the program automatically if it finds an error
 func HandleFsError(err error) {
 	if err == nil {
 		return
@@ -123,32 +124,41 @@ func OpenPager(file string) {
 
 // PathExpand converts '~`, and to absolute path
 func pathExpand(dotfilesDir string, rawPath string) string {
-	expand := func(path string) string {
-		homeDir, err := os.UserHomeDir()
-		HandleError(err)
-
-		newPath := strings.ReplaceAll(path, "~", homeDir)
-		newPath = strings.ReplaceAll(path, "$HOME", homeDir)
-		return newPath
-	}
-
 	isAbsolute := func(path string) bool {
-		if strings.HasPrefix(path, "~") || strings.HasPrefix(path, "/") || strings.HasPrefix(path, "$HOME") {
+		if strings.HasPrefix(path, "/") {
 			return true
 		}
-
 		return false
 	}
 
+	if strings.HasPrefix(rawPath, "~") {
+		homeDir, err := os.UserHomeDir()
+		HandleFsError(err)
+		rawPath = strings.Replace(rawPath, "~", homeDir, 1)
+	}
+
+	if strings.Contains(rawPath, "$HOME") {
+		homeDir, err := os.UserHomeDir()
+		HandleFsError(err)
+		rawPath = strings.ReplaceAll(rawPath, "$HOME", homeDir)
+	}
+
+	if strings.Contains(rawPath, "$XDG_CONFIG_HOME") {
+		configHome := os.Getenv("XDG_CONFIG_HOME")
+		rawPath = strings.ReplaceAll(rawPath, "$XDG_CONFIG_HOME", configHome)
+	}
+
 	if isAbsolute(rawPath) {
-		return expand(rawPath)
+		fmt.Println("abs", rawPath)
+		return rawPath
 	}
 
 	// relative
-	return filepath.Join(dotfilesDir, expand(rawPath))
+	return filepath.Join(dotfilesDir, rawPath)
 }
 
-// Src gets
+// Src gets the location of a file, accounting for default values, config file values, and command line arguments
+// TODO take into account command line arguments
 func Src(dotfilesDir string, dottyCfg t.DottyConfig, typ string) string {
 	switch typ {
 	case "system":
@@ -171,7 +181,8 @@ func Src(dotfilesDir string, dottyCfg t.DottyConfig, typ string) string {
 	panic("Src not valid")
 }
 
-// Dest is
+// Dest gets the location of a file, accounting for default values, config file values, and command line arguments
+// TODO take into account command line arguments
 func Dest(dotfilesDir string, dottyCfg t.DottyConfig, typ string) string {
 	switch typ {
 	case "system":
