@@ -18,7 +18,7 @@ var userCheckCmd = &cobra.Command{
 	Short: "Check for inconsistencies / missing files",
 	Run: func(cmd *cobra.Command, args []string) {
 		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
-		userConfig := config.GetUserToml(dotfilesDir)
+		userConfig := config.UserCfg(dotfilesDir)
 		dotfileDir := filepath.Join(dotfilesDir, "user")
 
 		walkables := []string{}

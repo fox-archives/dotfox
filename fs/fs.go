@@ -17,7 +17,7 @@ import (
 )
 
 func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src string, dest string, rel string), onFolder func(src string, dest string, rel string)) {
-	userToml := config.GetUserToml(dotfilesDir)
+	userToml := config.UserCfg(dotfilesDir)
 
 	err := filepath.Walk(srcDir, func(src string, srcInfo os.FileInfo, err error) error {
 		util.HandleFsError(err)

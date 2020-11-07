@@ -12,7 +12,7 @@ var systemEditCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
 
-		actions.OpenEditor(config.GetSystemTomlPath(dotfilesDir))
+		actions.OpenEditor(config.GetCfgFile(dotfilesDir, "system"))
 	},
 }
 

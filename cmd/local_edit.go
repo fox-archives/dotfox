@@ -12,7 +12,7 @@ var localEditCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
 
-		actions.OpenEditor(config.GetLocalTomlPath(dotfilesDir))
+		actions.OpenEditor(config.GetCfgFile(dotfilesDir, "local"))
 	},
 }
 

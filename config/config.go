@@ -2,10 +2,12 @@ package config
 
 import (
 	"io/ioutil"
+	"log"
 	"path/filepath"
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/eankeen/dotty/internal/t"
 	"github.com/eankeen/dotty/internal/util"
 )
 
@@ -61,52 +63,10 @@ type SystemDotsConfig struct {
 	Ignores []Ignore `toml:"ignores"`
 }
 
-// GetSystemToml gets system (/) config
-func GetSystemToml(dotfilesDir string) SystemDotsConfig {
-	projectConfig := GetSystemTomlPath(dotfilesDir)
-
-	raw, err := ioutil.ReadFile(projectConfig)
-	util.HandleFsError(err)
-
-	var systemDotsConfig SystemDotsConfig
-	err = toml.Unmarshal(raw, &systemDotsConfig)
-	util.HandleError(err)
-
-	return systemDotsConfig
-}
-
-// GetSystemTomlPath gets location of system (/) config (system.dots.toml)
-func GetSystemTomlPath(dotfilesDir string) string {
-	location := filepath.Join(dotfilesDir, "config", "system.dots.toml")
-
-	return location
-}
-
 // UserDotsConfig represents the `user.dots.toml` file
 type UserDotsConfig struct {
 	Files   []File   `toml:"files"`
 	Ignores []Ignore `toml:"ignores"`
-}
-
-// GetUserToml gets user (~) config
-func GetUserToml(dotfilesDir string) UserDotsConfig {
-	projectConfig := GetUserTomlPath(dotfilesDir)
-
-	raw, err := ioutil.ReadFile(projectConfig)
-	util.HandleFsError(err)
-
-	var userDotsConfig UserDotsConfig
-	err = toml.Unmarshal(raw, &userDotsConfig)
-	util.HandleError(err)
-
-	return userDotsConfig
-}
-
-// GetUserTomlPath gets location of user (~) config (user.dots.toml)
-func GetUserTomlPath(dotfilesDir string) string {
-	location := filepath.Join(dotfilesDir, "config", "user.dots.toml")
-
-	return location
 }
 
 // LocalDotsConfig represents the `local.dots.toml` file
@@ -114,23 +74,80 @@ type LocalDotsConfig struct {
 	Files []File `toml:"files"`
 }
 
-// GetLocalToml gets local (.) config
-func GetLocalToml(dotfilesDir string) LocalDotsConfig {
-	projectConfig := GetLocalTomlPath(dotfilesDir)
-
-	raw, err := ioutil.ReadFile(projectConfig)
+// DottyCfg gets the `dotty.toml` file
+func DottyCfg(dotfilesDir string) t.DottyConfig {
+	file := filepath.Join(dotfilesDir, "dotty.toml")
+	raw, err := ioutil.ReadFile(file)
 	util.HandleFsError(err)
 
-	var localDotsConfig LocalDotsConfig
-	err = toml.Unmarshal(raw, &localDotsConfig)
-	util.HandleFsError(err)
+	var cfg t.DottyConfig
+	err = toml.Unmarshal(raw, &cfg)
+	util.HandleError(err)
 
-	return localDotsConfig
+	return cfg
 }
 
-// GetLocalTomlPath gets location of local (.) config (local.dots.toml)
-func GetLocalTomlPath(dotfilesDir string) string {
-	location := filepath.Join(dotfilesDir, "config", "local.dots.toml")
+// SystemCfg gets system (/) config
+func SystemCfg(dotfilesDir string) SystemDotsConfig {
+	file := GetCfgFile("system", dotfilesDir)
+	raw, err := ioutil.ReadFile(file)
+	util.HandleFsError(err)
 
-	return location
+	var cfg SystemDotsConfig
+	err = toml.Unmarshal(raw, &cfg)
+	util.HandleError(err)
+
+	return cfg
+}
+
+// UserCfg gets user (~) config
+func UserCfg(dotfilesDir string) UserDotsConfig {
+	file := GetCfgFile("user", dotfilesDir)
+	raw, err := ioutil.ReadFile(file)
+	util.HandleFsError(err)
+
+	var cfg UserDotsConfig
+	err = toml.Unmarshal(raw, &cfg)
+	util.HandleError(err)
+
+	return cfg
+}
+
+// LocalCfg gets local (.) config
+func LocalCfg(dotfilesDir string) LocalDotsConfig {
+	file := GetCfgFile("local", dotfilesDir)
+	raw, err := ioutil.ReadFile(file)
+	util.HandleFsError(err)
+
+	var cfg LocalDotsConfig
+	err = toml.Unmarshal(raw, &cfg)
+	util.HandleFsError(err)
+
+	return cfg
+}
+
+// GetCfgFile gets the location of a particular dotfile (/, ~, or .) (system, user, or local)
+func GetCfgFile(typ string, dotfilesDir string) string {
+	configDir := DottyCfg(dotfilesDir).ConfigDir
+
+	switch typ {
+	case "system":
+		location := filepath.Join(dotfilesDir, configDir, "system.dots.toml")
+		return location
+
+	case "user":
+		location := filepath.Join(dotfilesDir, configDir, "user.dots.toml")
+		return location
+
+	case "local":
+		location := filepath.Join(dotfilesDir, configDir, "local.dots.toml")
+		return location
+
+	default:
+		log.Panicf("'%s' is not a valid type for GetConfigPath", typ)
+		break
+	}
+
+	log.Panicf("'%s' is not a valid type for GetConfigPath", typ)
+	return ""
 }

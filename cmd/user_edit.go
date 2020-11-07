@@ -12,7 +12,7 @@ var userEditCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
 
-		actions.OpenEditor(config.GetUserTomlPath(dotfilesDir))
+		actions.OpenEditor(config.GetCfgFile(dotfilesDir, "user"))
 	},
 }
 

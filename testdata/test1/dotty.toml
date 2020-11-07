@@ -1,0 +1,6 @@
+configDir = "cfg"
+
+userDirSrc = "user-src"
+userDirDest = "user-dest"
+
+localDirSrc = "local"

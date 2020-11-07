@@ -6,10 +6,13 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"runtime"
+	"strings"
 	"syscall"
 	"unsafe"
 
+	"github.com/eankeen/dotty/internal/t"
 	"github.com/eankeen/go-logger"
 )
 
@@ -116,4 +119,80 @@ func OpenPager(file string) {
 
 	err := cmd.Run()
 	HandleError(err)
+}
+
+// PathExpand converts '~`, and to absolute path
+func pathExpand(dotfilesDir string, rawPath string) string {
+	expand := func(path string) string {
+		homeDir, err := os.UserHomeDir()
+		HandleError(err)
+
+		newPath := strings.ReplaceAll(path, "~", homeDir)
+		newPath = strings.ReplaceAll(path, "$HOME", homeDir)
+		return newPath
+	}
+
+	isAbsolute := func(path string) bool {
+		if strings.HasPrefix(path, "~") || strings.HasPrefix(path, "/") || strings.HasPrefix(path, "$HOME") {
+			return true
+		}
+
+		return false
+	}
+
+	if isAbsolute(rawPath) {
+		return expand(rawPath)
+	}
+
+	// relative
+	return filepath.Join(dotfilesDir, expand(rawPath))
+}
+
+// Src gets
+func Src(dotfilesDir string, dottyCfg t.DottyConfig, typ string) string {
+	switch typ {
+	case "system":
+		if dottyCfg.SystemDirSrc == "" {
+			return filepath.Join(dotfilesDir, "system")
+		}
+		return pathExpand(dotfilesDir, dottyCfg.SystemDirSrc)
+	case "user":
+		if dottyCfg.UserDirSrc == "" {
+			return filepath.Join(dotfilesDir, "user")
+		}
+		return pathExpand(dotfilesDir, dottyCfg.UserDirSrc)
+	case "local":
+		if dottyCfg.LocalDirSrc == "" {
+			return filepath.Join(dotfilesDir, "local")
+		}
+		return pathExpand(dotfilesDir, dottyCfg.LocalDirSrc)
+	}
+
+	panic("Src not valid")
+}
+
+// Dest is
+func Dest(dotfilesDir string, dottyCfg t.DottyConfig, typ string) string {
+	switch typ {
+	case "system":
+		if dottyCfg.SystemDirDest == "" {
+			return "/"
+		}
+		return pathExpand(dotfilesDir, dottyCfg.SystemDirDest)
+	case "user":
+		if dottyCfg.UserDirDest == "" {
+			homeDir, err := os.UserHomeDir()
+			HandleFsError(err)
+
+			return homeDir
+		}
+		return pathExpand(dotfilesDir, dottyCfg.UserDirDest)
+	case "local":
+		wd, err := os.Getwd()
+		HandleError(err)
+
+		return wd
+	}
+
+	panic("Dest not valid")
 }

@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/eankeen/dotty/actions"
+	"github.com/eankeen/dotty/config"
+	"github.com/eankeen/dotty/internal/util"
 )
 
 func run() {
@@ -40,8 +42,11 @@ func TestFull(t *testing.T) {
 	test1 := filepath.Join(testDir, "test1")
 
 	dotfilesDir := test1
-	srcDir := filepath.Join(test1, "dotfiles")
-	destDir := filepath.Join(test1, "user-home")
+	dottyCfg := config.DottyCfg(dotfilesDir)
+
+	srcDir := util.Src(dotfilesDir, dottyCfg, "user")
+	destDir := util.Dest(dotfilesDir, dottyCfg, "user")
+
 	do(dotfilesDir, srcDir, destDir)
 
 	t.Log("thing")

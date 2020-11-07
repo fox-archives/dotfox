@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"path/filepath"
-
 	"github.com/eankeen/dotty/actions"
+	"github.com/eankeen/dotty/config"
+	"github.com/eankeen/dotty/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -13,8 +13,10 @@ var userUnapplyCmd = &cobra.Command{
 	Long:  "This unapplies all user dotfiles, unlinking them from the destination (user) directory",
 	Run: func(cmd *cobra.Command, args []string) {
 		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
-		srcDir := filepath.Join(dotfilesDir, "user")
-		destDir := cmd.Flag("user-dir").Value.String()
+		dottyCfg := config.DottyCfg(dotfilesDir)
+
+		srcDir := util.Src(dotfilesDir, dottyCfg, "user")
+		destDir := util.Dest(dotfilesDir, dottyCfg, "user")
 
 		actions.Unapply(dotfilesDir, srcDir, destDir)
 	},
