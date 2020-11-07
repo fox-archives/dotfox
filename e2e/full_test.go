@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eankeen/dotty/fs"
+	"github.com/eankeen/dotty/actions"
 )
 
 func run() {
@@ -28,28 +28,11 @@ func _dirname() string {
 }
 
 func do(dotDir string, srcDir string, destDir string) {
-	onFile := func(src string, dest string, rel string) {
-		fs.ApplyFile(src, dest, rel)
-	}
-
-	onFolder := func(src string, dest string, rel string) {
-		fs.ApplyFolder(src, dest, rel)
-	}
-
-	fs.Walk(dotDir, srcDir, destDir, onFile, onFolder)
+	actions.Apply(dotDir, srcDir, destDir)
 
 	time.Sleep(time.Millisecond * 500)
 
-	// unlink
-	onFile2 := func(src string, dest string, rel string) {
-		fs.UnapplyFile(src, dest, rel)
-	}
-
-	onFolder2 := func(src string, dest string, rel string) {
-		fs.UnapplyFolder(src, dest, rel)
-	}
-
-	fs.Walk(dotDir, srcDir, destDir, onFile2, onFolder2)
+	actions.Unapply(dotDir, srcDir, destDir)
 }
 
 func TestFull(t *testing.T) {

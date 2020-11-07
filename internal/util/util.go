@@ -63,39 +63,6 @@ func Contains(arr []string, str string) bool {
 	return false
 }
 
-// OpenEditor opens a file for editing
-func OpenEditor(file string) {
-	editor := os.Getenv("EDITOR")
-	program := "vim"
-	if editor != "" {
-		program = editor
-	}
-
-	cmd := exec.Command(program, file)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
-	HandleError(err)
-}
-
-func OpenPager(file string) {
-	pager := os.Getenv("PAGER")
-	program := "less"
-	if pager != "" {
-		program = pager
-	}
-
-	cmd := exec.Command(program, file)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
-	HandleError(err)
-}
-
 // Prompt ensures that we get a valid response
 func Prompt(options []string, printText string, printArgs ...interface{}) string {
 	logger.Notice(printText, printArgs...)
@@ -133,4 +100,20 @@ func HandleFsError(err error) {
 
 	logger.Critical("An unknown error occurred\n")
 	log.Panicln(err)
+}
+
+func OpenPager(file string) {
+	pager := os.Getenv("PAGER")
+	program := "less"
+	if pager != "" {
+		program = pager
+	}
+
+	cmd := exec.Command(program, file)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err := cmd.Run()
+	HandleError(err)
 }

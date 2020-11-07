@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/eankeen/dotty/fs"
+	"github.com/eankeen/dotty/actions"
 	"github.com/eankeen/go-logger"
 	"github.com/spf13/cobra"
 )
@@ -23,15 +23,7 @@ var systemApplyCmd = &cobra.Command{
 		srcDir := filepath.Join(dotDir, "system")
 		destDir := cmd.Flag("system-dir").Value.String()
 
-		onFile := func(src string, dest string, rel string) {
-			fs.ApplyFile(src, dest, rel)
-		}
-
-		onFolder := func(src string, dest string, rel string) {
-			fs.ApplyFolder(src, dest, rel)
-		}
-
-		fs.Walk(dotDir, srcDir, destDir, onFile, onFolder)
+		actions.Apply(dotDir, srcDir, destDir)
 	},
 }
 

@@ -3,7 +3,7 @@ package cmd
 import (
 	"path/filepath"
 
-	"github.com/eankeen/dotty/fs"
+	"github.com/eankeen/dotty/actions"
 	"github.com/spf13/cobra"
 )
 
@@ -16,15 +16,7 @@ var userApplyCmd = &cobra.Command{
 		srcDir := filepath.Join(dotDir, "user")
 		destDir := cmd.Flag("user-dir").Value.String()
 
-		onFile := func(src string, dest string, rel string) {
-			fs.ApplyFile(src, dest, rel)
-		}
-
-		onFolder := func(src string, dest string, rel string) {
-			fs.ApplyFolder(src, dest, rel)
-		}
-
-		fs.Walk(dotDir, srcDir, destDir, onFile, onFolder)
+		actions.Apply(dotDir, srcDir, destDir)
 	},
 }
 

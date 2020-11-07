@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"github.com/eankeen/dotty/actions"
 	"github.com/eankeen/dotty/config"
-	"github.com/eankeen/dotty/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +12,7 @@ var userEditCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		dotDir := cmd.Flag("dot-dir").Value.String()
 
-		util.OpenEditor(config.GetUserTomlPath(dotDir))
+		actions.OpenEditor(config.GetUserTomlPath(dotDir))
 	},
 }
 

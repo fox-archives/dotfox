@@ -3,7 +3,7 @@ package cmd
 import (
 	"path/filepath"
 
-	"github.com/eankeen/dotty/fs"
+	"github.com/eankeen/dotty/actions"
 	"github.com/spf13/cobra"
 )
 
@@ -16,15 +16,7 @@ var userUnapplyCmd = &cobra.Command{
 		srcDir := filepath.Join(dotDir, "user")
 		destDir := cmd.Flag("user-dir").Value.String()
 
-		onFile := func(src string, dest string, rel string) {
-			fs.UnapplyFile(src, dest, rel)
-		}
-
-		onFolder := func(src string, dest string, rel string) {
-			fs.UnapplyFolder(src, dest, rel)
-		}
-
-		fs.Walk(dotDir, srcDir, destDir, onFile, onFolder)
+		actions.Unapply(dotDir, srcDir, destDir)
 	},
 }
 
