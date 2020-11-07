@@ -5,7 +5,7 @@ import (
 )
 
 // Apply (symlink) dotfiles
-func Apply(dotDir string, srcDir string, destDir string) {
+func Apply(dotfilesDir string, srcDir string, destDir string) {
 	onFile := func(src string, dest string, rel string) {
 		fs.ApplyFile(src, dest, rel)
 	}
@@ -14,11 +14,11 @@ func Apply(dotDir string, srcDir string, destDir string) {
 		fs.ApplyFolder(src, dest, rel)
 	}
 
-	fs.Walk(dotDir, srcDir, destDir, onFile, onFolder)
+	fs.Walk(dotfilesDir, srcDir, destDir, onFile, onFolder)
 }
 
 // Unapply (un-symlink) dotfiles
-func Unapply(dotDir string, srcDir string, destDir string) {
+func Unapply(dotfilesDir string, srcDir string, destDir string) {
 	onFile := func(src string, dest string, rel string) {
 		fs.UnapplyFile(src, dest, rel)
 	}
@@ -27,5 +27,5 @@ func Unapply(dotDir string, srcDir string, destDir string) {
 		fs.UnapplyFolder(src, dest, rel)
 	}
 
-	fs.Walk(dotDir, srcDir, destDir, onFile, onFolder)
+	fs.Walk(dotfilesDir, srcDir, destDir, onFile, onFolder)
 }

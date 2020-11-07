@@ -12,11 +12,11 @@ var userApplyCmd = &cobra.Command{
 	Short: "Synchronize user dotfiles",
 	Long:  "Synchronize user dotfiles. You will be prompted on conflicts",
 	Run: func(cmd *cobra.Command, args []string) {
-		dotDir := cmd.Flag("dot-dir").Value.String()
-		srcDir := filepath.Join(dotDir, "user")
+		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
+		srcDir := filepath.Join(dotfilesDir, "user")
 		destDir := cmd.Flag("user-dir").Value.String()
 
-		actions.Apply(dotDir, srcDir, destDir)
+		actions.Apply(dotfilesDir, srcDir, destDir)
 	},
 }
 

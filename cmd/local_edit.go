@@ -10,9 +10,9 @@ var localEditCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Edit 'local' TOML config",
 	Run: func(cmd *cobra.Command, args []string) {
-		dotDir := cmd.Flag("dot-dir").Value.String()
+		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
 
-		actions.OpenEditor(config.GetLocalTomlPath(dotDir))
+		actions.OpenEditor(config.GetLocalTomlPath(dotfilesDir))
 	},
 }
 

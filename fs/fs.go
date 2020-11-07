@@ -16,10 +16,12 @@ import (
 	"github.com/otiai10/copy"
 )
 
-func Walk(dotDir string, srcDir string, destDir string, onFile func(src string, dest string, rel string), onFolder func(src string, dest string, rel string)) {
-	userToml := config.GetUserToml(dotDir)
+func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src string, dest string, rel string), onFolder func(src string, dest string, rel string)) {
+	userToml := config.GetUserToml(dotfilesDir)
 
 	err := filepath.Walk(srcDir, func(src string, srcInfo os.FileInfo, err error) error {
+		util.HandleFsError(err)
+
 		// prevent errors in slice
 		if src == srcDir {
 			return nil
@@ -30,7 +32,7 @@ func Walk(dotDir string, srcDir string, destDir string, onFile func(src string, 
 
 		for _, file := range userToml.Files {
 			// logger.Debug("src: %s\n", src)
-			// logger.Debug("file.File: %s\n", file.File)
+			// logger.cDebug("file.File: %s\n", file.File)
 
 			// if path has a part in ignores, then we skip the whole file
 			for _, ignore := range userToml.Ignores {

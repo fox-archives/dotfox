@@ -10,9 +10,9 @@ var systemEditCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Edit 'system' TOML config",
 	Run: func(cmd *cobra.Command, args []string) {
-		dotDir := cmd.Flag("dot-dir").Value.String()
+		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
 
-		actions.OpenEditor(config.GetSystemTomlPath(dotDir))
+		actions.OpenEditor(config.GetSystemTomlPath(dotfilesDir))
 	},
 }
 

@@ -27,22 +27,22 @@ func _dirname() string {
 	return filepath.Dir(_filename())
 }
 
-func do(dotDir string, srcDir string, destDir string) {
-	actions.Apply(dotDir, srcDir, destDir)
+func do(dotfilesDir string, srcDir string, destDir string) {
+	actions.Apply(dotfilesDir, srcDir, destDir)
 
 	time.Sleep(time.Millisecond * 500)
 
-	actions.Unapply(dotDir, srcDir, destDir)
+	actions.Unapply(dotfilesDir, srcDir, destDir)
 }
 
 func TestFull(t *testing.T) {
 	testDir := filepath.Join(filepath.Dir(_dirname()), "testdata")
 	test1 := filepath.Join(testDir, "test1")
 
-	dotDir := test1
+	dotfilesDir := test1
 	srcDir := filepath.Join(test1, "dotfiles")
 	destDir := filepath.Join(test1, "user-home")
-	do(dotDir, srcDir, destDir)
+	do(dotfilesDir, srcDir, destDir)
 
 	t.Log("thing")
 }

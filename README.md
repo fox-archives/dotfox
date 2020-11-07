@@ -33,7 +33,7 @@ Available Commands:
   user        Userwide (~) config management
 
 Flags:
-      --dot-dir string   The location of your dotfiles
+      --dotfiles-dir string   The location of your dotfiles
   -h, --help             help for dotty
 
 Use "dotty [command] --help" for more information about a command.
@@ -49,5 +49,5 @@ go install
 I recommend having something like this in your ~/.profile`
 
 ```sh
-alias dotty='dotty --dot-dir=$HOME/.dots'
+alias dotty='dotty --dotfiles-dir=$HOME/.dots'
 ```

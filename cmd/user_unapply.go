@@ -12,11 +12,11 @@ var userUnapplyCmd = &cobra.Command{
 	Short: "Unapply a",
 	Long:  "This unapplies all user dotfiles, unlinking them from the destination (user) directory",
 	Run: func(cmd *cobra.Command, args []string) {
-		dotDir := cmd.Flag("dot-dir").Value.String()
-		srcDir := filepath.Join(dotDir, "user")
+		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
+		srcDir := filepath.Join(dotfilesDir, "user")
 		destDir := cmd.Flag("user-dir").Value.String()
 
-		actions.Unapply(dotDir, srcDir, destDir)
+		actions.Unapply(dotfilesDir, srcDir, destDir)
 	},
 }
 

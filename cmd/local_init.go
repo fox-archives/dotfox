@@ -21,10 +21,10 @@ var localInitCmd = &cobra.Command{
 
 		// COPY GLOBE.TOML
 		{
-			dotDir := cmd.Flag("dot-dir").Value.String()
-			srcConfig := path.Join(dotDir, "globe.toml")
+			dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
+			srcConfig := path.Join(dotfilesDir, "globe.toml")
 			destConfig := path.Join(wd, "globe.toml")
-			logger.Debug("dotDir: %s\n", dotDir)
+			logger.Debug("dotfilesDir: %s\n", dotfilesDir)
 			logger.Debug("Copying '%s' to '%s'\n", srcConfig, destConfig)
 
 			sourceFile, err := os.Open(srcConfig)

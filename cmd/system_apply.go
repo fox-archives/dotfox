@@ -19,11 +19,11 @@ var systemApplyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		dotDir := cmd.Flag("dot-dir").Value.String()
-		srcDir := filepath.Join(dotDir, "system")
+		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
+		srcDir := filepath.Join(dotfilesDir, "system")
 		destDir := cmd.Flag("system-dir").Value.String()
 
-		actions.Apply(dotDir, srcDir, destDir)
+		actions.Apply(dotfilesDir, srcDir, destDir)
 	},
 }
 

@@ -5,7 +5,7 @@ Before I move the docs to a cooler place, here are the features currently availa
 You can manage three types of dotfiles. _system_, _user_, and _local_. When setting up your repository, make sure you have a `config`, `local`, `system`, and `local` folders [like mine for example](https://github.com/eankeen/dots). I have my repo cloned to `~/.dots` and have this alias setup
 
 ```sh
-alias dotty='dotty --dot-dir=$HOME/.dots'
+alias dotty='dotty --dotfiles-dir=$HOME/.dots'
 ```
 
 ## Types of Dotfiles

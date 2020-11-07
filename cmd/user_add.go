@@ -73,7 +73,7 @@ var userAddCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		userDir := cmd.Flag("user-dir").Value.String()
-		dotDir := cmd.Flag("dot-dir").Value.String()
+		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
 
 		fileType := cmd.Flag("type").Value.String()
 		if !(fileType == "folder" || fileType == "file") {
@@ -83,27 +83,27 @@ var userAddCmd = &cobra.Command{
 
 		newPath := args[0]
 
-		// we place this before userDir because dotDir may include
+		// we place this before userDir because dotfilesDir may include
 		// the contents of userDir, plus an extra path
-		if strings.HasPrefix(newPath, dotDir) {
+		if strings.HasPrefix(newPath, dotfilesDir) {
 			addFile(newPath, fileType)
 			return
 		}
 
-		// test if has userDir prefix, replace it with dotDir
+		// test if has userDir prefix, replace it with dotfilesDir
 		if strings.HasPrefix(newPath, userDir) {
-			str := filepath.Join(dotDir, "user", newPath[len(userDir):])
+			str := filepath.Join(dotfilesDir, "user", newPath[len(userDir):])
 			addFile(str, fileType)
 			return
 		}
 
 		if filepath.IsAbs(newPath) {
-			logger.Error("Your path was not recognized. It must be either a relative path (relative to the dotDir) or an absolute path that has a prefix of your dotDir or userDir")
+			logger.Error("Your path was not recognized. It must be either a relative path (relative to the dotfilesDir) or an absolute path that has a prefix of your dotfilesDir or userDir")
 			return
 		}
 
-		// if path not absolute, assume it is relative to dotDir
-		newPath = filepath.Join(dotDir, "user", newPath)
+		// if path not absolute, assume it is relative to dotfilesDir
+		newPath = filepath.Join(dotfilesDir, "user", newPath)
 		addFile(newPath, fileType)
 	},
 }
