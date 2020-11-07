@@ -50,8 +50,8 @@ type GlobeState struct {
 func writeGlobeState() {
 	projectDir := config.GetProjectDir()
 
-	globeDotDir := path.Join(projectDir, ".globe")
-	globeStateFile := path.Join(globeDotDir, "globe.state.json")
+	globeDotDir := path.Join(projectDir, ".dotty")
+	globeStateFile := path.Join(globeDotDir, "dotty.state.json")
 
 	panicIfFileDoesNotExit(globeDotDir)
 

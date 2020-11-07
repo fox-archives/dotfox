@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/eankeen/dotty/internal/util"
 	logger "github.com/eankeen/go-logger"
 )
 
@@ -72,12 +71,17 @@ func RemoveThenSymlink(src string, dest string) error {
 	return nil
 }
 
-func WriteTemp(content []byte) os.File {
+// WriteTemp takes a `[]byte` and writes that to a temporary file, returning the File
+func WriteTemp(content []byte) (os.File, error) {
 	tempFile, err := ioutil.TempFile(os.TempDir(), "dotty-")
-	util.HandleFsError(err)
+	if err != nil {
+		return os.File{}, err
+	}
 
 	_, err = tempFile.Write(content)
-	util.HandleFsError(err)
+	if err != nil {
+		return os.File{}, err
+	}
 
-	return *tempFile
+	return *tempFile, nil
 }

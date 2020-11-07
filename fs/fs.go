@@ -16,6 +16,7 @@ import (
 	"github.com/otiai10/copy"
 )
 
+// Walk walks a directory full of dotfiles (for example, $HOME). It walks each file, and tests to see if it matches a pattern in `user.dots.toml`, `system.dots.toml`, etc.
 func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src string, dest string, rel string), onFolder func(src string, dest string, rel string)) {
 	userToml := config.UserCfg(dotfilesDir)
 
@@ -32,7 +33,7 @@ func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src str
 
 		for _, file := range userToml.Files {
 			// logger.Debug("src: %s\n", src)
-			// logger.cDebug("file.File: %s\n", file.File)
+			// logger.Debug("file.File: %s\n", file.File)
 
 			// if path has a part in ignores, then we skip the whole file
 			for _, ignore := range userToml.Ignores {
@@ -53,7 +54,6 @@ func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src str
 
 			if fileMatches && fileType == "file" {
 				logger.Informational("Operating on File: '%s'\n", file.File)
-
 				if srcInfo.IsDir() {
 					logger.Warning("Your '%s' entry has a match, but it actually is a folder (%s) instead of a file. Did you mean to append a slash? Skipping file", file.File, src)
 					return nil
@@ -87,6 +87,7 @@ func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src str
 	util.HandleFsError(err)
 }
 
+// ApplyFile ensures that there is a `src` file that the `dest` symlink is pointing to
 // assumptions: src file exists, dest may NOT
 func ApplyFile(src string, dest string, rel string) {
 	fi, err := os.Lstat(dest)
@@ -156,7 +157,8 @@ promptUserFile:
 			panic(err)
 		}
 
-		file := WriteTemp(output)
+		file, err := WriteTemp(output)
+		util.HandleFsError(err)
 		util.OpenPager(file.Name())
 
 		goto promptUserFile
@@ -168,7 +170,8 @@ promptUserFile:
 			panic(err)
 		}
 
-		file := WriteTemp(output)
+		file, err := WriteTemp(output)
+		util.HandleFsError(err)
 		util.OpenPager(file.Name())
 
 		goto promptUserFile
@@ -204,6 +207,7 @@ promptUserFile:
 	return
 }
 
+// ApplyFolder ensures that there is a `src` folder that the `dest` symlink is pointing to
 // assumptions: src directory exists. dest may NOT
 func ApplyFolder(src string, dest string, rel string) {
 	fi, err := os.Lstat(dest)
@@ -295,7 +299,8 @@ func ApplyFolder(src string, dest string, rel string) {
 			content := append(output, "\n\n"...)
 			content = append(content, output2...)
 
-			file := WriteTemp(content)
+			file, err := WriteTemp(content)
+			util.HandleFsError(err)
 			util.OpenPager(file.Name())
 
 			goto promptUserFolder
@@ -330,6 +335,7 @@ func ApplyFolder(src string, dest string, rel string) {
 	}
 }
 
+// UnapplyFile ensures that there is no symlink located at `dest` (pointing to a file in `src`)
 func UnapplyFile(src string, dest string, rel string) {
 	fi, err := os.Lstat(dest)
 	if os.IsNotExist(err) {
@@ -350,6 +356,7 @@ func UnapplyFile(src string, dest string, rel string) {
 	}
 }
 
+// UnapplyFolder ensures that there is no symlink located at `dest` (pointing to a folder in `src`)
 func UnapplyFolder(src string, dest string, rel string) {
 	fi, err := os.Lstat(dest)
 	if os.IsNotExist(err) {

@@ -24,6 +24,30 @@ func HandleError(err error) {
 	}
 }
 
+func HandleFsError(err error) {
+	if err == nil {
+		return
+	}
+
+	if os.IsPermission(err) {
+		logger.Error("You do not have permission to access the file or folder\n")
+		log.Fatalln(err)
+	}
+
+	if os.IsNotExist(err) {
+		logger.Error("File does not exist\n")
+		log.Fatalln(err)
+	}
+
+	if os.IsExist(err) {
+		logger.Error("File exists\n")
+		log.Fatalln(err)
+	}
+
+	logger.Critical("An unknown error occurred\n")
+	log.Panicln(err)
+}
+
 // Dirname performs same function as `__dirname()` in Node, obtaining the parent folder of the file of the callee of this function
 func Dirname() string {
 	_, filename, _, ok := runtime.Caller(1)
@@ -79,30 +103,6 @@ func Prompt(options []string, printText string, printArgs ...interface{}) string
 	}
 
 	return Prompt(options, printText, printArgs)
-}
-
-func HandleFsError(err error) {
-	if err == nil {
-		return
-	}
-
-	if os.IsPermission(err) {
-		logger.Error("You do not have permission to access the file or folder\n")
-		log.Fatalln(err)
-	}
-
-	if os.IsNotExist(err) {
-		logger.Error("File does not exist\n")
-		log.Fatalln(err)
-	}
-
-	if os.IsExist(err) {
-		logger.Error("File exists\n")
-		log.Fatalln(err)
-	}
-
-	logger.Critical("An unknown error occurred\n")
-	log.Panicln(err)
 }
 
 func OpenPager(file string) {
