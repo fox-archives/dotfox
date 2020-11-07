@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"path/filepath"
+
 	"github.com/eankeen/dotty/actions"
 	"github.com/eankeen/dotty/config"
 	"github.com/spf13/cobra"
@@ -12,7 +14,8 @@ var localEditCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
 
-		actions.OpenEditor(config.GetCfgFile(dotfilesDir, "local"))
+		file := filepath.Join(dotfilesDir, config.DottyCfg(dotfilesDir).ConfigDir, "local.dots.toml")
+		actions.OpenEditor(file)
 	},
 }
 

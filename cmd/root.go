@@ -30,20 +30,20 @@ func init() {
 
 	pf := rootCmd.PersistentFlags()
 
-	pf.String("dotfiles-dir", "", "The location of your dotfiles")
+	pf.String("dotfiles-dir", "", "The source locations of your dotfiles")
 	cobra.MarkFlagRequired(pf, "dotfiles-dir")
 	cobra.MarkFlagDirname(pf, "dotfiles-dir")
 
-	pf.String("system-dir", "/", "Destination of 'system' dotfiles")
-	cobra.MarkFlagDirname(pf, "system-dir")
+	pf.String("system-dir-dest", "/", "Destination of 'system' dotfiles")
+	cobra.MarkFlagDirname(pf, "system-dir-dest")
 
 	homedir, err := os.UserHomeDir()
 	util.HandleError(err)
-	pf.String("user-dir", homedir, "Destination of 'user' dotfiles")
-	cobra.MarkFlagDirname(pf, "user-dir")
+	pf.String("user-dir-dest", homedir, "Destination of 'user' dotfiles")
+	cobra.MarkFlagDirname(pf, "user-dir-dest")
 
 	wd, err := os.Getwd()
 	util.HandleError(err)
-	pf.String("local-dir", wd, "Destination of 'local' dotfiles")
-	cobra.MarkFlagDirname(pf, "local-dir")
+	pf.String("local-dir-dest", wd, "Destination of 'local' dotfiles")
+	cobra.MarkFlagDirname(pf, "local-dir-dest")
 }

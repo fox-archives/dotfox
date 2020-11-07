@@ -72,7 +72,7 @@ var userAddCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		userDir := cmd.Flag("user-dir").Value.String()
+		userDir := cmd.Flag("user-dir-dest").Value.String()
 		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
 
 		fileType := cmd.Flag("type").Value.String()
