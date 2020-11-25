@@ -36,7 +36,7 @@ func HandleFsError(err error) {
 	}
 
 	if os.IsNotExist(err) {
-		logger.Error("File does not exist\n")
+		logger.Error("File or folder does not exist. Please create it\n")
 		log.Fatalln(err)
 	}
 

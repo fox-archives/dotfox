@@ -1,0 +1,6 @@
+configDir = "cfg"
+
+userDirSrc = "src-dotfiles"
+userDirDest = "dest-HOME"
+
+localDirSrc = "local"
