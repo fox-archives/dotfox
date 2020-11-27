@@ -94,10 +94,10 @@ func TestUserApply(t *testing.T) {
 		}
 
 		fmt.Printf("DESTDIR: '%s'\n", destDir)
-		// err := os.RemoveAll(destDir)
-		// util.HandleFsError(err)
-		actions.Apply(dotfilesDir, srcDir, destDir)
+		err = os.RemoveAll(destDir)
+		util.HandleFsError(err)
 
+		actions.Apply(dotfilesDir, srcDir, destDir)
 		userTest.fn(t, srcDir, destDir)
 	}
 
