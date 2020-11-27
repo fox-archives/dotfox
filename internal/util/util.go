@@ -6,13 +6,10 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"runtime"
-	"strings"
 	"syscall"
 	"unsafe"
 
-	"github.com/eankeen/dotty/internal/t"
 	"github.com/eankeen/go-logger"
 )
 
@@ -120,89 +117,4 @@ func OpenPager(file string) {
 
 	err := cmd.Run()
 	HandleError(err)
-}
-
-// PathExpand converts '~`, and to absolute path
-func pathExpand(dotfilesDir string, rawPath string) string {
-	isAbsolute := func(path string) bool {
-		if strings.HasPrefix(path, "/") {
-			return true
-		}
-		return false
-	}
-
-	if strings.HasPrefix(rawPath, "~") {
-		homeDir, err := os.UserHomeDir()
-		HandleFsError(err)
-		rawPath = strings.Replace(rawPath, "~", homeDir, 1)
-	}
-
-	if strings.Contains(rawPath, "$HOME") {
-		homeDir, err := os.UserHomeDir()
-		HandleFsError(err)
-		rawPath = strings.ReplaceAll(rawPath, "$HOME", homeDir)
-	}
-
-	if strings.Contains(rawPath, "$XDG_CONFIG_HOME") {
-		configHome := os.Getenv("XDG_CONFIG_HOME")
-		rawPath = strings.ReplaceAll(rawPath, "$XDG_CONFIG_HOME", configHome)
-	}
-
-	if isAbsolute(rawPath) {
-		return rawPath
-	}
-
-	// relative
-	return filepath.Join(dotfilesDir, rawPath)
-}
-
-// Src gets the location of a file, accounting for default values, config file values, and command line arguments
-// TODO take into account command line arguments
-func Src(dotfilesDir string, dottyCfg t.DottyConfig, typ string) string {
-	switch typ {
-	case "system":
-		if dottyCfg.SystemDirSrc == "" {
-			return filepath.Join(dotfilesDir, "system")
-		}
-		return pathExpand(dotfilesDir, dottyCfg.SystemDirSrc)
-	case "user":
-		if dottyCfg.UserDirSrc == "" {
-			return filepath.Join(dotfilesDir, "user")
-		}
-		return pathExpand(dotfilesDir, dottyCfg.UserDirSrc)
-	case "local":
-		if dottyCfg.LocalDirSrc == "" {
-			return filepath.Join(dotfilesDir, "local")
-		}
-		return pathExpand(dotfilesDir, dottyCfg.LocalDirSrc)
-	}
-
-	panic("Src not valid")
-}
-
-// Dest gets the location of a file, accounting for default values, config file values, and command line arguments
-// TODO take into account command line arguments
-func Dest(dotfilesDir string, dottyCfg t.DottyConfig, typ string) string {
-	switch typ {
-	case "system":
-		if dottyCfg.SystemDirDest == "" {
-			return "/"
-		}
-		return pathExpand(dotfilesDir, dottyCfg.SystemDirDest)
-	case "user":
-		if dottyCfg.UserDirDest == "" {
-			homeDir, err := os.UserHomeDir()
-			HandleFsError(err)
-
-			return homeDir
-		}
-		return pathExpand(dotfilesDir, dottyCfg.UserDirDest)
-	case "local":
-		wd, err := os.Getwd()
-		HandleError(err)
-
-		return wd
-	}
-
-	panic("Dest not valid")
 }

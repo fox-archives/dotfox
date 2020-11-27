@@ -102,8 +102,8 @@ func TestUserApply(t *testing.T) {
 		dotfilesDir := filepath.Join(testDir(), "test-user", userTest.dir)
 		dottyCfg := config.DottyCfg(dotfilesDir)
 
-		srcDir := util.Src(dotfilesDir, dottyCfg, "user")
-		destDir := util.Dest(dotfilesDir, dottyCfg, "user")
+		srcDir := config.Src(dotfilesDir, dottyCfg, "user")
+		destDir := config.Dest(dotfilesDir, dottyCfg, "user")
 
 		homeDir, err := os.UserHomeDir()
 		util.HandleError(err)

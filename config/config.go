@@ -6,9 +6,18 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/eankeen/dotty/internal/t"
 	"github.com/eankeen/dotty/internal/util"
 )
+
+// DottyConfig represents the `dotty.toml` file
+type DottyConfig struct {
+	ConfigDir     string `toml:"configDir"`
+	SystemDirSrc  string `toml:"systemDirSrc"`
+	SystemDirDest string `toml:"systemDirDest"`
+	UserDirSrc    string `toml:"userDirSrc"`
+	UserDirDest   string `toml:"userDirDest"`
+	LocalDirSrc   string `toml:"localDirSrc"`
+}
 
 // File represents a file entry in a `*.dots.toml` file
 type File struct {
@@ -75,12 +84,12 @@ type LocalDotsConfig struct {
 }
 
 // DottyCfg gets the `dotty.toml` file
-func DottyCfg(dotfilesDir string) t.DottyConfig {
+func DottyCfg(dotfilesDir string) DottyConfig {
 	file := filepath.Join(dotfilesDir, "dotty.toml")
 	raw, err := ioutil.ReadFile(file)
 	util.HandleFsError(err)
 
-	var cfg t.DottyConfig
+	var cfg DottyConfig
 	err = toml.Unmarshal(raw, &cfg)
 	util.HandleError(err)
 

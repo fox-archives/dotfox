@@ -9,7 +9,7 @@ import (
 
 var userUnapplyCmd = &cobra.Command{
 	Use:   "unapply",
-	Short: "Unapply a",
+	Short: "Unsymlinks matched user files",
 	Long:  "This unapplies all user dotfiles, unlinking them from the destination (user) directory",
 	Run: func(cmd *cobra.Command, args []string) {
 		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
