@@ -17,7 +17,7 @@ import (
 )
 
 // Walk walks a directory full of dotfiles (for example, $HOME). It walks each file, and tests to see if it matches a pattern in `user.dots.toml`, `system.dots.toml`, etc.
-func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src string, dest string, rel string), onFolder func(src string, dest string, rel string)) {
+func Walk(dotfilesDir, srcDir, destDir string, onFile func(src, dest, rel string, mode int), onFolder func(src, dest, rel string, mode int)) {
 	userToml := config.UserCfg(dotfilesDir)
 
 	err := filepath.Walk(srcDir, func(src string, srcInfo os.FileInfo, err error) error {
@@ -52,6 +52,16 @@ func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src str
 
 			fileMatches, fileType := config.FileMatches(src, file)
 
+			// SET DEFAULT
+			// todo: make the default the mode of the src file
+			if file.Mode == 0 {
+				if fileType == "folder" {
+					file.Mode = 0755
+				} else if fileType == "file" {
+					file.Mode = 0644
+				}
+			}
+
 			if fileMatches && fileType == "file" {
 				logger.Informational("Operating on File: '%s'\n", file.File)
 				if srcInfo.IsDir() {
@@ -59,7 +69,7 @@ func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src str
 					return nil
 				}
 
-				onFile(src, dest, rel)
+				onFile(src, dest, rel, file.Mode)
 
 				// go to next file (in dotfile folder)
 				return nil
@@ -71,7 +81,7 @@ func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src str
 					return nil
 				}
 
-				onFolder(src, dest, rel)
+				onFolder(src, dest, rel, file.Mode)
 
 				// go to next file (in dotfile folder)
 				return nil
@@ -89,16 +99,13 @@ func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src str
 
 // ApplyFile ensures that there is a `src` file that the `dest` symlink is pointing to
 // assumptions: src file exists, dest may NOT
-func ApplyFile(src string, dest string, rel string) {
+func ApplyFile(src string, dest string, rel string, mode int) {
 	fi, err := os.Lstat(dest)
 	if err != nil {
 		// dest file doesn't exist
 		if os.IsNotExist(err) {
 			logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
-			err := MkdirThenSymlink(src, dest)
-			// if err != nil {
-			// 	panic(err)
-			// }
+			err := MkdirThenSymlink(src, dest, mode)
 			util.HandleFsError(err)
 			return
 		}
@@ -117,7 +124,7 @@ func ApplyFile(src string, dest string, rel string) {
 		// if link destination doesn't match src
 		if linkDest != src {
 			logger.Debug("OK: Symlink points to invalid location. Removing and Recreating\n")
-			err := RemoveThenSymlink(src, dest)
+			err := RemoveThenSymlink(src, dest, mode)
 			util.HandleFsError(err)
 			return
 		}
@@ -139,7 +146,7 @@ func ApplyFile(src string, dest string, rel string) {
 	// if files have the same content
 	if strings.Compare(string(destContents), string(srcContents)) == 0 {
 		logger.Debug("OK: dest and src have same content. Replacing dest with symlink\n")
-		err := RemoveThenSymlink(src, dest)
+		err := RemoveThenSymlink(src, dest, mode)
 		util.HandleFsError(err)
 		return
 	}
@@ -176,7 +183,7 @@ promptUserFile:
 
 		goto promptUserFile
 	case "use-src":
-		err := RemoveThenSymlink(src, dest)
+		err := RemoveThenSymlink(src, dest, mode)
 		util.HandleFsError(err)
 		break
 	case "use-dest":
@@ -194,7 +201,7 @@ promptUserFile:
 		util.HandleFsError(err)
 
 		// re-symlink
-		err = RemoveThenSymlink(src, dest)
+		err = RemoveThenSymlink(src, dest, mode)
 		util.HandleFsError(err)
 		break
 	case "skip":
@@ -209,13 +216,13 @@ promptUserFile:
 
 // ApplyFolder ensures that there is a `src` folder that the `dest` symlink is pointing to
 // assumptions: src directory exists. dest may NOT
-func ApplyFolder(src string, dest string, rel string) {
+func ApplyFolder(src string, dest string, rel string, mode int) {
 	fi, err := os.Lstat(dest)
 	if err != nil {
 		// dest file doesn't exist
 		if os.IsNotExist(err) {
 			logger.Debug("OK: dest '%s' doesn't exist. Recreating\n", dest)
-			err := MkdirThenSymlink(src, dest)
+			err := MkdirThenSymlink(src, dest, mode)
 			util.HandleFsError(err)
 			return
 		}
@@ -234,7 +241,7 @@ func ApplyFolder(src string, dest string, rel string) {
 		// if link destination doesn't match src
 		if linkDest != src {
 			logger.Debug("OK: Symlink points to invalid location. Removing and Recreating\n")
-			RemoveThenSymlink(src, dest)
+			RemoveThenSymlink(src, dest, mode)
 			util.HandleFsError(err)
 			return
 		}
@@ -255,14 +262,14 @@ func ApplyFolder(src string, dest string, rel string) {
 	// if both folders are empty, symlink them
 	if len(srcDirs) == 0 && len(destDirs) == 0 {
 		logger.Debug("OK: Replacing folder with symlink\n")
-		err := RemoveThenSymlink(src, dest)
+		err := RemoveThenSymlink(src, dest, mode)
 		util.HandleFsError(err)
 		return
 	}
 
 	if len(srcDirs) > 0 && len(destDirs) == 0 {
 		logger.Debug("OK: Replacing folder with symlink\n")
-		err := RemoveThenSymlink(src, dest)
+		err := RemoveThenSymlink(src, dest, mode)
 		util.HandleFsError(err)
 		return
 	}
@@ -277,6 +284,10 @@ func ApplyFolder(src string, dest string, rel string) {
 
 		err = os.Symlink(src, dest)
 		util.HandleFsError(err)
+
+		err = os.Chmod(dest, os.FileMode(mode))
+		util.HandleFsError(err)
+
 		return
 	}
 
@@ -312,6 +323,9 @@ func ApplyFolder(src string, dest string, rel string) {
 			err = os.Symlink(src, dest)
 			util.HandleFsError(err)
 
+			err = os.Chmod(dest, os.FileMode(mode))
+			util.HandleFsError(err)
+
 			break
 		case "use-dest":
 			// TODO: fix this (getting permissions errors)
@@ -325,6 +339,9 @@ func ApplyFolder(src string, dest string, rel string) {
 			util.HandleFsError(err)
 
 			err = os.Symlink(src, dest)
+			util.HandleFsError(err)
+
+			err = os.Chmod(dest, os.FileMode(mode))
 			util.HandleFsError(err)
 
 			break

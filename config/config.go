@@ -13,6 +13,7 @@ import (
 // File represents a file entry in a `*.dots.toml` file
 type File struct {
 	File       string   `toml:"file"`
+	Mode       int      `toml:"mode"`
 	Tags       []string `toml:"tags"`
 	Heuristic1 bool
 	Heuristic2 bool

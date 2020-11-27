@@ -75,6 +75,25 @@ func TestUserApply(t *testing.T) {
 				ensureSymlink(t, srcDir, destDir, "afolder/asubfolder")
 			},
 		},
+		// test defaults of dotty.toml
+		{
+			dir: "user-7-defaults",
+			fn: func(t *testing.T, srcDir, destDir string) {
+				defaultDestDir := filepath.Join(testDir(), "test-user", "user-7-defaults", "dest-HOME")
+
+				ensureDir(t, defaultDestDir, "")
+				ensureSymlink(t, srcDir, defaultDestDir, "bar")
+			},
+		},
+		// test adding permission to file
+		{
+			dir: "user-8-permission",
+			fn: func(t *testing.T, srcDir, destDir string) {
+				ensureDir(t, destDir, "")
+				ensureSymlink(t, srcDir, destDir, "bar")
+				ensureMode(t, destDir, "bar", "-rw-------")
+			},
+		},
 	}
 
 	for _, userTest := range userTests {
@@ -88,12 +107,12 @@ func TestUserApply(t *testing.T) {
 
 		homeDir, err := os.UserHomeDir()
 		util.HandleError(err)
+
 		if destDir == homeDir {
 			fmt.Println("FAIL NOW")
 			t.FailNow()
 		}
 
-		fmt.Printf("DESTDIR: '%s'\n", destDir)
 		err = os.RemoveAll(destDir)
 		util.HandleFsError(err)
 

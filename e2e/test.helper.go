@@ -36,7 +36,6 @@ func ensureDir(t *testing.T, destDir string, path string) {
 			t.Error(err)
 		}
 	}
-
 }
 
 func ensureSymlink(t *testing.T, src string, dest string, path string) {
@@ -52,5 +51,24 @@ func ensureSymlink(t *testing.T, src string, dest string, path string) {
 
 	if linkSrc != finalSrc {
 		t.Logf("Error: Symlink at '%s' points to '%s', but should point at '%s'", finalDest, linkSrc, finalSrc)
+	}
+}
+
+func ensureMode(t *testing.T, dest string, path string, modeStr string) {
+	finalDest := filepath.Join(dest, path)
+
+	info, err := os.Stat(finalDest)
+	if err != nil {
+		if os.IsNotExist(err) {
+			t.Logf("Error: ensureDir: Folder '%s' does not exist", finalDest)
+		} else {
+			t.Log("An unknown error occured")
+			t.Error(err)
+		}
+	}
+
+	p := info.Mode()
+	if p.String() != modeStr {
+		t.Errorf("Error: modeStr '%s' does not match '%s' for dest '%s'", p, modeStr, dest)
 	}
 }

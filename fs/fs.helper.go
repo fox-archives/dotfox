@@ -41,7 +41,7 @@ func FilePossiblyExists(fileName string) (bool, error) {
 
 // MkdirThenSymlink creates a new symlink to a destination. it
 // automatically creates the parent directory structure too
-func MkdirThenSymlink(src string, dest string) error {
+func MkdirThenSymlink(src string, dest string, mode int) error {
 	err := os.MkdirAll(filepath.Dir(dest), 0755)
 	if err != nil {
 		return err
@@ -52,18 +52,28 @@ func MkdirThenSymlink(src string, dest string) error {
 		return err
 	}
 
+	err = os.Chmod(dest, os.FileMode(mode))
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // RemoveThenSymlink removes a symlink that points to a wrong
 // location, replacing it with the right one
-func RemoveThenSymlink(src string, dest string) error {
+func RemoveThenSymlink(src string, dest string, mode int) error {
 	err := os.Remove(dest)
 	if err != nil {
 		return err
 	}
 
 	err = os.Symlink(src, dest)
+	if err != nil {
+		return err
+	}
+
+	err = os.Chmod(dest, os.FileMode(mode))
 	if err != nil {
 		return err
 	}
