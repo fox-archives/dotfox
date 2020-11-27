@@ -20,7 +20,7 @@ For example, you can manage your "local" `.editorconfig`'s, `.eslintrc.js`'s, `.
 ```txt
 $ dotty --help
 A CM (Configuration Management) utility for dotfiles. Used for managing
-local,user, or system-wide dotfiles
+local, user, or system-wide dotfiles
 
 Usage:
    dotty [command]

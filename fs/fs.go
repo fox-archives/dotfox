@@ -55,7 +55,7 @@ func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src str
 			if fileMatches && fileType == "file" {
 				logger.Informational("Operating on File: '%s'\n", file.File)
 				if srcInfo.IsDir() {
-					logger.Warning("Your '%s' entry has a match, but it actually is a folder (%s) instead of a file. Did you mean to append a slash? Skipping file", file.File, src)
+					logger.Warning("Your '%s' entry has a match, but it actually is a folder (%s) instead of a file. Did you mean to append a slash? Skipping\n", file.File, src)
 					return nil
 				}
 
@@ -67,7 +67,7 @@ func Walk(dotfilesDir string, srcDir string, destDir string, onFile func(src str
 				logger.Informational("Operating on Folder: '%s'\n", file.File)
 
 				if !srcInfo.IsDir() {
-					logger.Warning("Your '%s' entry has a match, but it actually matches a file (%s) instead of a folder. Did you mean to remove the trailing slack? Skipping file\n", file.File, src)
+					logger.Warning("Your '%s' entry has a match, but it actually matches a file (%s) instead of a folder. Did you mean to remove the trailing slack? Skipping\n", file.File, src)
 					return nil
 				}
 
