@@ -1,53 +1,14 @@
 # Dotty
 
-🌎 System, user, and local specific dotfile manager
+🌎 Simple dotfile manager
 
 ## Description
 
-A CM (Configuration Management) utility for dotfiles. It's used for managing local, user, or system-wide dotfiles.
-
-For example, you can manage your "local" `.editorconfig`'s, `.eslintrc.js`'s, `.clang-format`'s, your "user" `~/.bashrc`'s, `~/.inpurc`'s, or your "system" `/boot/efi/EFI/refind/refind.conf`, `/root/.nanorc` files.
-
-## Features
-
-- Human readable config format
-- Prompts user on conflicts
-- Uses symlinks
-- Use the same utility to manage three different types of dotfiles
-
-## Usage
-
-```txt
-$ dotty --help
-A CM (Configuration Management) utility for dotfiles. Used for managing
-local, user, or system-wide dotfiles
-
-Usage:
-   dotty [command]
-
-Available Commands:
-  help        Help about any command
-  init        Init Dotty's config files
-  local       Local (.) (per-project) config management
-  system      Systemwide (/) config management
-  user        Userwide (~) config management
-
-Flags:
-      --dotfiles-dir string   The location of your dotfiles
-  -h, --help             help for dotty
-
-Use "dotty [command] --help" for more information about a command.
-```
-
-## Installation
-
-```sh
-git clone https://github.com/eankeen/dotty
-go install
-```
-
-I recommend having something like this in your ~/.profile`
-
-```sh
-alias dotty='dotty --dotfiles-dir=$HOME/.dots'
-```
+- OK
+- OK_SLASH: ok, but symlink has an appended slash
+- BROKEN_S: symlink exists, but points to wrong location
+- ROGUE_F: file exists in location
+- ROGUE_D: dir exists in location
+- TODO_F: file does not exist in location. must todo copy it in there
+- TODO_D: same for dir
+- MISSING: file missing from both src and dest
