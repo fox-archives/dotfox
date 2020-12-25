@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/eankeen/dotty/actions"
 	"github.com/eankeen/dotty/config"
-	"github.com/eankeen/dotty/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -15,8 +14,8 @@ var userUnapplyCmd = &cobra.Command{
 		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
 		dottyCfg := config.DottyCfg(dotfilesDir)
 
-		srcDir := util.Src(dotfilesDir, dottyCfg, "user")
-		destDir := util.Dest(dotfilesDir, dottyCfg, "user")
+		srcDir := config.Src(dotfilesDir, dottyCfg, "user")
+		destDir := config.Dest(dotfilesDir, dottyCfg, "user")
 
 		actions.Unapply(dotfilesDir, srcDir, destDir)
 	},

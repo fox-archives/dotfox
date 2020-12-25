@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/eankeen/dotty/config"
-	"github.com/eankeen/dotty/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -16,11 +15,11 @@ var printCmd = &cobra.Command{
 		dotfilesDir := cmd.Flag("dotfiles-dir").Value.String()
 		dottyCfg := config.DottyCfg(dotfilesDir)
 
-		systemSrcDir := util.Src(dotfilesDir, dottyCfg, "system")
-		systemDestDir := util.Dest(dotfilesDir, dottyCfg, "system")
-		userSrcDir := util.Src(dotfilesDir, dottyCfg, "user")
-		userDestDir := util.Dest(dotfilesDir, dottyCfg, "user")
-		localSrcDir := util.Src(dotfilesDir, dottyCfg, "local")
+		systemSrcDir := config.Src(dotfilesDir, dottyCfg, "system")
+		systemDestDir := config.Dest(dotfilesDir, dottyCfg, "system")
+		userSrcDir := config.Src(dotfilesDir, dottyCfg, "user")
+		userDestDir := config.Dest(dotfilesDir, dottyCfg, "user")
+		localSrcDir := config.Src(dotfilesDir, dottyCfg, "local")
 
 		fmt.Printf("dotfilesDir: '%s'\n", dotfilesDir)
 		fmt.Printf("systemSrcDir: '%s'\n", systemSrcDir)

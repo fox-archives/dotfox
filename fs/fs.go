@@ -32,8 +32,8 @@ func Walk(dotfilesDir, srcDir, destDir string, onFile func(src, dest, rel string
 		dest := filepath.Join(destDir, rel)
 
 		for _, file := range userToml.Files {
-			// logger.Debug("src: %s\n", src)
-			// logger.Debug("file.File: %s\n", file.File)
+			logger.Debug("src: %s\n", src)
+			logger.Debug("file.File: %s\n", file.File)
 
 			// if path has a part in ignores, then we skip the whole file
 			for _, ignore := range userToml.Ignores {

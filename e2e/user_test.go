@@ -94,6 +94,19 @@ func TestUserApply(t *testing.T) {
 				ensureMode(t, destDir, "bar", "-rw-------")
 			},
 		},
+		{
+			dir: "user-9-dots",
+			fn: func(t *testing.T, srcDir, destDir string) {
+				ensureDir(t, destDir, "")
+				ensureDir(t, destDir, ".baz")
+				ensureDir(t, destDir, "folder")
+				ensureDir(t, destDir, "folder/.zed")
+				ensureSymlink(t, srcDir, destDir, ".bar")
+				ensureSymlink(t, srcDir, destDir, ".baz")
+				ensureSymlink(t, srcDir, destDir, "folder/.foo")
+				ensureSymlink(t, srcDir, destDir, "folder/.zed")
+			},
+		},
 	}
 
 	for _, userTest := range userTests {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/eankeen/dotty/internal/util"
 	"github.com/spf13/cobra"
 	"golang.org/x/sys/unix"
 )
@@ -33,17 +32,4 @@ func init() {
 	pf.String("dotfiles-dir", "", "The source locations of your dotfiles")
 	cobra.MarkFlagRequired(pf, "dotfiles-dir")
 	cobra.MarkFlagDirname(pf, "dotfiles-dir")
-
-	pf.String("system-dir-dest", "/", "Destination of 'system' dotfiles")
-	cobra.MarkFlagDirname(pf, "system-dir-dest")
-
-	homedir, err := os.UserHomeDir()
-	util.HandleError(err)
-	pf.String("user-dir-dest", homedir, "Destination of 'user' dotfiles")
-	cobra.MarkFlagDirname(pf, "user-dir-dest")
-
-	wd, err := os.Getwd()
-	util.HandleError(err)
-	pf.String("local-dir-dest", wd, "Destination of 'local' dotfiles")
-	cobra.MarkFlagDirname(pf, "local-dir-dest")
 }
