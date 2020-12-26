@@ -26,36 +26,34 @@ proc rts(str: string): string =
     return str[0 .. ^2]
   return str
 
-# given the path to the dest (the home folder), give
-# the real location (in the dotfiles)
-proc getRealDotfileLocation(homeDir: string, dotDir: string, file: string): string =
-    let rel = file[len(homeDir) .. ^1]
-    return joinPath(dotDir, rel)
+# from dotfile (in homeDir), get rel path
+proc getRel(homeDir: string, dotFile: string): string =
+  let rel = dotFile[len(homeDir) .. ^1]
+  return rel
 
-proc symlinkResolvedProperly(src: string, dest: string, symlink: string): bool =
-  let rel = symlink[len(dest) .. ^1]
+# from dotFile (in homeDir), get real path that's in dotDir
+proc getRealDot(dotDir: string, homeDir: string, dotFile: string): string =
+    return joinPath(dotDir, getRel(homeDir, dotFile))
 
-  if rts(expandSymlink(symlink)) == joinPath(src, rel):
+# test if the symlink in homeDir actually points to corresponding one in dotFile
+# assumes the symlink exists
+proc symlinkResolvedProperly(dotDir: string, homeDir: string, dotFile: string): bool =
+
+  if rts(expandSymlink(dotFile)) == getRealDot(dotDir, homeDir, dotFile):
     return true
   else:
     return false
 
-# checks to see if src and dest are both a folder or file. if not, aborts
-proc isBothFileOrFolder(src: string, dest: string, rel: string): bool =
-  let pathOne = joinPath(src, rel)
-  let pathTwo = joinPath(dest, rel)
+proc dirLength(dir: string): int =
+  var len = 0
+  for kind, path in walkDir(dir):
+    len = len + 1
+  return len
 
-  if dirExists(pathOne) and dirExists(pathTwo):
-    return true
-  elif fileExists(pathOne) and fileExists(pathTwo):
-    return true
-  else:
-    return false
-
-proc status(src: string, dest: string, dotConfigFiles: seq[string]) =
-  for i, file in dotConfigFiles:
+proc doStatus(dotDir: string, homeDir: string, dotFiles: seq[string]) =
+  for i, file in dotFiles:
     if symlinkExists(file):
-        if symlinkResolvedProperly(src, dest, file):
+        if symlinkResolvedProperly(dotDir, homeDir, file):
           # symlinks pointing to a file or folder may or may not have a trailing slash. skip ones that do for consistency
           if endsWith(expandSymlink(file), '/'):
               echo "[OK_SLASH] " & file
@@ -70,18 +68,21 @@ proc status(src: string, dest: string, dotConfigFiles: seq[string]) =
         echo "[ROGUE_D]  " & file
     # nothing exists, we create it
     else:
-        let rel = file[len(dest) .. ^1]
-        if fileExists(joinPath(src, rel)):
+        let rel = file[len(homeDir) .. ^1]
+        if fileExists(joinPath(dotDir, rel)):
           echo "[TOLINK_F] " & file
-        elif dirExists(joinPath(src, rel)):
+        elif dirExists(joinPath(dotDir, rel)):
           echo "[TOLINK_D] " & file
         else:
           echo "[MISSING]  " & file
 
-proc reconcile(src: string, dest: string, dotConfigFiles: seq[string]) =
+proc doReconcile(dotDir: string, homeDir: string, dotConfigFiles: seq[string]) =
   for i, file in dotConfigFiles:
+    # ensure directory exists
+    createDir(parentDir(file))
+
     if symlinkExists(file):
-        if symlinkResolvedProperly(src, dest, file):
+        if symlinkResolvedProperly(dotDir, homeDir, file):
           # everything OK except the trailing slash; fix it
           if endsWith(expandSymlink(file), '/'):
               echo  "FIX OK_SLASH: " & file
@@ -90,17 +91,67 @@ proc reconcile(src: string, dest: string, dotConfigFiles: seq[string]) =
               createSymlink(rts(temp), file)
         else:
           echo "FIX BROKEN_S: " & file
-          let temp = expandSymlink(file)
           removeFile(file)
-          createSymlink(rts(temp), file)
+          createSymlink(getRealDot(dotDir, homeDir, file), file)
     elif fileExists(file):
-        echo "FIX ROGUE_F  " & file
+        let real = getRealDot(dotDir, homeDir, file)
+
+        if fileExists(real):
+          let fileContents = readFile(file)
+          let realContents = readFile(real)
+
+          if fileContents == realContents:
+            removeFile(file)
+            createSymlink(real, file)
+          else:
+            echo "SKIP ROGUE_F_F Path conflict: Remove the outdated and try again"
+            echo "             -> " & file & " (file)"
+            echo "             -> " & real & " (file)"
+        elif dirExists(real):
+          echo "SKIP ROGUE_F_D Path conflict: Remove the outdated and try again"
+          echo "             -> " & file & " (file)"
+          echo "             -> " & real & " (directory)"
+        else:
+          echo "FIX ROGUE_F_M  " & file
+          # ensure directory
+          createDir(parentDir(real))
+
+          # file doesn't exist on other side. move it
+          moveFile(file, real)
+          createSymlink(real, file)
 
     elif dirExists(file):
-        echo "[ROGUE_D]  " & file
+        let real = getRealDot(dotDir, homeDir, file)
+
+        if fileExists(real):
+          echo "SKIP ROGUE_D_F Path conflict: Remove the outdated and try again"
+          echo "             -> " & file & " (directory)"
+          echo "             -> " & real & " (file)"
+        elif dirExists(real):
+          if dirLength(file) == 0:
+            echo "FIX ROGUE_D  " & file
+            removeDir(file)
+            createSymlink(joinPath(dotDir, getRel(homeDir, file)), file)
+          # TODO: do some merging or whatever
+          else:
+            echo "SKIP ROGUE_D_D Path conflict: Remove the outdated and try again"
+            echo "             -> " & file & " (directory)"
+            echo "             -> " & real & " (directory)"
+        else:
+          echo "FIX ROGUE_D_M  " & file
+          # ensure directory
+          createDir(parentDir(real))
+
+          # file doesn't exist on other side. move it
+          try:
+            copyDirWithPermissions(file, real)
+            removeDir(file)
+            createSymlink(real, file)
+          except Exception:
+            echo "Error: ROGUE_D_M Could not copy folder"
+
     else:
-        let rel = file[len(dest) .. ^1]
-        createSymlink(joinPath(src, rel), file)
+        createSymlink(joinPath(dotDir, getRel(homeDir, file)), file)
 
 let home = getHomeDir() & "/"
 let cfg = xdgCfg() & "/"
@@ -188,14 +239,18 @@ let dotConfigFiles = [
   data & "applications/Zettlr.desktop"
 ]
 
-let dest = getHomeDir()
-let src = joinPath(getHomeDir(), ".dots/user")
+let homeDir = getHomeDir()
+let dotDir = joinPath(getHomeDir(), ".dots/user")
 
-status(src, dest, @dotConfigFiles)
-# # reconcile(srf, dest, @dotConfigFiles)
+if paramCount() < 1:
+  echo "Error: Expected subcommand. Exiting"
+  quit 1
 
-proc dirLength(dir: string): int =
-  var len = 0
-  for kind, path in walkDir(dir):
-    len = len + 1
-  return len
+case paramStr(1):
+  of "status":
+    doStatus(dotDir, homeDir, @dotConfigFiles)
+  of "reconcile":
+    doReconcile(dotDir, homeDir, @dotConfigFiles)
+  else:
+    echo "Error: Subcommand not found. Exiting"
+    quit 1
