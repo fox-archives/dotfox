@@ -7,7 +7,7 @@ license       = "Apache-2.0"
 srcDir        = "src"
 bin           = @["dotty"]
 
-
 # Dependencies
 
 requires "nim >= 1.4.2"
+requires "parsetoml >= 0.5.0"

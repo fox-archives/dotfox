@@ -1,16 +1,20 @@
 import os
+import osproc
+import sequtils
 import strutils
-proc xdgCfg*: string =
-  if getEnv("XDG_CONFIG_HOME") != "":
-    return getEnv("XDG_CONFIG_HOME")
-  else:
-    return joinPath(getEnv("HOME"), ".config")
 
-proc xdgData*: string =
-  if getEnv("XDG_DATA_HOME") != "":
-    return getEnv("XDG_DATA_HOME")
-  else:
-    return joinPath(getEnv("HOME"), ".local/share")
+proc getDotFiles*(): seq[string] =
+  let cfg = joinPath(getConfigDir(), "dotty", "dotty.nim")
+  if not fileExists(cfg):
+    echo "dotty.nim not found at '" & cfg & "'. Create one"
+    quit 1
+
+  let output = execProcess("nim", args=["--hints:off", "r", cfg], options={poUsePath})
+  var dotFiles = newSeq[string]()
+  for str in filter(output.split('\n'), proc(str: string): bool = not isEmptyOrWhitespace(str)):
+    dotFiles.add(str)
+
+  return dotFiles
 
 # remove trailing slash
 proc rts*(str: string): string =
@@ -23,6 +27,10 @@ proc getRel*(homeDir: string, dotFile: string): string =
   let rel = dotFile[len(homeDir) .. ^1]
   return rel
 
+# for when dotFile / dotFolder doesn't exist, but the symlink points there
+proc createRel*(dotFile: string) =
+  echo "do thing"
+
 # from dotFile (in homeDir), get real path that's in dotDir
 proc getRealDot*(dotDir: string, homeDir: string, dotFile: string): string =
     return joinPath(dotDir, getRel(homeDir, dotFile))
@@ -30,7 +38,6 @@ proc getRealDot*(dotDir: string, homeDir: string, dotFile: string): string =
 # test if the symlink in homeDir actually points to corresponding one in dotFile
 # assumes the symlink exists
 proc symlinkResolvedProperly*(dotDir: string, homeDir: string, dotFile: string): bool =
-
   if rts(expandSymlink(dotFile)) == getRealDot(dotDir, homeDir, dotFile):
     return true
   else:

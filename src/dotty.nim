@@ -1,25 +1,22 @@
 import os
 import system
 import strutils
-import logging
+import parsetoml
 
 import "./util"
-
-let consoleLog = newConsoleLogger()
-addHandler(consoleLog)
 
 proc doStatus(dotDir: string, homeDir: string, dotFiles: seq[string]) =
   for i, file in dotFiles:
     if symlinkExists(file):
-        if symlinkResolvedProperly(dotDir, homeDir, file):
-          # symlinks pointing to a file or folder may or may not have a trailing slash. skip ones that do for consistency
-          if endsWith(expandSymlink(file), '/'):
-              echo "[OK_SLASH] " & file
-          else:
-              echo "[OK]       " & file
+      if symlinkResolvedProperly(dotDir, homeDir, file):
+        # symlinks pointing to a file or folder may or may not have a trailing slash. skip ones that do for consistency
+        if endsWith(expandSymlink(file), '/'):
+            echo "[OK_SLASH] " & file
         else:
-          echo "[BROKEN_S] " & file
-          echo "          -> " & expandSymlink(file)
+            echo "[OK]       " & file
+      else:
+        echo "[BROKEN_S] " & file
+        echo "          -> " & expandSymlink(file)
     elif fileExists(file):
         echo "[ROGUE_F]  " & file
     elif dirExists(file):
@@ -34,8 +31,8 @@ proc doStatus(dotDir: string, homeDir: string, dotFiles: seq[string]) =
         else:
           echo "[MISSING]  " & file
 
-proc doReconcile(dotDir: string, homeDir: string, dotConfigFiles: seq[string]) =
-  for i, file in dotConfigFiles:
+proc doReconcile(dotDir: string, homeDir: string, dotFiles: seq[string]) =
+  for i, file in dotFiles:
     # ensure directory exists
     createDir(parentDir(file))
 
@@ -111,104 +108,21 @@ proc doReconcile(dotDir: string, homeDir: string, dotConfigFiles: seq[string]) =
     else:
         createSymlink(joinPath(dotDir, getRel(homeDir, file)), file)
 
-let home = getHomeDir() & "/"
-let cfg = xdgCfg() & "/"
-let data = xdgData() & "/"
-let dotConfigFiles = [
-  home & ".alsoftrc",
-  home & ".bash_logout",
-  home & ".bash_profile",
-  home & ".bashrc",
-  home & ".cliflix.json",
-  home & ".profile",
-  home & ".yarnrc",
-  cfg & "alacritty",
-  cfg & "awesome",
-  cfg & "bash",
-  cfg & "bat",
-  cfg & "broot",
-  cfg & "calcuse",
-  cfg & "cava",
-  cfg & "chezmoi",
-  cfg & "cmus/rc",
-  cfg & "Code/User/keybindings.json",
-  cfg & "Code/User/settings.json",
-  cfg & "curl",
-  cfg & "dircolors",
-  cfg & "dunst",
-  cfg & "environment.d",
-  cfg & "fish",
-  cfg & "fontconfig",
-  cfg & "gh",
-  cfg & "git",
-  cfg & "hg",
-  cfg & "htop",
-  cfg & "i3",
-  cfg & "i3status",
-  cfg & "info",
-  cfg & "ion",
-  cfg & "kitty",
-  cfg & "lazydocker",
-  cfg & "maven",
-  cfg & "micro",
-  cfg & "mnemosyne/config.py",
-  cfg & "nano",
-  cfg & "neofetch",
-  cfg & "nimble",
-  cfg & "nitrogen",
-  cfg & "npm",
-  cfg & "nu",
-  cfg & "nvim",
-  cfg & "pamix.conf",
-  cfg & "picom",
-  cfg & "polybar",
-  cfg & "profile",
-  cfg & "pulse/client.conf",
-  cfg & "pulsemixer.cfg",
-  cfg & "python",
-  cfg & "ranger",
-  cfg & "readline",
-  cfg & "redshift",
-  cfg & "ripgrep",
-  cfg & "rofi",
-  cfg & "rtorrent",
-  cfg & "salamis",
-  cfg & "starship",
-  cfg & "sxhkd",
-  cfg & "systemd",
-  cfg & "terminator",
-  cfg & "termite",
-  cfg & "tilda",
-  cfg & "tmux",
-  cfg & "todotxt",
-  cfg & "urxvt",
-  cfg & "user-dirs.dirs",
-  cfg & "vim",
-  cfg & "wget",
-  cfg & "X11",
-  cfg & "xob",
-  cfg & "yay",
-  cfg & "zsh",
-  data & "gnupg/gpg.conf",
-  data & "gnupg/dirmngr.conf",
-  data & "applications/Calcurse.desktop",
-  data & "applications/Nemo.desktop",
-  data & "applications/Obsidian.desktop",
-  data & "applications/Zettlr.desktop"
-]
-
-let homeDir = getHomeDir()
-let dotDir = joinPath(getHomeDir(), ".dots/user")
+let toml = parsetoml.parseFile(joinPath(getConfigDir(), "dotty/dotty.toml"))
+let cfg = toml["config"]
 
 if paramCount() < 1:
   echo "Error: Expected subcommand. Exiting"
   quit 1
 
+let dotDir = expandTilde(cfg["dotDir"].getStr())
+let homeDir = expandTilde(cfg["homeDir"].getStr())
+
 case paramStr(1):
   of "status":
-    doStatus(dotDir, homeDir, @dotConfigFiles)
+    doStatus(dotDir, homeDir,  getDotFiles())
   of "reconcile":
-    doReconcile(dotDir, homeDir, @dotConfigFiles)
+    doReconcile(dotDir, homeDir, getDotFiles())
   else:
     echo "Error: Subcommand not found. Exiting"
     quit 1
