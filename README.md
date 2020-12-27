@@ -4,9 +4,10 @@
 
 ## Description
 
-- OK
-- OK_SLASH: ok, but symlink has an appended slash
-- BROKEN_S: symlink exists, but points to wrong location
+- OK: Correct symlink
+- VALID_SLASH: Correct symlink, with extra leading slash
+- VALID_MISS: Correct symlink, but transient file doesn't exist
+- INVALID: Incorrect symlink (points to wrong location)
 - ROGUE_F: file exists in location
 - ROGUE_D: dir exists in location
 - TOLINK_F: file does not exist in location. will be linked during reconciliation
