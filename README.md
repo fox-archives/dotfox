@@ -4,15 +4,22 @@
 
 ## Description
 
-- OK: Correct symlink
-- VALID_SLASH: Correct symlink, with extra leading slash
-- VALID_MISS: Correct symlink, but transient file doesn't exist
-- INVALID: Incorrect symlink (points to wrong location)
-- ROGUE_F: file exists in location
-- ROGUE_D: dir exists in location
-- TOLINK_F: file does not exist in location. will be linked during reconciliation
-- TOLINK_D: same for dir
-- MISSING: file missing from both src and dest
+## Status Codes
+
+- [generalStatus]-[homeDirStatus]-[dotDirStatus]
+
+- generalStatus (general status of dotfile pair (symlink, file/folder). meaning if it's resolvable, might cause troubles)
+
+  - OK (symlink exists and has backing folder/file)
+  - OK_S (same as OK), but symlink has a trailing slash (trailing slash will be removed on reconciliation)
+  - Y (resolvable on reconciliation)
+  - E (inherent conflict)
+  - M (missing)
+
+- homeDirStatus (existance of dot in homeDir)
+  - SYM, FILE, DIR, NULL
+- dotDirStatus
+  - same as above
 
 ## TODO:
 

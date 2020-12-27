@@ -23,8 +23,8 @@ proc doAbstract(
   for i, file in dotFiles:
     createDir(parentDir(file))
 
+    let real = getRealDot(dotDir, homeDir, file)
     if symlinkExists(file):
-      let real = getRealDot(dotDir, homeDir, file)
       if fileExists(real):
         runSymlinkFile(file, real)
       elif dirExists(real):
@@ -33,25 +33,22 @@ proc doAbstract(
         runSymlinkNull(file, real)
 
     elif fileExists(file):
-        let real = getRealDot(dotDir, homeDir, file)
-        if fileExists(real):
-          runFileFile(file, real)
-        elif dirExists(real):
-          runFileDir(file, real)
-        else:
-          runFileNull(file, real)
+      if fileExists(real):
+        runFileFile(file, real)
+      elif dirExists(real):
+        runFileDir(file, real)
+      else:
+        runFileNull(file, real)
 
     elif dirExists(file):
-        let real = getRealDot(dotDir, homeDir, file)
-        if fileExists(real):
-          runDirFile(file, real)
-        elif dirExists(real):
-          runDirDir(file, real)
-        else:
-          runDirNull(file, real)
+      if fileExists(real):
+        runDirFile(file, real)
+      elif dirExists(real):
+        runDirDir(file, real)
+      else:
+        runDirNull(file, real)
 
     else:
-      let real = getRealDot(dotDir, homeDir, file)
       if fileExists(real):
         runNullFile(file, real)
       elif dirExists(real):
@@ -59,54 +56,69 @@ proc doAbstract(
       else:
         runNullNull(file, real)
 
+
 proc doStatus*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
-  proc runSymlinkAny(file: string, real: string) =
+  proc runSymlinkFile(file: string, real: string) =
     if symlinkResolvedProperly(dotDir, homeDir, file):
       if endsWith(expandSymlink(file), '/'):
-        echo "[VALID_SLASH] " & file
-      # symlink (valid), ∅
-      elif not fileExists(getRealDot(dotDir, homeDir, file)) and not dirExists(getRealDot(dotDir, homeDir, file)):
-        echo "[VALID_MISS] " & file
-      # symlink (valid), dir
-      # symlink (valid), file
+        echo "[OK_S]        " & file
       else:
-        echo "[OK]         " & file
-    # symlink (invalid), -
-    # symlink (invalid), ∅
-    # symlink (invalid), dir
-    # symlink (invalid), file
+        echo "[OK]          " & file
     else:
-      echo "[INVALID] " & file
-      echo "          -> " & real
+      echo "[Y_SYM_FILE]  " & file
 
-  proc runFileAny(file: string, real: string) =
-    echo "[ROGUE_F]  " & file
+  proc runSymlinkDir(file: string, real: string) =
+    if symlinkResolvedProperly(dotDir, homeDir, file):
+      if endsWith(expandSymlink(file), '/'):
+        echo "[OK_S]        " & file
+      else:
+        echo "[OK]          " & file
+    else:
+      echo "[Y_SYM_DIR]  " & file
 
-  proc runDirAny(file: string, real: string) =
-    echo "[ROGUE_D]  " & file
+  proc runSymlinkNull(file: string, real: string) =
+    echo "[M_SYM_NULL]  " & file
+
+  proc runFileFile(file: string, real: string) =
+    echo "[E_FILE_FILE]  " & file
+
+  proc runFileDir(file: string, real: string) =
+    echo "[E_FILE_DIR]  " & file
+
+  proc runFileNull(file: string, real: string) =
+    echo "[Y_FILE_NULL]  " & file
+
+  proc runDirFile(file: string, real: string) =
+    echo "[E_DIR_FILE]  " & file
+
+  proc runDirDir(file: string, real: string) =
+    echo "[E_DIR_DIR]  " & file
+
+  proc runDirNull(file: string, real: string) =
+    echo "[Y_DIR_NULL]  " & file
 
   proc runNullFile(file: string, real: string) =
-    echo "[TOLINK_F] " & file
+    echo "[Y_NULL_FILE] " & file
 
   proc runNullDir(file: string, real: string) =
-    echo "[TOLINK_D] " & file
+    echo "[Y_NULL_DIR] " & file
 
   proc runNullNull(file: string, real: string) =
-    echo "[MISSING]  " & file
+    echo "[M_NULL_NULL]  " & file
 
   doAbstract(
     dotDir,
     homeDir,
     dotFiles,
-    runSymlinkAny,
-    runSymlinkAny,
-    runSymlinkAny,
-    runFileAny,
-    runFileAny,
-    runFileAny,
-    runDirAny,
-    runDirAny,
-    runDirAny,
+    runSymlinkFile,
+    runSymlinkDir,
+    runSymlinkNull,
+    runFileFile,
+    runFileDir,
+    runFileNull,
+    runDirFile,
+    runDirDir,
+    runDirNull,
     runNullFile,
     runNullDir,
     runNullNull
@@ -114,18 +126,32 @@ proc doStatus*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
 
 
 proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
-  proc runSymlinkAny(file: string, real: string) =
+  proc runSymlinkFile(file: string, real: string) =
     if symlinkResolvedProperly(dotDir, homeDir, file):
-      # transform trailing slash for consistency
       if endsWith(expandSymlink(file), '/'):
-          echo  "FIX OK_SLASH: " & file
-          let temp = expandSymlink(file)
-          removeFile(file)
-          createSymlink(rts(temp), file)
+        let temp = expandSymlink(file)
+        removeFile(file)
+        createSymlink(rts(temp), file)
+      # else:
+      #   echo "[OK]          " & file
     else:
-      echo "FIX BROKEN_S: " & file
       removeFile(file)
       createSymlink(getRealDot(dotDir, homeDir, file), file)
+
+  proc runSymlinkDir(file: string, real: string) =
+    if symlinkResolvedProperly(dotDir, homeDir, file):
+      if endsWith(expandSymlink(file), '/'):
+        let temp = expandSymlink(file)
+        removeFile(file)
+        createSymlink(rts(temp), file)
+      # else:
+      #   echo "[OK]          " & file
+    else:
+      removeFile(file)
+      createSymlink(getRealDot(dotDir, homeDir, file), file)
+
+  proc runSymlinkNull(file: string, real: string) =
+    echo "[M_SYM_NULL]  " & file
 
   proc runFileFile(file: string, real: string) =
     let fileContents = readFile(file)
@@ -138,13 +164,14 @@ proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
       echo "SKIP ROGUE_F_F Path conflict: Remove the outdated and try again"
       echo "             -> " & file & " (file)"
       echo "             -> " & real & " (file)"
+
   proc runFileDir(file: string, real: string) =
     echo "SKIP ROGUE_F_D Path conflict: Remove the outdated and try again"
     echo "             -> " & file & " (file)"
     echo "             -> " & real & " (directory)"
+
   proc runFileNull (file: string, real: string) =
     echo "FIX ROGUE_F_M  " & file
-    # ensure directory
     createDir(parentDir(real))
 
     # file doesn't exist on other side. move it
@@ -155,6 +182,7 @@ proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
     echo "SKIP ROGUE_D_F Path conflict: Remove the outdated and try again"
     echo "             -> " & file & " (directory)"
     echo "             -> " & real & " (file)"
+
   proc runDirDir (file: string, real: string) =
     if dirLength(file) == 0:
       echo "FIX ROGUE_D  " & file
@@ -165,6 +193,7 @@ proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
       echo "SKIP ROGUE_D_D Path conflict: Remove the outdated and try again"
       echo "             -> " & file & " (directory)"
       echo "             -> " & real & " (directory)"
+
   proc runDirNull (file: string, real: string) =
     echo "FIX ROGUE_D_M  " & file
     # ensure directory
@@ -185,9 +214,9 @@ proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
     dotDir,
     homeDir,
     dotFiles,
-    runSymlinkAny,
-    runSymlinkAny,
-    runSymlinkAny,
+    runSymlinkFile,
+    runSymlinkDir,
+    runSymlinkNull,
     runFileFile,
     runFileDir,
     runFileNull,

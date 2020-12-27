@@ -5,7 +5,7 @@ import "./do"
 import "./util"
 
 proc writeHelp() =
-  echo "help"
+  echo "subcommands: status, reconcile"
 
 proc writeVersion() =
   echo "version"
