@@ -161,17 +161,17 @@ proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
       removeFile(file)
       createSymlink(real, file)
     else:
-      echo "SKIP ROGUE_F_F Path conflict: Remove the outdated and try again"
+      echo "SKIP E_FILE_FILE Path conflict: Remove the outdated and try again"
       echo "             -> " & file & " (file)"
       echo "             -> " & real & " (file)"
 
   proc runFileDir(file: string, real: string) =
-    echo "SKIP ROGUE_F_D Path conflict: Remove the outdated and try again"
+    echo "SKIP E_FILE_DIR Path conflict: Remove the outdated and try again"
     echo "             -> " & file & " (file)"
     echo "             -> " & real & " (directory)"
 
   proc runFileNull (file: string, real: string) =
-    echo "FIX ROGUE_F_M  " & file
+    echo "FIX E_FILE_NULL  " & file
     createDir(parentDir(real))
 
     # file doesn't exist on other side. move it
@@ -179,23 +179,23 @@ proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
     createSymlink(real, file)
 
   proc runDirFile (file: string, real: string) =
-    echo "SKIP ROGUE_D_F Path conflict: Remove the outdated and try again"
+    echo "SKIP E_DIR_FILE Path conflict: Remove the outdated and try again"
     echo "             -> " & file & " (directory)"
     echo "             -> " & real & " (file)"
 
   proc runDirDir (file: string, real: string) =
     if dirLength(file) == 0:
-      echo "FIX ROGUE_D  " & file
+      echo "FIX E_DIR_DIR  " & file
       removeDir(file)
       createSymlink(joinPath(dotDir, getRel(homeDir, file)), file)
     # TODO: do some merging or whatever
     else:
-      echo "SKIP ROGUE_D_D Path conflict: Remove the outdated and try again"
+      echo "SKIP E_DIR_DIR Path conflict: Remove the outdated and try again"
       echo "             -> " & file & " (directory)"
       echo "             -> " & real & " (directory)"
 
   proc runDirNull (file: string, real: string) =
-    echo "FIX ROGUE_D_M  " & file
+    echo "FIX E_DIR_NULL  " & file
     # ensure directory
     createDir(parentDir(real))
 
@@ -205,7 +205,7 @@ proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
       removeDir(file)
       createSymlink(real, file)
     except Exception:
-      echo "Error: ROGUE_D_M Could not copy folder"
+      echo "Error: E_DIR_NULL Could not copy folder"
 
   proc runNullAny(file: string, real: string) =
     createSymlink(joinPath(dotDir, getRel(homeDir, file)), file)
