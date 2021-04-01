@@ -16,6 +16,13 @@ proc getDotFiles*(): seq[string] =
 
   return dotFiles
 
+proc getRootDotfiles*(): seq[string] =
+  return @[
+    "/root/.bashrc_source",
+    "/root/.nano"
+  ]
+
+
 # remove trailing slash
 proc rts*(str: string): string =
   if endsWith(str, '/'):

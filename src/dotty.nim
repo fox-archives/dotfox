@@ -32,6 +32,8 @@ for kind, key, val in p.getopt():
       doStatus(dotDir, homeDir, getDotFiles())
     of "reconcile":
       doReconcile(dotDir, homeDir, getDotFiles())
+    of "rootReconcile":
+      doRootReconcile(dotDir, homeDir, getRootDotFiles())
     else:
       echo "Error: Subcommand not recognized. Exiting"
-      quit 1
+      quit QuitFailure

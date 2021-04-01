@@ -2,6 +2,8 @@ import os
 import system
 import strutils
 import "./util"
+import posix
+import std/os
 
 proc doAbstract(
   dotDir: string,
@@ -80,7 +82,7 @@ proc doStatus*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
     echo "[M_SYM_NULL]  " & file
 
   proc runFileFile(file: string, real: string) =
-    echo "[E_FILE_FILE]  " & file
+    echo "[E_FILE_FILE] " & file
 
   proc runFileDir(file: string, real: string) =
     echo "[E_FILE_DIR]  " & file
@@ -227,3 +229,17 @@ proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
     runNullAny,
     runNullAny
   )
+
+proc doRootReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
+  proc runFileAny(file: string, real: string) =
+    copyFile(real, file)
+
+  if geteuid() != 0:
+  # if not os.isAdmin():
+    echo "Must be running as root"
+    quit QuitFailure
+
+  for i, file in dotFiles:
+    createDir(parentDir(file))
+
+    echo file
