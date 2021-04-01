@@ -22,8 +22,8 @@ trim_trailing_whitespace = false
 
 [*.md]
 indent_style = space
-tab_width = 1
+indent_size = 2
 
 [*.{nims,nim}]
 indent_style = space
-tab_width = 2
+indent_size = 2

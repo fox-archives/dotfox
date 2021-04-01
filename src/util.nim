@@ -2,14 +2,39 @@ import os
 import osproc
 import sequtils
 import strutils
+import terminal
+import strformat
+
+proc logError*(str: string): void =
+  echo fmt"{ansiForegroundColorCode(fgRed)}Error: {str}"
+  resetAttributes()
+
+proc logWarn*(str: string): void =
+  echo fmt"{ansiForegroundColorCode(fgYellow)}Info: {str}"
+  resetAttributes()
+
+proc logInfo*(str: string): void =
+  echo fmt"{ansiForegroundColorCode(fgGreen)}Info: {str}"
+  resetAttributes()
+
+proc die*(str: string): void =
+  logError(fmt"{str}. Exiting")
+  quit QuitFailure
+
+proc echoStatus*(status: string, file: string) =
+  let s = fmt"[{status}]"
+  echo fmt"{s:<14}" & file
+
+proc echoPoint*(str: string) =
+  echo fmt"              -> {str}"
 
 proc getDotFiles*(): seq[string] =
-  let cfg = joinPath(getConfigDir(), "dotty", "dotty.nim")
+  let cfg = joinPath(getConfigDir(), "dotty", "dotty.sh")
   if not fileExists(cfg):
-    echo "dotty.nim not found at '" & cfg & "'. Create one"
+    echo "dotty.sh not found at '" & cfg & "'. Create one"
     quit 1
 
-  let output = execProcess("nim", args=["--hints:off", "r", cfg], options={poUsePath})
+  let output = execProcess(cfg)
   var dotFiles = newSeq[string]()
   for str in filter(output.split('\n'), proc(str: string): bool = not isEmptyOrWhitespace(str)):
     dotFiles.add(str)
