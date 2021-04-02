@@ -2,8 +2,32 @@ import os
 import osproc
 import sequtils
 import strutils
+import posix
 import terminal
 import strformat
+
+proc writeHelp*() =
+  echo """Dotty
+
+Usage: dotty [flags] [subcommand]
+
+Subcommands:
+  status
+    Views the status of user dotfiles
+  reconcile
+    Symlinks dotfiles to proper location and attempts to autofix mismatches
+  rootStatus
+    Views the status of root dotfiles
+  rootReconcile
+    Copies over dotfiles to /root directory
+
+Flags:
+  --help
+  --version"""
+
+proc writeVersion*() =
+  # TODO
+  echo "0.2.1"
 
 proc logError*(str: string): void =
   echo fmt"{ansiForegroundColorCode(fgRed)}Error: {str}"
@@ -17,36 +41,61 @@ proc logInfo*(str: string): void =
   echo fmt"{ansiForegroundColorCode(fgGreen)}Info: {str}"
   resetAttributes()
 
-proc die*(str: string): void =
+proc die*(str: string): void {.noReturn.} =
   logError(fmt"{str}. Exiting")
   quit QuitFailure
 
-proc echoStatus*(status: string, file: string) =
+proc echoStatus*(status: string, file: string): void =
   let s = fmt"[{status}]"
   echo fmt"{s:<14}" & file
 
-proc echoPoint*(str: string) =
+proc echoPoint*(str: string): void =
   echo fmt"              -> {str}"
 
-proc getDotFiles*(): seq[string] =
-  let cfg = joinPath(getConfigDir(), "dotty", "dotty.sh")
-  if not fileExists(cfg):
-    echo "dotty.sh not found at '" & cfg & "'. Create one"
-    quit 1
+proc ensureRoot*(): void =
+  if geteuid() != 0:
+    die "Must be running as root"
 
-  let output = execProcess(cfg)
+proc ensureNotRoot*(): void =
+  if geteuid() == 0:
+    die "Must not be running as root"
+
+proc hasRootOwnership*(path: string): bool =
+  var info: Stat
+  let err = stat(path, info)
+  if err != 0:
+    raise Exception.newException(fmt"stat error: {path} (does it exist?)")
+
+  let passwd: ptr Passwd = getpwuid(info.st_uid)
+  return passwd[].pw_uid == 0
+
+proc setRootOwnership*(path: string): void =
+  var info: Stat
+  let err = stat(path, info)
+  if err != 0:
+    raise Exception.newException(fmt"stat error: {path} (does it exist?)")
+
+  # keep same gid since some systems like OpenSUSE have
+  # a different group ownership
+  let success = chown(path.cstring, 0.Uid, info.st_gid)
+  if success != 0:
+    raise Exception.newException(fmt"chown error: {path}")
+
+proc getDotFiles*(file: string): seq[string] =
+  let cfg = joinPath(getConfigDir(), "dotty", file)
+  if not fileExists(cfg):
+    die fmt"{file} not found at '{cfg}'"
+
+  let result = execCmdEx(cfg)
+  if result.exitCode != 0:
+    stdout.write result.output
+    die fmt"Executing {cfg} failed"
+
   var dotFiles = newSeq[string]()
-  for str in filter(output.split('\n'), proc(str: string): bool = not isEmptyOrWhitespace(str)):
+  for str in filter(result.output.split('\n'), proc(str: string): bool = not isEmptyOrWhitespace(str)):
     dotFiles.add(str)
 
   return dotFiles
-
-proc getRootDotfiles*(): seq[string] =
-  return @[
-    "/root/.bashrc_source",
-    "/root/.nano"
-  ]
-
 
 # remove trailing slash
 proc rts*(str: string): string =
@@ -58,10 +107,6 @@ proc rts*(str: string): string =
 proc getRel*(homeDir: string, dotFile: string): string =
   let rel = dotFile[len(homeDir) .. ^1]
   return rel
-
-# for when dotFile / dotFolder doesn't exist, but the symlink points there
-proc createRel*(dotFile: string) =
-  echo "do thing"
 
 # from dotFile (in homeDir), get real path that's in dotDir
 proc getRealDot*(dotDir: string, homeDir: string, dotFile: string): string =

@@ -24,7 +24,7 @@ _dotty() {
 	if [[ "$i" -eq "$COMP_CWORD" ]]; then
 		local cur="${COMP_WORDS[COMP_CWORD]}"
 		# shellcheck disable=SC2207
-		COMPREPLY=($(compgen -W "status reconcile --version --help" -- "$cur"))
+		COMPREPLY=($(compgen -W "status reconcile rootStatus rootReconcile --version --help" -- "$cur"))
 		return
 	fi
 

@@ -1,31 +1,9 @@
 import os
 import parsetoml
 import parseopt
+import strformat
 import "./do"
 import "./util"
-
-proc writeHelp() =
-  echo """Dotty
-
-Usage: dotty [subcommand] [flags]
-
-Subcommands:
-  status
-    Views the status of user dotfiles
-  reconcile
-    Symlinks dotfiles to proper location and attempts to autofix mismatches
-  rootStatus
-    Views the status of root dotfiles
-  rootReconcile
-    Copies over dotfiles to /root directory
-
-Flags:
-  --help
-  --version"""
-
-proc writeVersion() =
-  # TODO
-  echo "0.2.1"
 
 if paramCount() < 1:
   die "Expected subcommand"
@@ -39,18 +17,28 @@ for kind, key, val in p.getopt():
       of "help", "h": writeHelp(); quit QuitSuccess
       of "version", "v": writeVersion(); quit QuitSuccess
   of cmdArgument:
-    let toml = parsetoml.parseFile(joinPath(getConfigDir(), "dotty/config.toml"))
+    let tomlFile = joinPath(getConfigDir(), "dotty/config.toml")
+    if not fileExists(tomlFile):
+      die fmt"{tomlFile} not found"
+
+    let toml = parsetoml.parseFile(tomlFile)
     let dotDir = expandTilde(toml["config"]["dotDir"].getStr())
     let homeDir = expandTilde(toml["config"]["destDir"].getStr())
 
     case key:
     of "status":
-      doStatus(dotDir, homeDir, getDotFiles())
-    of "rootStatus":
-      doRootStatus(dotDir, homeDir, getDotFiles())
+      ensureNotRoot()
+      doStatus(dotDir, homeDir, getDotFiles("dotty.sh"))
+      echo "Done."
     of "reconcile":
-      doReconcile(dotDir, homeDir, getDotFiles())
+      ensureNotRoot()
+      doReconcile(dotDir, homeDir, getDotFiles("dotty.sh"))
+    of "rootStatus":
+      ensureRoot()
+      doStatus(dotDir, homeDir, getDotFiles("dottyRoot.sh"))
     of "rootReconcile":
-      doRootReconcile(dotDir, homeDir, getRootDotFiles())
+      ensureRoot()
+      doReconcile(dotDir, homeDir, getDotFiles("dottyRoot.sh"))
+      echo "Done."
     else:
       die "Subcommand not recognized"

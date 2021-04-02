@@ -64,7 +64,6 @@ Run `dotty reconcile` to automatically setup your dotfiles. In doing this, it _a
 FORMAT
   [generalStatus]-[homeDirStatus]-[dotDirStatus]
 
-
 generalStatus:
   OK:
     All symlinks and files exists properly
@@ -94,5 +93,5 @@ generalStatus:
 EXAMPLES
   [E_FILE_FILE]  /home/user/.profile
   [M_SYM_NULL]   /home/user/.profile2
-  [Y_SYM_FILE]    /home/user/.profile3
+  [Y_SYM_FILE]   /home/user/.profile3
 ```
