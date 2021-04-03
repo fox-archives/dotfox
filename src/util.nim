@@ -65,7 +65,7 @@ proc hasAllRootFiles(dotDir: string): bool =
     var info: Stat
     let code = stat(path, info)
     if code != 0:
-      logError "Could not stat {path}"
+      logError fmt"Could not stat {path}"
       return false
 
     # skip group check
