@@ -27,7 +27,7 @@ Flags:
 
 proc writeVersion*() =
   # TODO
-  echo "0.2.1"
+  echo "0.3.0"
 
 proc logError*(str: string): void =
   echo fmt"{ansiForegroundColorCode(fgRed)}Error: {str}"
