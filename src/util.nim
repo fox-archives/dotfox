@@ -58,28 +58,42 @@ proc ensureRoot*(): void =
 
 proc ensureNotRoot*(): void =
   if geteuid() == 0:
-    die "Must not be running as root"
+    die "Must NOT be running as root"
 
-proc hasRootOwnership*(path: string): bool =
-  var info: Stat
-  let err = stat(path, info)
-  if err != 0:
-    raise Exception.newException(fmt"stat error: {path} (does it exist?)")
+proc hasAllRootFiles(dotDir: string): bool =
+  proc fileOwnedByRoot(path: string): bool =
+    var info: Stat
+    let code = stat(path, info)
+    if code != 0:
+      logError "Could not stat {path}"
+      return false
 
-  let passwd: ptr Passwd = getpwuid(info.st_uid)
-  return passwd[].pw_uid == 0
+    # skip group check
+    let fileUsername = getpwuid(info.st_uid).pw_name
+    return fileUsername == "root"
 
-proc setRootOwnership*(path: string): void =
-  var info: Stat
-  let err = stat(path, info)
-  if err != 0:
-    raise Exception.newException(fmt"stat error: {path} (does it exist?)")
+  var allRootFiles = true
+  proc walk(path: string) =
+    for kind, file in walkDir(path):
+      if not fileOwnedByRoot(file):
+        echo file
+        allRootFiles = false
 
-  # keep same gid since some systems like OpenSUSE have
-  # a different group ownership
-  let success = chown(path.cstring, 0.Uid, info.st_gid)
-  if success != 0:
-    raise Exception.newException(fmt"chown error: {path}")
+      if kind == PathComponent.pcDir:
+        walk(file)
+
+  # ensure we check root parent
+  if not fileOwnedByRoot(dotDir):
+    echo dotDir
+    allRootFiles = false
+
+  walk(dotDir)
+  return allRootFiles
+
+proc ensureRootFileOwnership*(dotDir: string): void =
+  if not hasAllRootFiles(dotDir):
+    echo fmt"Not all files in {dotDir} are owned by root. Fix this"
+    quit QuitFailure
 
 proc getDotFiles*(file: string): seq[string] =
   let cfg = joinPath(getConfigDir(), "dotty", file)

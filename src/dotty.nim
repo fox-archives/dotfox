@@ -35,9 +35,11 @@ for kind, key, val in p.getopt():
       doReconcile(dotDir, homeDir, getDotFiles("dotty.sh"))
     of "rootStatus":
       ensureRoot()
+      ensureRootFileOwnership(dotDir)
       doStatus(dotDir, homeDir, getDotFiles("dottyRoot.sh"))
     of "rootReconcile":
       ensureRoot()
+      ensureRootFileOwnership(dotDir)
       doReconcile(dotDir, homeDir, getDotFiles("dottyRoot.sh"))
       echo "Done."
     else:
