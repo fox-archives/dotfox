@@ -6,6 +6,10 @@ import posix
 import terminal
 import strformat
 
+type
+  Options* = object
+    showOk*: bool
+
 proc writeHelp*() =
   echo """Dotty
 
@@ -23,7 +27,15 @@ Subcommands:
 
 Flags:
   --help
-  --version"""
+  --version
+  --show-ok
+    Only prints information associated with a file if there is an error
+    associated with it
+
+Usage:
+  dotty --show-ok=false status
+  sudo dotty rootReconcile
+"""
 
 proc writeVersion*() =
   # TODO

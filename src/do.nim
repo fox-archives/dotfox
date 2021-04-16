@@ -11,10 +11,11 @@ import posix
 proc doAbstract(
   dotDir: string,
   homeDir: string,
+  options: Options,
   dotFiles: seq[string],
-  runSymlinkSymlink: proc (dotFile: string, real: string),
-  runSymlinkFile: proc (dotFile: string, real: string),
-  runSymlinkDir: proc (dotFile: string, real: string),
+  runSymlinkSymlink: proc (dotFile: string, real: string, options: Options),
+  runSymlinkFile: proc (dotFile: string, real: string, options: Options),
+  runSymlinkDir: proc (dotFile: string, real: string, options: Options),
   runSymlinkNull: proc (dotFile: string, real: string),
   runFileFile: proc(dotFile: string, real: string),
   runFileDir: proc(dotFile: string, real: string),
@@ -33,11 +34,11 @@ proc doAbstract(
 
       if symlinkExists(file):
         if symlinkExists(real):
-          runSymlinkSymlink(file, real)
+          runSymlinkSymlink(file, real, options)
         elif fileExists(real):
-          runSymlinkFile(file, real)
+          runSymlinkFile(file, real, options)
         elif dirExists(real):
-          runSymlinkDir(file, real)
+          runSymlinkDir(file, real, options)
         else:
           runSymlinkNull(file, real)
 
@@ -69,8 +70,8 @@ proc doAbstract(
       echoStatus("SKIP", file)
 
 
-proc doStatus*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
-  proc runSymlinkSymlink(file: string, real: string): void =
+proc doStatus*(dotDir: string, homeDir: string, options: Options, dotFiles: seq[string]) =
+  proc runSymlinkSymlink(file: string, real: string, options: Options): void =
     let finalFile = expandSymlink(real)
     if symlinkExists(finalFile) or fileExists(finalFile) or dirExists(finalFile):
       echoStatus("OK", file)
@@ -80,21 +81,25 @@ proc doStatus*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
       echoPoint(fmt"{real} (symlink)")
       echoPoint(fmt"{finalFile} (nothing here) (path relative to {real})")
 
-  proc runSymlinkFile(file: string, real: string): void =
+  proc runSymlinkFile(file: string, real: string, options: Options): void =
     if symlinkResolvedProperly(dotDir, homeDir, file):
       if endsWith(expandSymlink(file), '/'):
-        echoStatus("OK_S", file)
+        if options.showOk:
+          echoStatus("OK_S", file)
       else:
-        echoStatus("OK", file)
+        if options.showOk:
+          echoStatus("OK", file)
     else:
       echoStatus("Y_SYM_FILE", file)
 
-  proc runSymlinkDir(file: string, real: string): void =
+  proc runSymlinkDir(file: string, real: string, options: Options): void =
     if symlinkResolvedProperly(dotDir, homeDir, file):
       if endsWith(expandSymlink(file), '/'):
-        echoStatus("OK_S", file)
+        if options.showOk:
+          echoStatus("OK_S", file)
       else:
-        echoStatus("OK", file)
+        if options.showOk:
+          echoStatus("OK", file)
     else:
       echoStatus("Y_SYM_DIR", file)
 
@@ -131,6 +136,7 @@ proc doStatus*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
   doAbstract(
     dotDir,
     homeDir,
+    options,
     dotFiles,
     runSymlinkSymlink,
     runSymlinkFile,
@@ -148,10 +154,11 @@ proc doStatus*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
   )
 
 
-proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
+proc doReconcile*(dotDir: string, homeDir: string, options: Options,
+    dotFiles: seq[string]) =
   # if the symlink points to another symlink, we assume this setup is intentional, and forgo checks of validity
   # for example, ~/.config/conky -> ~/config/conky
-  proc runSymlinkSymlink(file: string, real: string): void =
+  proc runSymlinkSymlink(file: string, real: string, options: Options): void =
     let finalFile = expandSymlink(real)
     if symlinkExists(finalFile) or fileExists(finalFile) or dirExists(finalFile):
       return
@@ -161,7 +168,7 @@ proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
       echoPoint(fmt"{real} (symlink)")
       echoPoint(fmt"{finalFile} (nothing here)")
 
-  proc runSymlinkFile(file: string, real: string) =
+  proc runSymlinkFile(file: string, real: string, options: Options) =
     if symlinkResolvedProperly(dotDir, homeDir, file):
       # if destination has an extraneous forward slash,
       # automatically remove it
@@ -173,7 +180,7 @@ proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
       removeFile(file)
       createSymlink(getRealDot(dotDir, homeDir, file), file)
 
-  proc runSymlinkDir(file: string, real: string) =
+  proc runSymlinkDir(file: string, real: string, options: Options) =
     if symlinkResolvedProperly(dotDir, homeDir, file):
       # if destination has a spurious slash, automatically
       # remove it
@@ -262,6 +269,7 @@ proc doReconcile*(dotDir: string, homeDir: string, dotFiles: seq[string]) =
   doAbstract(
     dotDir,
     homeDir,
+    options,
     dotFiles,
     runSymlinkSymlink,
     runSymlinkFile,

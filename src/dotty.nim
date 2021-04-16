@@ -8,14 +8,18 @@ import "./util"
 if paramCount() < 1:
   die "Expected subcommand"
 
+var options = Options(showOk: true)
+
 var p = initOptParser(commandLineParams())
 for kind, key, val in p.getopt():
   case kind
   of cmdEnd: break
   of cmdShortOption, cmdLongOption:
-      case key
-      of "help", "h": writeHelp(); quit QuitSuccess
-      of "version", "v": writeVersion(); quit QuitSuccess
+    case key
+    of "help", "h": writeHelp(); quit QuitSuccess
+    of "version", "v": writeVersion(); quit QuitSuccess
+    of "show-ok":
+      options.showOk = false
   of cmdArgument:
     let tomlFile = joinPath(getConfigDir(), "dotty/config.toml")
     if not fileExists(tomlFile):
@@ -28,19 +32,19 @@ for kind, key, val in p.getopt():
     case key:
     of "status":
       ensureNotRoot()
-      doStatus(dotDir, homeDir, getDotFiles("dotty.sh"))
+      doStatus(dotDir, homeDir, options, getDotFiles("dotty.sh"))
       echo "Done."
     of "reconcile":
       ensureNotRoot()
-      doReconcile(dotDir, homeDir, getDotFiles("dotty.sh"))
+      doReconcile(dotDir, homeDir, options, getDotFiles("dotty.sh"))
     of "rootStatus":
       ensureRoot()
       ensureRootFileOwnership(dotDir)
-      doStatus(dotDir, homeDir, getDotFiles("dottyRoot.sh"))
+      doStatus(dotDir, homeDir, options, getDotFiles("dottyRoot.sh"))
     of "rootReconcile":
       ensureRoot()
       ensureRootFileOwnership(dotDir)
-      doReconcile(dotDir, homeDir, getDotFiles("dottyRoot.sh"))
+      doReconcile(dotDir, homeDir, options, getDotFiles("dottyRoot.sh"))
       echo "Done."
     else:
       die "Subcommand not recognized"
