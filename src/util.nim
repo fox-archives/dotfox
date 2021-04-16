@@ -106,7 +106,8 @@ proc getDotFiles*(file: string): seq[string] =
     die fmt"Executing {cfg} failed"
 
   var dotFiles = newSeq[string]()
-  for str in filter(result.output.split('\n'), proc(str: string): bool = not isEmptyOrWhitespace(str)):
+  for str in filter(result.output.split('\n'), proc(
+      str: string): bool = not isEmptyOrWhitespace(str)):
     dotFiles.add(str)
 
   return dotFiles
@@ -124,11 +125,17 @@ proc getRel*(homeDir: string, dotFile: string): string =
 
 # from dotFile (in homeDir), get real path that's in dotDir
 proc getRealDot*(dotDir: string, homeDir: string, dotFile: string): string =
+  if symlinkExists(dotFile):
+    # if the symlink expands to a folder, it will append a slash,
+    # causing symlinkExists() to fail. rts() rectifies this
+    return rts(expandSymlink(dotFile))
+  else:
     return joinPath(dotDir, getRel(homeDir, dotFile))
 
 # test if the symlink in homeDir actually points to corresponding one in dotFile
 # assumes the symlink exists
-proc symlinkResolvedProperly*(dotDir: string, homeDir: string, dotFile: string): bool =
+proc symlinkResolvedProperly*(dotDir: string, homeDir: string,
+    dotFile: string): bool =
   if rts(expandSymlink(dotFile)) == getRealDot(dotDir, homeDir, dotFile):
     return true
   else:
