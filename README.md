@@ -90,13 +90,25 @@ generalStatus:
     example, if ~/.profile3 is supposed to be a SYMLINK to ~/.dots/.profile3 (FILE), but has a destination that is actually to /dev/null,
     dotty will set the symlink properly
 
+homeDirStatus/dotDirStatus:
+  SYM
+    A symlink (that points to a file, directory, or nothing)
+
+  FILE
+    A file
+
+  DIR
+    A directory
+
+  NULL
+    Nothing (absense of a symlink, file, or directory)
+
+  SSS
+    A symlink (that points to another symlink)
+    This only shows up as `M_SSS_NULL`, in which the second symlink is not pointing to a non-existant location. (dotDirStatus will never show up as SSS)
+
 EXAMPLES
   [E_FILE_FILE]  /home/user/.profile
   [M_SYM_NULL]   /home/user/.profile2
   [Y_SYM_FILE]   /home/user/.profile3
 ```
-
-## TODO
-
-- on root reconciliation callback to no symlink if
-  external place is vfat (no symlinks)
