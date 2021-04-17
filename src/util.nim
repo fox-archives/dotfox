@@ -39,7 +39,7 @@ Usage:
 
 proc writeVersion*() =
   # TODO
-  echo "0.3.0"
+  echo "0.4.0"
 
 proc logError*(str: string): void =
   echo fmt"{ansiForegroundColorCode(fgRed)}Error: {str}"
