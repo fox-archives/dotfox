@@ -33,7 +33,6 @@ for kind, key, val in p.getopt():
     of "status":
       ensureNotRoot()
       doStatus(dotDir, homeDir, options, getDotFiles("dotty.sh"))
-      echo "Done."
     of "reconcile":
       ensureNotRoot()
       doReconcile(dotDir, homeDir, options, getDotFiles("dotty.sh"))
@@ -45,6 +44,5 @@ for kind, key, val in p.getopt():
       ensureRoot()
       ensureRootFileOwnership(dotDir)
       doReconcile(dotDir, homeDir, options, getDotFiles("dottyRoot.sh"))
-      echo "Done."
     else:
       die "Subcommand not recognized"

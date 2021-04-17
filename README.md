@@ -68,47 +68,53 @@ generalStatus:
   OK:
     All symlinks and files exists properly
 
-  OK_S:
+  OK/:
     All symlinks and files exist properly. And, the symlink destination
     has an extraneous succeeding slash ("even when the destination is a
     directory this is not needed"). So on reconcile this will normalize
     to be suffix-slash-less.
 
-  E:
-    Inherent conflict. For example, ~/.profile1 and ~/.dots/.profile1
-    both exist (and are FILEs (not symlinks)). You yourself may need to delete one of the files for
-    this tool to autofix. When autofixing, the tool will ensure the
+  ERR:
+    A conflict exists. You yourself may need to delete one of the files if dotty
+    is not able to autofix. When autofixing, the tool will ensure the
     non-deleted file is at ~/.dots/.profile1, and a symlink to it exists
     in ~/.profile1
 
-  M:
-    A file is missing. For example, ~/.profile2 is a SYMLINK to
-    ~/.dots/.profile2 - but ~/.dots/.profile2 does not exist (NULL)
 
-  Y:
-    The situation can automatically be fixed on reconciliation. For
-    example, if ~/.profile3 is supposed to be a SYMLINK to ~/.dots/.profile3 (FILE), but has a destination that is actually to /dev/null,
-    dotty will set the symlink properly
-
-homeDirStatus/dotDirStatus:
+homeDirStatus:
   SYM
-    A symlink (that points to a file, directory, or nothing)
+    Symlink exists
 
   FILE
-    A file
+    File exists
 
   DIR
-    A directory
+    Directory exists
 
   NULL
-    Nothing (absense of a symlink, file, or directory)
+    Nothing exists
 
-  SSS
-    A symlink (that points to another symlink)
-    This only shows up as `M_SSS_NULL`, in which the second symlink is not pointing to a non-existant location. (dotDirStatus will never show up as SSS)
+  USYM
+    Symlink exists, but it's not managed by 'dotty'. Occurs when
+    a traced symlink's destination is not within dotDir
+    (ex. ~/.profile -> ~/.config/profile/profile.sh). All lines with USYM
+    are OK because they are symlinks this tool does not manage
+
+dotDirStatus:
+  SYM
+    Symlink exists
+
+  FILE
+    File exists
+
+  DIR
+    Directory exists
+
+  NULL
+    Nothing exists
 
 EXAMPLES
-  [E_FILE_FILE]  /home/user/.profile
-  [M_SYM_NULL]   /home/user/.profile2
-  [Y_SYM_FILE]   /home/user/.profile3
+  ERR_NULL_FILE
+  OK_USYM_DIR
+
 ```

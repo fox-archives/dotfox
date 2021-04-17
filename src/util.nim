@@ -59,10 +59,10 @@ proc die*(str: string): void {.noReturn.} =
 
 proc echoStatus*(status: string, file: string): void =
   let s = fmt"[{status}]"
-  echo fmt"{s:<14}" & file
+  echo fmt"{s:<16}" & file
 
 proc echoPoint*(str: string): void =
-  echo fmt"              -> {str}"
+  echo fmt"                -> {str}"
 
 proc ensureRoot*(): void =
   if geteuid() != 0:
@@ -137,18 +137,20 @@ proc getRel*(homeDir: string, dotFile: string): string =
 
 # from dotFile (in homeDir), get real path that's in dotDir
 proc getRealDot*(dotDir: string, homeDir: string, dotFile: string): string =
-  if symlinkExists(dotFile):
-    # if the symlink expands to a folder, it will append a slash,
-    # causing symlinkExists() to fail. rts() rectifies this
-    return rts(expandSymlink(dotFile))
-  else:
-    return joinPath(dotDir, getRel(homeDir, dotFile))
+  return joinPath(dotDir, getRel(homeDir, dotFile))
+
+# determine if the symlink is created by us (explanation in getRealDot())
+proc symlinkCreatedByDotty*(dotDir: string, homeDir: string,
+    symlinkFile: string): bool =
+  if startsWith(symlinkFile, dotDir):
+    return true
+  return false
 
 # test if the symlink in homeDir actually points to corresponding one in dotFile
 # assumes the symlink exists
 proc symlinkResolvedProperly*(dotDir: string, homeDir: string,
     dotFile: string): bool =
-  if rts(expandSymlink(dotFile)) == getRealDot(dotDir, homeDir, dotFile):
+  if rts(expandSymlink(dotFile)) == joinPath(dotDir, getRel(homeDir, dotFile)):
     return true
   else:
     return false
