@@ -9,6 +9,8 @@ import strformat
 type
   Options* = object
     showOk*: bool
+    isRoot*: bool
+    action*: string
 
 proc writeHelp*() =
   echo """Dotty
