@@ -1,5 +1,3 @@
-# managed by 'eankeen/globe'; don't edit!
-
 root = true
 
 [*]
@@ -10,15 +8,6 @@ end_of_line = lf
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
-
-[{GNUmakefile,Makefile,makefile,*.mk}]
-indent_style = tab
-
-[*.{yaml,yml}]
-indent_style = space
-
-[*.{diff,md,snap}]
-trim_trailing_whitespace = false
 
 [*.md]
 indent_style = space

@@ -3,7 +3,6 @@ import system
 import strutils
 import "./util"
 import strformat
-import posix
 
 # for each higher order function (ex. runSymlinkDir), the first word (e.g. Symlink) represents the type of file
 # located in the home / destination folder. The Second word (ex. Dir) represents the type of

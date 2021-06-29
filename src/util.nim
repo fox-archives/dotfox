@@ -112,13 +112,13 @@ proc getDotFiles*(file: string): seq[string] =
   if not fileExists(cfg):
     die fmt"{file} not found at '{cfg}'"
 
-  let result = execCmdEx(cfg)
-  if result.exitCode != 0:
-    stdout.write result.output
+  let cmdResult = execCmdEx(cfg)
+  if cmdResult.exitCode != 0:
+    stdout.write cmdResult.output
     die fmt"Executing {cfg} failed"
 
   var dotFiles = newSeq[string]()
-  for str in filter(result.output.split('\n'), proc(
+  for str in filter(cmdResult.output.split('\n'), proc(
       str: string): bool = not isEmptyOrWhitespace(str)):
     dotFiles.add(str)
 

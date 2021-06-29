@@ -6,7 +6,9 @@ import "./do"
 import "./util"
 
 if paramCount() < 1:
-  die "Expected subcommand"
+  logError "Expected subcommand"
+  writeHelp()
+  quit QuitFailure
 
 var options = Options(showOk: true)
 
