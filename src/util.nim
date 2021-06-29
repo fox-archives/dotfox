@@ -10,7 +10,9 @@ type
   Options* = object
     showOk*: bool
     isRoot*: bool
+    interactive*: bool
     action*: string
+    configFile*: string
 
 proc writeHelp*() =
   echo """Dotty
@@ -22,10 +24,6 @@ Subcommands:
     Views the status of user dotfiles
   reconcile
     Symlinks dotfiles to proper location and attempts to autofix mismatches
-  rootStatus
-    Views the status of root dotfiles
-  rootReconcile
-    Copies over dotfiles to /root directory
 
 Flags:
   --help
@@ -33,6 +31,10 @@ Flags:
   --show-ok
     Only prints information associated with a file if there is an error
     associated with it
+  --root
+    Enable linking as root
+  --interactive, -i
+    Enable interactive mode, which shows a prompt before each action (linking, deletion)
 
 Usage:
   dotty --show-ok=false status

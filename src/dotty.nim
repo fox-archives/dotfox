@@ -5,7 +5,7 @@ import strformat
 import "./do"
 import "./util"
 
-var options = Options(showOk: true, isRoot: false, action: "")
+var options = Options(showOk: true, isRoot: false, interactive: false)
 
 var p = initOptParser(commandLineParams())
 for kind, key, val in p.getopt():
@@ -18,8 +18,12 @@ for kind, key, val in p.getopt():
     of "version", "v":
       writeVersion()
       quit QuitSuccess
+    of "interactive", "i":
+      options.interactive = true
     of "show-ok":
       options.showOk = false
+    of "config":
+      options.configFile = val
     of "root":
       options.isRoot = true
   of cmdArgument:
@@ -33,31 +37,30 @@ for kind, key, val in p.getopt():
   of cmdEnd:
     break
 
-let tomlFile = joinPath(getConfigDir(), "dotty/config.toml")
-if not fileExists(tomlFile):
-  die fmt"{tomlFile} not found"
+if options.configFile == "":
+  options.configFile = joinPath(getConfigDir(), "dotty", "config.toml")
 
-let toml = parsetoml.parseFile(tomlFile)
+if not fileExists(options.configFile):
+  die fmt"Config file '{options.configFile}' not found"
+
+let toml = parsetoml.parseFile(options.configFile)
 let dotDir = expandTilde(toml["config"]["dotDir"].getStr())
 let homeDir = expandTilde(toml["config"]["destDir"].getStr())
 
+var scriptName = ""
+if options.isRoot:
+  ensureRoot()
+  ensureRootFileOwnership(dotDir)
+  scriptName = "dotty.sh"
+else:
+  ensureNotRoot()
+  scriptName = "dotty.sh"
+
 case options.action:
 of "status":
-  if options.isRoot:
-    ensureRoot()
-    ensureRootFileOwnership(dotDir)
-    doStatus(dotDir, homeDir, options, getDotFiles("dottyRoot.sh"))
-  else:
-    ensureNotRoot()
-    doStatus(dotDir, homeDir, options, getDotFiles("dotty.sh"))
+  doStatus(dotDir, homeDir, options, getDotFiles(scriptName))
 of "reconcile":
-  if options.isRoot:
-    ensureRoot()
-    ensureRootFileOwnership(dotDir)
-    doReconcile(dotDir, homeDir, options, getDotFiles("dottyRoot.sh"))
-  else:
-    ensureNotRoot()
-    doReconcile(dotDir, homeDir, options, getDotFiles("dotty.sh"))
+  doReconcile(dotDir, homeDir, options, getDotFiles(scriptName))
 else:
   logError "Expected subcommand"
   writeHelp()
