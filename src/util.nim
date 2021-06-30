@@ -2,9 +2,9 @@ import os
 import osproc
 import sequtils
 import strutils
-import posix
 import terminal
 import strformat
+import posix
 
 type
   Options* = object
@@ -13,6 +13,7 @@ type
     interactive*: bool
     action*: string
     configFile*: string
+    files*: seq[string]  
 
 proc writeHelp*() =
   echo """Dotty
@@ -26,19 +27,19 @@ Subcommands:
     Symlinks dotfiles to proper location and attempts to autofix mismatches
 
 Flags:
-  --help
-  --version
+  --help, -h
+  --version, -v
   --show-ok
     Only prints information associated with a file if there is an error
     associated with it
   --root
-    Enable linking as root
+    Manage the dotfiles for the root user
   --interactive, -i
     Enable interactive mode, which shows a prompt before each action (linking, deletion)
 
 Usage:
   dotty --show-ok=false status
-  sudo dotty rootReconcile
+  sudo dotty reconcile --root
 """
 
 proc writeVersion*() =
@@ -66,17 +67,9 @@ proc echoStatus*(status: string, file: string): void =
   echo fmt"{s:<16}" & file
 
 proc echoPoint*(str: string): void =
-  echo fmt"                -> {str}"
+  echo fmt"                -> {str}"  
 
-proc ensureRoot*(): void =
-  if geteuid() != 0:
-    die "Must be running as root"
-
-proc ensureNotRoot*(): void =
-  if geteuid() == 0:
-    die "Must NOT be running as root"
-
-proc hasAllRootFiles(dotDir: string): bool =
+proc hasAllRootFiles*(dotDir: string): bool =
   proc fileOwnedByRoot(path: string): bool =
     var info: Stat
     let code = stat(path, info)
@@ -106,25 +99,22 @@ proc hasAllRootFiles(dotDir: string): bool =
   walk(dotDir)
   return allRootFiles
 
-proc ensureRootFileOwnership*(dotDir: string): void =
-  if not hasAllRootFiles(dotDir):
-    echo fmt"Not all files in {dotDir} are owned by root. Fix this"
-    quit QuitFailure
-
-proc getDotFiles*(file: string): seq[string] =
-  let cfg = joinPath(getConfigDir(), "dotty", file)
-  if not fileExists(cfg):
-    die fmt"{file} not found at '{cfg}'"
-
-  let cmdResult = execCmdEx(cfg)
-  if cmdResult.exitCode != 0:
-    stdout.write cmdResult.output
-    die fmt"Executing {cfg} failed"
-
+proc getDotFiles*(files: seq[string]): seq[string] =
   var dotFiles = newSeq[string]()
-  for str in filter(cmdResult.output.split('\n'), proc(
-      str: string): bool = not isEmptyOrWhitespace(str)):
-    dotFiles.add(str)
+
+  for file in files:
+    let cfg = joinPath(getConfigDir(), "dotty", file)
+    if not fileExists(cfg):
+      die fmt"File '{cfg}' not found"
+
+    let cmdResult = execCmdEx(cfg)
+    if cmdResult.exitCode != 0:
+      stdout.write cmdResult.output
+      die fmt"Executing {cfg} failed"
+
+    for str in filter(cmdResult.output.split('\n'), proc(
+        str: string): bool = not isEmptyOrWhitespace(str)):
+      dotFiles.add(str)
 
   return dotFiles
 
@@ -164,3 +154,12 @@ proc dirLength*(dir: string): int =
   for kind, path in walkDir(dir):
     len = len + 1
   return len
+
+proc parseCategories*(categories: string): seq[string] =
+  if categories == "":
+    logError "No category was specified. Please specify a category"
+    quit QuitFailure
+  elif categories.contains(","):
+    return categories.split(",")
+  else:
+    return @[categories]

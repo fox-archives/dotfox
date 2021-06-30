@@ -2,6 +2,7 @@ import os
 import parsetoml
 import parseopt
 import strformat
+import posix
 import "./do"
 import "./util"
 
@@ -26,6 +27,8 @@ for kind, key, val in p.getopt():
       options.configFile = val
     of "root":
       options.isRoot = true
+    of "files":
+      options.files = parseCategories(val)
   of cmdArgument:
     case key:
     of "status":
@@ -37,6 +40,7 @@ for kind, key, val in p.getopt():
   of cmdEnd:
     break
 
+
 if options.configFile == "":
   options.configFile = joinPath(getConfigDir(), "dotty", "config.toml")
 
@@ -47,20 +51,29 @@ let toml = parsetoml.parseFile(options.configFile)
 let dotDir = expandTilde(toml["config"]["dotDir"].getStr())
 let homeDir = expandTilde(toml["config"]["destDir"].getStr())
 
-var scriptName = ""
 if options.isRoot:
-  ensureRoot()
-  ensureRootFileOwnership(dotDir)
-  scriptName = "dotty.sh"
+  if geteuid() != 0:
+    die "Must be running as root"
+
+  if not hasAllRootFiles(dotDir):
+    echo fmt"Not all files in {dotDir} are owned by root. Fix this"
+    quit QuitFailure
+
+  if len(options.files) == 0:
+    options.files = @["dottyRoot.sh"]
+
 else:
-  ensureNotRoot()
-  scriptName = "dotty.sh"
+  if geteuid() == 0:
+    die "Must NOT be running as root"
+
+  if len(options.files) == 0:
+    options.files = @["dotty.sh"]
 
 case options.action:
 of "status":
-  doStatus(dotDir, homeDir, options, getDotFiles(scriptName))
+  doStatus(dotDir, homeDir, options, getDotFiles(options.files))
 of "reconcile":
-  doReconcile(dotDir, homeDir, options, getDotFiles(scriptName))
+  doReconcile(dotDir, homeDir, options, getDotFiles(options.files))
 else:
   logError "Expected subcommand"
   writeHelp()
