@@ -154,12 +154,14 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotFiles: seq[
       echoStatus("ERR_SYM_NULL", file)
       echoPoint(fmt"{file} (symlink)")
       echoPoint(fmt"{real} (nothing here)")
+      echoPoint(fmt"Did you forget to create your actual dotfile at '{real}'?")
       echoPoint("(not fixable)")
     # symlink created by user
     else:
       echoStatus("ERR_USER_SYM", file)
       echoPoint(fmt"{file} (symlink)")
       echoPoint(fmt"{real} (nothing here)")
+      echoPoint(fmt"Did you forget to create your actual dotfile at '{real}'?")
       echoPoint("(not fixable)")
 
   proc runFileFile(file: string, real: string): void =
@@ -188,6 +190,7 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotFiles: seq[
     echoStatus("ERR_DIR_DIR", file)
     echoPoint(fmt"{file} (directory)")
     echoPoint(fmt"{real} (directory)")
+    echoPoint("Remove the directory that has the older contents")
     echoPoint("(possibly fixable)")
 
   proc runDirNull(file: string, real: string): void =
@@ -204,6 +207,7 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotFiles: seq[
 
   proc runNullNull(file: string, real: string): void =
     echoStatus("ERR_NULL_NULL", file)
+    echoPoint(fmt"Did you forget to create your actual dotfile at '{real}'?")
     echoPoint("(not fixable)")
 
   doAbstract(
