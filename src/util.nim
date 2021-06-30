@@ -103,7 +103,8 @@ proc getDotFiles*(files: seq[string]): seq[string] =
   var dotFiles = newSeq[string]()
 
   for file in files:
-    let cfg = joinPath(getConfigDir(), "dotty", file)
+    let cfg = file
+    
     if not fileExists(cfg):
       die fmt"File '{cfg}' not found"
 
@@ -157,7 +158,7 @@ proc dirLength*(dir: string): int =
 
 proc parseCategories*(categories: string): seq[string] =
   if categories == "":
-    logError "No category was specified. Please specify a category"
+    logError "No files was specified. Please specify a category"
     quit QuitFailure
   elif categories.contains(","):
     return categories.split(",")

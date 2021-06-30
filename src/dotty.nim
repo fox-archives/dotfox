@@ -60,14 +60,16 @@ if options.isRoot:
     quit QuitFailure
 
   if len(options.files) == 0:
-    options.files = @["dottyRoot.sh"]
+    let cfg = joinPath(getConfigDir(), "dotty", "dottyRoot.sh")
+    options.files = @[cfg]
 
 else:
   if geteuid() == 0:
     die "Must NOT be running as root"
 
   if len(options.files) == 0:
-    options.files = @["dotty.sh"]
+    let cfg = joinPath(getConfigDir(), "dotty", "dotty.sh")
+    options.files = @[cfg]
 
 case options.action:
 of "status":
