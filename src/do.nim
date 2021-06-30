@@ -204,7 +204,7 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotFiles: seq[
 
   proc runNullNull(file: string, real: string): void =
     echoStatus("ERR_NULL_NULL", file)
-    echoPoint("(fixable)")
+    echoPoint("(not fixable)")
 
   doAbstract(
     dotDir,
