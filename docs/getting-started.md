@@ -10,7 +10,7 @@ dotDir = "~/.dotfiles"
 destDir = "~"
 ```
 
-Now, specify the dotfiles you wish to automatically deploy. These dotfiles will have symlinks created in the `destDir`, pointing to their respective file or directory in `dotDir`. Specify the dotfiles using a shell script:
+Now, specify the dotfiles you wish to automatically deploy. These dotfiles will have symlinks created in the `destDir`, pointing to their respective file or directory in `dotDir`. Specify the dotfiles using a shell script located at `~/.config/dotty/deployments/default.sh`
 
 ```bash
 #!/usr/bin/env bash

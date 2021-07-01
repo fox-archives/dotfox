@@ -22,7 +22,7 @@ for kind, key, val in p.getopt():
     of "show-ok":
       options.showOk = parseBoolFlag(val)
     of "config":
-        options.configFile = val
+      options.configFile = val
     of "root":
       options.isRoot = parseBoolFlag(val)
     of "deployment":
@@ -53,16 +53,16 @@ if options.isRoot:
     die "Must be running as root"
 
   if not hasAllRootFiles(dotDir):
-    die fmt"Not all files in {dotDir} are owned by root. Fix this"
+    die fmt"Not all files in '{dotDir}' are owned by root. Fix this"
 
   if options.deployment == "":
-    options.deployment = joinPath(getConfigDir(), "dotty", "dottyRoot.sh")
+    options.deployment = joinPath(getConfigDir(), "dotty", "deployments", "defaultRoot.sh")
 else:
   if geteuid() == 0:
     die "Must NOT be running as root"
 
   if options.deployment == "":
-    options.deployment = joinPath(getConfigDir(), "dotty", "dotty.sh")
+    options.deployment = joinPath(getConfigDir(), "dotty", "deployments", "default.sh")
 
 case options.action:
 of "status":
@@ -70,6 +70,6 @@ of "status":
 of "reconcile":
   doReconcile(dotDir, homeDir, options, getDotfileList(options.deployment))
 else:
-  logError "Expected subcommand"
+  logError "Subcommand expected, but none given"
   writeHelp()
   quit QuitFailure

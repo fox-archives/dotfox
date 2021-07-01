@@ -4,7 +4,7 @@ import strutils
 import strformat
 import "./util"
 
-# for each higher order function (ex. runSymlinkDir), the first word (e.g. Symlink) represents the type of file
+# For each higher order function (ex. runSymlinkDir), the first word (e.g. Symlink) represents the type of file
 # located in the home / destination folder. The Second word (ex. Dir) represents the type of
 # file that exists in the dotfile repo
 proc doAbstract(
@@ -31,13 +31,13 @@ proc doAbstract(
       createDir(parentDir(file))
 
       # 'file' and 'dotfile' are synonymous
-      # if dotfile is a symlink, it could mean the symlink was created by dotty,
+      # If the dotfile is a symlink, it could mean the symlink was created by dotty,
       # or by the user (either could point to a symlink, file, or directory)
       # (ex. ~/.profile -> ~/.config/profile/profile.sh) (created by user)
       # (ex. ~/bin -> ~/.local/bin) (created by user)
       # (ex. ~/.config/profile/profile.sh -> ~/.dots/.config/profile/profile.sh) (created by dotty)
 
-      # we must test if the symlink points to a symlink/file/dir ("real")
+      # We must test if the symlink points to a symlink/file/dir ("real")
       # that has a prefix the same as dotDir. if it does, we dotty created the dotfile. if it
       # does not, the user created the dotfile. to make this check possible (in runSymlinkSymlink,
       # runSymlinkFile, runSymlinkDir, and runSymlinkNull), we HAVE to return
@@ -45,7 +45,7 @@ proc doAbstract(
       # to a ERR_SYM_NULL error with "joinPath(dotDir, getRel(homeDir, dotfile))")
       var real = ""
       if symlinkExists(file):
-        # if the symlink expands to a folder, it will append a slash,
+        # If the symlink expands to a folder, it will append a slash,
         # causing symlinkExists() to fail. rts() rectifies this
         real = rts(expandSymlink(file))
       else:
@@ -92,15 +92,15 @@ proc doAbstract(
 proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[string]) =
   proc runSymlinkSymlink(file: string, real: string, options: Options): void =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
-      # this is possible if dotty does it's thing correctly, but
+      # This is possible if dotty does it's thing correctly, but
       # the user replaces the file/directory in dotDir with a symlink
-      # to something else. it is an error, even if the symlink resolves
+      # to something else. It is an error, even if the symlink resolves
       # properly, and it should not be possible in normal circumstances
       printStatus("ERR_SYM_SYM", file)
       printHint("(not fixable)")
-    # symlink created by user
+    # Symlink created by user
     else:
-      # even if symlink does not point to a valid location, we print OK
+      # Even if symlink does not point to a valid location, we print OK
       # since the symlink is created by the user and we don't track those
       if options.showOk:
         printStatus("OK_USYM_SYM", file)
@@ -116,9 +116,9 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[
             printStatus("OK", file)
       else:
         printStatus("ERR_SYM_FILE", file)
-        # possibly fixable, see reasoning in runSymlinkDir()
+        # Possibly fixable, see reasoning in runSymlinkDir()
         printHint("(possibly fixable)")
-    # symlink created by user
+    # Symlink created by user
     else:
       if options.showOk:
         printStatus("OK_USYM_FILE", file)
@@ -135,16 +135,16 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[
       else:
         printStatus("ERR_SYM_DIR", file)
 
-        # possibly fixable because when we have this:
+        # Possibly fixable because when we have this:
         # ~/.profile (file) -> ~/.dots/.config/profile/.profile (real)
         # it becomes this:
         # ~/.profile (file) -> ~/.dots/.profile (real)
         # even though, it should be
         # ~/.profile (file) -> ~/.config/profile/.profile (real)
-        # this a user error symlinking inside dotDir, but nevertheless,
+        # This a user error symlinking inside dotDir, but nevertheless,
         # still not necessarily fixable. we can't fix this
         printHint("(possibly fixable)")
-    # symlink created by user
+    # Symlink created by user
     else:
       if options.showOk:
         printStatus("OK_USYM_DIR", file)
@@ -156,9 +156,9 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[
       printHint(fmt"{real} (nothing here)")
       printHint(fmt"Did you forget to create your actual dotfile at '{real}'?")
       printHint("(not fixable)")
-    # symlink created by user
+    # Symlink created by user
     else:
-      printStatus("ERR_USER_SYM", file)
+      printStatus("ERR_USYM_NULL", file)
       printHint(fmt"{file} (symlink)")
       printHint(fmt"{real} (nothing here)")
       printHint(fmt"Did you forget to create your actual dotfile at '{real}'?")
@@ -241,7 +241,7 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
   proc runSymlinkFile(file: string, real: string, options: Options) =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
       if symlinkResolvedProperly(dotDir, homeDir, file):
-        # if destination has an extraneous forward slash,
+        # If the destination has an extraneous forward slash,
         # automatically remove it
         if endsWith(expandSymlink(file), '/'):
           let temp = expandSymlink(file)
@@ -251,21 +251,18 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
         printStatus("ERR_SYM_FILE", file)
         printHint("(attempted fix)")
 
-        # won't always work properly see reasoning in status runSymlinkDir()
         removeFile(file)
         createSymlink(getRealDot(dotDir, homeDir, file), file)
 
   proc runSymlinkDir(file: string, real: string, options: Options) =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
       if symlinkResolvedProperly(dotDir, homeDir, file):
-        # if destination has a spurious slash, automatically
-        # remove it
+        # If the destination has a spurious slash, automatically remove it
         if endsWith(expandSymlink(file), '/'):
           let temp = expandSymlink(file)
           removeFile(file)
           createSymlink(rts(temp), file)
       else:
-        # won't always work properly see reasoning in status runSymlinkDir()
         removeFile(file)
         createSymlink(getRealDot(dotDir, homeDir, file), file)
 
@@ -301,7 +298,7 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
 
     createDir(parentDir(real))
 
-    # file doesn't exist on other side. move it
+    # The file doesn't exist on other side. Move it
     moveFile(file, real)
     createSymlink(real, file)
 
@@ -310,12 +307,12 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
     printHint(fmt"{file} (directory)")
     printHint(fmt"{real} (file)")
 
-  # swapped
+  # Swapped
   proc runDirNull (file: string, real: string) =
-    # ensure directory
+    # Ensure directory hierarchy exists
     createDir(parentDir(real))
 
-    # file doesn't exist on other side. move it
+    # The file doesn't exist on other side. Move it
     try:
       printStatus("ERR_DIR_NULL", file)
       printHint("Automatically fixed")
@@ -328,7 +325,7 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
       printStatus("ERR_DIR_NULL", file)
       printHint("Error: Could not copy folder")
 
-  # swapped
+  # Swapped
   proc runDirDir (file: string, real: string) =
     if dirLength(file) == 0:
       printStatus("ERR_DIR_DIR", file)

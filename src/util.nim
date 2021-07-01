@@ -14,15 +14,15 @@ type
     configFile*: string
     deployment*: string
 
-proc logError*(str: string): void =
+proc logError*(str: string): void {.inline.} =
   echo fmt"{ansiForegroundColorCode(fgRed)}Error: {str}"
   resetAttributes()
 
-proc logWarn*(str: string): void =
+proc logWarn*(str: string): void {.inline.} =
   echo fmt"{ansiForegroundColorCode(fgYellow)}Info: {str}"
   resetAttributes()
 
-proc logInfo*(str: string): void =
+proc logInfo*(str: string): void {.inline.} =
   echo fmt"{ansiForegroundColorCode(fgGreen)}Info: {str}"
   resetAttributes()
 
@@ -30,12 +30,12 @@ proc die*(str: string): void {.noReturn.} =
   logError(fmt"{str}. Exiting")
   quit QuitFailure
 
-proc printStatus*(status: string, file: string): void =
+proc printStatus*(status: string, file: string): void {.inline.} =
   # Print the status code for the particular file
   let s = fmt"[{status}]"
   echo fmt"{s:<16}" & file
 
-proc printHint*(str: string): void =
+proc printHint*(str: string): void {.inline.} =
   # Print a hint for a particular file, but indented so the output is more clear
   echo fmt"                -> {str}"  
 
@@ -101,14 +101,14 @@ proc getDotfileList*(deploymentStr: string): seq[string] =
   return dotfiles
 
 
-proc rts*(str: string): string =
+proc rts*(str: string): string {.inline.} =
   # Remove trailing slash
   if endsWith(str, '/'):
     return str[0 .. ^2]
 
   return str
 
-proc getRel*(homeDir: string, dotfile: string): string =
+proc getRel*(homeDir: string, dotfile: string): string {.inline.} =
   # From dotfile (in homeDir), get relative path
   return dotfile[len(homeDir) .. ^1]
 
