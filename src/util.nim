@@ -12,7 +12,7 @@ type
     isRoot*: bool
     action*: string
     configFile*: string
-    tags*: seq[string]
+    deployment*: string
 
 proc logError*(str: string): void =
   echo fmt"{ansiForegroundColorCode(fgRed)}Error: {str}"
@@ -72,25 +72,32 @@ proc hasAllRootFiles*(parentDir: string): bool =
   walk(parentDir)
   return allRootFiles
 
-proc getDotfileList*(files: seq[string]): seq[string] =
-  # Execute all dotfiles, returning all their standard output, concatonated
+proc getDotfileList*(deploymentStr: string): seq[string] =
+  # Execute deployment, returning all their standard output, concatenated
+  let oldCurrentDir = getCurrentDir()
+  setCurrentDir(joinPath(getConfigDir(), "dotty", "deployments"))
+
+  var deployment = ""
+
+  if not isAbsolute(deploymentStr):
+    deployment = joinPath(getConfigDir(), "dotty", "deployments", deploymentStr)
+  else:
+    deployment = deploymentStr
+
+  if not fileExists(deployment):
+    die fmt"Deployment file '{deployment}' not found"
+
+  let cmdResult = execCmdEx(deployment)
+  if cmdResult.exitCode != 0:
+    stdout.write cmdResult.output
+    die fmt"Executing {deployment} failed"
+
   var dotfiles = newSeq[string]()
+  for str in filter(cmdResult.output.split('\n'), proc(
+      str: string): bool = not isEmptyOrWhitespace(str)):
+    dotfiles.add(str)
 
-  for file in files:
-    let cfg = file
-
-    if not fileExists(cfg):
-      die fmt"File '{cfg}' not found"
-
-    let cmdResult = execCmdEx(cfg)
-    if cmdResult.exitCode != 0:
-      stdout.write cmdResult.output
-      die fmt"Executing {cfg} failed"
-
-    for str in filter(cmdResult.output.split('\n'), proc(
-        str: string): bool = not isEmptyOrWhitespace(str)):
-      dotfiles.add(str)
-
+  setCurrentDir(oldCurrentDir)
   return dotfiles
 
 
@@ -157,13 +164,16 @@ Flags:
   --version, -v
   --show-ok
     Only prints information associated with a file if there is an error
-    associated with it
+    associated with it when using the 'status' subcommand
   --roots
     Manage the dotfiles for the root user
-  --files
-    Files to execute to read all the dotfiles
+  --deployment
+    Specify specific deployment to read dotfiles from. This defaults to 'dotty.sh'
+    in your config directory
   --config
-    Location of the configuration file
+    Set location of config file. This defaults to 'config.toml'
+    in your config directory
+
 Usage:
   dotty --show-ok=false status
   sudo dotty reconcile --root

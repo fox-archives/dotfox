@@ -54,8 +54,8 @@ Done.
 As you can see, there is a hint that tells us that we forgot to move our dotfiles to the `dotDir`. How useful! Let's do that...
 
 ```sh
-echo 'export EDITOR="vim"' >| ~/.dotfiles/.bashrc
-echo 'clear' >| ~/.dotfiles/.bash_logout
+echo 'export EDITOR="vim"' > ~/.dotfiles/.bashrc
+echo 'clear' > ~/.dotfiles/.bash_logout
 ```
 
 Now, let's try running again
@@ -69,9 +69,9 @@ $ dotty status
 Done.
 ```
 
-As you can see, the `ERR_NULL_NULL` status codes changed to `ERR_NULL_FILE`. The last `NULL` changed to a file because we placed the correct files in the dotDir (destination directory)
+As you can see, the `ERR_NULL_NULL` status codes changed to `ERR_NULL_FILE`. The last `NULL` changed to a file because we placed the correct files in the `dotDir` (destination directory)
 
-Now that the dotfiles are automatically reconcilable, let's do that
+Now that the dotfiles are automatically fixable, let's run `dotty reconcile`
 
 ```sh
 $ dotty reconcile
@@ -82,7 +82,7 @@ $ dotty status
 Done.
 ```
 
-Cool, now the dotfiles have been resolved correctly. If you really want to check to see if the symlinks point to the correct location, you can do so:
+Cool, now the dotfiles have been resolved correctly. If you really want, you can check to see if the symlinks point to the correct location
 
 ```sh
 $ ls -al ~/.bash*

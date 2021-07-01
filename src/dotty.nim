@@ -2,7 +2,6 @@ import os
 import parsetoml
 import parseopt
 import strformat
-import strutils
 import posix
 import "./do"
 import "./util"
@@ -23,17 +22,11 @@ for kind, key, val in p.getopt():
     of "show-ok":
       options.showOk = parseBoolFlag(val)
     of "config":
-      options.configFile = val
+        options.configFile = val
     of "root":
       options.isRoot = parseBoolFlag(val)
-    of "tags":
-      if val == "":
-        logError "No files were specified. Please specify a category"
-        quit QuitFailure
-      elif val.contains(","):
-        options.tags = val.split(",")
-      else:
-        options.tags = @[val]
+    of "deployment":
+      options.deployment = val
   of cmdArgument:
     case key:
     of "status":
@@ -44,7 +37,6 @@ for kind, key, val in p.getopt():
       die fmt"Subcommand '{key}' not recognized"
   of cmdEnd:
     break
-
 
 if options.configFile == "":
   options.configFile = joinPath(getConfigDir(), "dotty", "config.toml")
@@ -63,22 +55,20 @@ if options.isRoot:
   if not hasAllRootFiles(dotDir):
     die fmt"Not all files in {dotDir} are owned by root. Fix this"
 
-  if len(options.tags) == 0:
-    let cfg = joinPath(getConfigDir(), "dotty", "dottyRoot.sh")
-    options.tags = @[cfg]
+  if options.deployment == "":
+    options.deployment = joinPath(getConfigDir(), "dotty", "dottyRoot.sh")
 else:
   if geteuid() == 0:
     die "Must NOT be running as root"
 
-  if len(options.tags) == 0:
-    let cfg = joinPath(getConfigDir(), "dotty", "dotty.sh")
-    options.tags = @[cfg]
+  if options.deployment == "":
+    options.deployment = joinPath(getConfigDir(), "dotty", "dotty.sh")
 
 case options.action:
 of "status":
-  doStatus(dotDir, homeDir, options, getDotfileList(options.tags))
+  doStatus(dotDir, homeDir, options, getDotfileList(options.deployment))
 of "reconcile":
-  doReconcile(dotDir, homeDir, options, getDotfileList(options.tags))
+  doReconcile(dotDir, homeDir, options, getDotfileList(options.deployment))
 else:
   logError "Expected subcommand"
   writeHelp()
