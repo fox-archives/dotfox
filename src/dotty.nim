@@ -6,7 +6,7 @@ import posix
 import "./do"
 import "./util"
 
-var options = Options(showOk: true, isRoot: false, interactive: false)
+var options = Options(showOk: true, isRoot: false)
 
 var p = initOptParser(commandLineParams())
 for kind, key, val in p.getopt():
@@ -19,8 +19,6 @@ for kind, key, val in p.getopt():
     of "version", "v":
       writeVersion()
       quit QuitSuccess
-    of "interactive", "i":
-      options.interactive = true
     of "show-ok":
       options.showOk = false
     of "config":

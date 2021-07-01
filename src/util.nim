@@ -10,7 +10,6 @@ type
   Options* = object
     showOk*: bool
     isRoot*: bool
-    interactive*: bool
     action*: string
     configFile*: string
     files*: seq[string]  
@@ -32,11 +31,12 @@ Flags:
   --show-ok
     Only prints information associated with a file if there is an error
     associated with it
-  --root
+  --roots
     Manage the dotfiles for the root user
-  --interactive, -i
-    Enable interactive mode, which shows a prompt before each action (linking, deletion)
-
+  --files
+    Files to execute to read all the dotfiles
+  --config
+    Location of the configuration file
 Usage:
   dotty --show-ok=false status
   sudo dotty reconcile --root
@@ -104,7 +104,7 @@ proc getDotFiles*(files: seq[string]): seq[string] =
 
   for file in files:
     let cfg = file
-    
+
     if not fileExists(cfg):
       die fmt"File '{cfg}' not found"
 
