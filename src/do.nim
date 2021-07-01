@@ -11,27 +11,27 @@ proc doAbstract(
   dotDir: string,
   homeDir: string,
   options: Options,
-  dotFiles: seq[string],
-  runSymlinkSymlink: proc (dotFile: string, real: string, options: Options),
-  runSymlinkFile: proc (dotFile: string, real: string, options: Options),
-  runSymlinkDir: proc (dotFile: string, real: string, options: Options),
-  runSymlinkNull: proc (dotFile: string, real: string),
-  runFileFile: proc(dotFile: string, real: string),
-  runFileDir: proc(dotFile: string, real: string),
-  runFileNull: proc (dotFile: string, real: string),
-  runDirFile: proc(dotFile: string, real: string),
-  runDirDir: proc(dotFile: string, real: string),
-  runDirNull: proc(dotFile: string, real: string),
-  runNullFile: proc(dotFile: string, real: string),
-  runNullDir: proc(dotFile: string, real: string),
-  runNullNull: proc(dotFile: string, real: string)
+  dotfiles: seq[string],
+  runSymlinkSymlink: proc (dotfile: string, real: string, options: Options),
+  runSymlinkFile: proc (dotfile: string, real: string, options: Options),
+  runSymlinkDir: proc (dotfile: string, real: string, options: Options),
+  runSymlinkNull: proc (dotfile: string, real: string),
+  runFileFile: proc(dotfile: string, real: string),
+  runFileDir: proc(dotfile: string, real: string),
+  runFileNull: proc (dotfile: string, real: string),
+  runDirFile: proc(dotfile: string, real: string),
+  runDirDir: proc(dotfile: string, real: string),
+  runDirNull: proc(dotfile: string, real: string),
+  runNullFile: proc(dotfile: string, real: string),
+  runNullDir: proc(dotfile: string, real: string),
+  runNullNull: proc(dotfile: string, real: string)
 ) =
-  for i, file in dotFiles:
+  for i, file in dotfiles:
     try:
       createDir(parentDir(file))
 
-      # 'file' and 'dotFile' are synonymous
-      # if dotFile is a symlink, it could mean the symlink was created by dotty,
+      # 'file' and 'dotfile' are synonymous
+      # if dotfile is a symlink, it could mean the symlink was created by dotty,
       # or by the user (either could point to a symlink, file, or directory)
       # (ex. ~/.profile -> ~/.config/profile/profile.sh) (created by user)
       # (ex. ~/bin -> ~/.local/bin) (created by user)
@@ -41,8 +41,8 @@ proc doAbstract(
       # that has a prefix the same as dotDir. if it does, we dotty created the dotfile. if it
       # does not, the user created the dotfile. to make this check possible (in runSymlinkSymlink,
       # runSymlinkFile, runSymlinkDir, and runSymlinkNull), we HAVE to return
-      # "rts(expandSymlink(dotFile))" so we can test the "real" path (rather than defaulting
-      # to a ERR_SYM_NULL error with "joinPath(dotDir, getRel(homeDir, dotFile))")
+      # "rts(expandSymlink(dotfile))" so we can test the "real" path (rather than defaulting
+      # to a ERR_SYM_NULL error with "joinPath(dotDir, getRel(homeDir, dotfile))")
       var real = ""
       if symlinkExists(file):
         # if the symlink expands to a folder, it will append a slash,
@@ -86,54 +86,54 @@ proc doAbstract(
           runNullNull(file, real)
     except Exception:
       logError &"Unhandled exception raised\n{getCurrentExceptionMsg()}"
-      echoStatus("SKIP", file)
+      printStatus("SKIP", file)
   echo "Done."
 
-proc doStatus*(dotDir: string, homeDir: string, options: Options, dotFiles: seq[string]) =
+proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[string]) =
   proc runSymlinkSymlink(file: string, real: string, options: Options): void =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
       # this is possible if dotty does it's thing correctly, but
       # the user replaces the file/directory in dotDir with a symlink
       # to something else. it is an error, even if the symlink resolves
       # properly, and it should not be possible in normal circumstances
-      echoStatus("ERR_SYM_SYM", file)
-      echoPoint("(not fixable)")
+      printStatus("ERR_SYM_SYM", file)
+      printHint("(not fixable)")
     # symlink created by user
     else:
       # even if symlink does not point to a valid location, we print OK
       # since the symlink is created by the user and we don't track those
       if options.showOk:
-        echoStatus("OK_USYM_SYM", file)
+        printStatus("OK_USYM_SYM", file)
 
   proc runSymlinkFile(file: string, real: string, options: Options): void =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
       if symlinkResolvedProperly(dotDir, homeDir, file):
         if endsWith(expandSymlink(file), '/'):
           if options.showOk:
-            echoStatus("OK/", file)
+            printStatus("OK/", file)
         else:
           if options.showOk:
-            echoStatus("OK", file)
+            printStatus("OK", file)
       else:
-        echoStatus("ERR_SYM_FILE", file)
+        printStatus("ERR_SYM_FILE", file)
         # possibly fixable, see reasoning in runSymlinkDir()
-        echoPoint("(possibly fixable)")
+        printHint("(possibly fixable)")
     # symlink created by user
     else:
       if options.showOk:
-        echoStatus("OK_USYM_FILE", file)
+        printStatus("OK_USYM_FILE", file)
 
   proc runSymlinkDir(file: string, real: string, options: Options): void =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
       if symlinkResolvedProperly(dotDir, homeDir, file):
         if endsWith(expandSymlink(file), '/'):
           if options.showOk:
-            echoStatus("OK/", file)
+            printStatus("OK/", file)
         else:
           if options.showOk:
-            echoStatus("OK", file)
+            printStatus("OK", file)
       else:
-        echoStatus("ERR_SYM_DIR", file)
+        printStatus("ERR_SYM_DIR", file)
 
         # possibly fixable because when we have this:
         # ~/.profile (file) -> ~/.dots/.config/profile/.profile (real)
@@ -143,78 +143,78 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotFiles: seq[
         # ~/.profile (file) -> ~/.config/profile/.profile (real)
         # this a user error symlinking inside dotDir, but nevertheless,
         # still not necessarily fixable. we can't fix this
-        echoPoint("(possibly fixable)")
+        printHint("(possibly fixable)")
     # symlink created by user
     else:
       if options.showOk:
-        echoStatus("OK_USYM_DIR", file)
+        printStatus("OK_USYM_DIR", file)
 
   proc runSymlinkNull(file: string, real: string): void =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
-      echoStatus("ERR_SYM_NULL", file)
-      echoPoint(fmt"{file} (symlink)")
-      echoPoint(fmt"{real} (nothing here)")
-      echoPoint(fmt"Did you forget to create your actual dotfile at '{real}'?")
-      echoPoint("(not fixable)")
+      printStatus("ERR_SYM_NULL", file)
+      printHint(fmt"{file} (symlink)")
+      printHint(fmt"{real} (nothing here)")
+      printHint(fmt"Did you forget to create your actual dotfile at '{real}'?")
+      printHint("(not fixable)")
     # symlink created by user
     else:
-      echoStatus("ERR_USER_SYM", file)
-      echoPoint(fmt"{file} (symlink)")
-      echoPoint(fmt"{real} (nothing here)")
-      echoPoint(fmt"Did you forget to create your actual dotfile at '{real}'?")
-      echoPoint("(not fixable)")
+      printStatus("ERR_USER_SYM", file)
+      printHint(fmt"{file} (symlink)")
+      printHint(fmt"{real} (nothing here)")
+      printHint(fmt"Did you forget to create your actual dotfile at '{real}'?")
+      printHint("(not fixable)")
 
   proc runFileFile(file: string, real: string): void =
-    echoStatus("ERR_FILE_FILE", file)
-    echoPoint(fmt"{file} (file)")
-    echoPoint(fmt"{real} (file)")
-    echoPoint("(possibly fixable)")
+    printStatus("ERR_FILE_FILE", file)
+    printHint(fmt"{file} (file)")
+    printHint(fmt"{real} (file)")
+    printHint("(possibly fixable)")
 
   proc runFileDir(file: string, real: string): void =
-    echoStatus("ERR_FILE_DIR", file)
-    echoPoint(fmt"{file} (file)")
-    echoPoint(fmt"{real} (directory)")
-    echoPoint("(not fixable)")
+    printStatus("ERR_FILE_DIR", file)
+    printHint(fmt"{file} (file)")
+    printHint(fmt"{real} (directory)")
+    printHint("(not fixable)")
 
   proc runFileNull(file: string, real: string): void =
-    echoStatus("ERR_FILE_NULL", file)
-    echoPoint("(fixable)")
+    printStatus("ERR_FILE_NULL", file)
+    printHint("(fixable)")
 
   proc runDirFile(file: string, real: string): void =
-    echoStatus("ERR_DIR_FILE", file)
-    echoPoint(fmt"{file} (directory)")
-    echoPoint(fmt"{real} (file)")
-    echoPoint("(not fixable)")
+    printStatus("ERR_DIR_FILE", file)
+    printHint(fmt"{file} (directory)")
+    printHint(fmt"{real} (file)")
+    printHint("(not fixable)")
 
   proc runDirDir(file: string, real: string): void =
-    echoStatus("ERR_DIR_DIR", file)
-    echoPoint(fmt"{file} (directory)")
-    echoPoint(fmt"{real} (directory)")
-    echoPoint("Remove the directory that has the older contents")
-    echoPoint("(possibly fixable)")
+    printStatus("ERR_DIR_DIR", file)
+    printHint(fmt"{file} (directory)")
+    printHint(fmt"{real} (directory)")
+    printHint("Remove the directory that has the older contents")
+    printHint("(possibly fixable)")
 
   proc runDirNull(file: string, real: string): void =
-    echoStatus("ERR_DIR_NULL", file)
-    echoPoint("(fixable)")
+    printStatus("ERR_DIR_NULL", file)
+    printHint("(fixable)")
 
   proc runNullFile(file: string, real: string): void =
-    echoStatus("ERR_NULL_FILE", file)
-    echoPoint("(fixable)")
+    printStatus("ERR_NULL_FILE", file)
+    printHint("(fixable)")
 
   proc runNullDir(file: string, real: string): void =
-    echoStatus("ERR_NULL_DIR", file)
-    echoPoint("(fixable)")
+    printStatus("ERR_NULL_DIR", file)
+    printHint("(fixable)")
 
   proc runNullNull(file: string, real: string): void =
-    echoStatus("ERR_NULL_NULL", file)
-    echoPoint(fmt"Did you forget to create your actual dotfile at '{real}'?")
-    echoPoint("(not fixable)")
+    printStatus("ERR_NULL_NULL", file)
+    printHint(fmt"Did you forget to create your actual dotfile at '{real}'?")
+    printHint("(not fixable)")
 
   doAbstract(
     dotDir,
     homeDir,
     options,
-    dotFiles,
+    dotfiles,
     runSymlinkSymlink,
     runSymlinkFile,
     runSymlinkDir,
@@ -232,11 +232,11 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotFiles: seq[
 
 
 proc doReconcile*(dotDir: string, homeDir: string, options: Options,
-    dotFiles: seq[string]) =
+    dotfiles: seq[string]) =
   proc runSymlinkSymlink(file: string, real: string, options: Options): void =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
-      echoStatus("ERR_SYM_SYM", file)
-      echoPoint("(not fixable)")
+      printStatus("ERR_SYM_SYM", file)
+      printHint("(not fixable)")
 
   proc runSymlinkFile(file: string, real: string, options: Options) =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
@@ -248,8 +248,8 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
           removeFile(file)
           createSymlink(rts(temp), file)
       else:
-        echoStatus("ERR_SYM_FILE", file)
-        echoPoint("(attempted fix)")
+        printStatus("ERR_SYM_FILE", file)
+        printHint("(attempted fix)")
 
         # won't always work properly see reasoning in status runSymlinkDir()
         removeFile(file)
@@ -271,10 +271,10 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
 
   proc runSymlinkNull(file: string, real: string) =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
-      echoStatus("ERR_SYM_NULL", file)
-      echoPoint(fmt"{file} (symlink)")
-      echoPoint(fmt"{real} (nothing here)")
-      echoPoint("(not fixable)")
+      printStatus("ERR_SYM_NULL", file)
+      printHint(fmt"{file} (symlink)")
+      printHint(fmt"{real} (nothing here)")
+      printHint("(not fixable)")
 
   proc runFileFile(file: string, real: string) =
     let fileContents = readFile(file)
@@ -284,20 +284,20 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
       removeFile(file)
       createSymlink(real, file)
     else:
-      echoStatus("ERR_FILE_FILE", file)
-      echoPoint(fmt"{file} (file)")
-      echoPoint(fmt"{real} (file)")
-      echoPoint("(not fixable)")
+      printStatus("ERR_FILE_FILE", file)
+      printHint(fmt"{file} (file)")
+      printHint(fmt"{real} (file)")
+      printHint("(not fixable)")
 
   proc runFileDir(file: string, real: string) =
-    echoStatus("ERR_FILE_DIR", file)
-    echoPoint(fmt"{file} (file)")
-    echoPoint(fmt"{real} (directory)")
-    echoPoint("(not fixable)")
+    printStatus("ERR_FILE_DIR", file)
+    printHint(fmt"{file} (file)")
+    printHint(fmt"{real} (directory)")
+    printHint("(not fixable)")
 
   proc runFileNull (file: string, real: string) =
-    echoStatus("ERR_FILE_NULL", file)
-    echoPoint("Automatically fixed")
+    printStatus("ERR_FILE_NULL", file)
+    printHint("Automatically fixed")
 
     createDir(parentDir(real))
 
@@ -306,9 +306,9 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
     createSymlink(real, file)
 
   proc runDirFile (file: string, real: string) =
-    echoStatus("ERR_DIR_FILE", file)
-    echoPoint(fmt"{file} (directory)")
-    echoPoint(fmt"{real} (file)")
+    printStatus("ERR_DIR_FILE", file)
+    printHint(fmt"{file} (directory)")
+    printHint(fmt"{real} (file)")
 
   # swapped
   proc runDirNull (file: string, real: string) =
@@ -317,36 +317,36 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
 
     # file doesn't exist on other side. move it
     try:
-      echoStatus("ERR_DIR_NULL", file)
-      echoPoint("Automatically fixed")
+      printStatus("ERR_DIR_NULL", file)
+      printHint("Automatically fixed")
 
       copyDirWithPermissions(file, real)
       removeDir(file)
       createSymlink(real, file)
     except Exception:
       logError getCurrentExceptionMsg()
-      echoStatus("ERR_DIR_NULL", file)
-      echoPoint("Error: Could not copy folder")
+      printStatus("ERR_DIR_NULL", file)
+      printHint("Error: Could not copy folder")
 
   # swapped
   proc runDirDir (file: string, real: string) =
     if dirLength(file) == 0:
-      echoStatus("ERR_DIR_DIR", file)
-      echoPoint("Automatically fixed")
+      printStatus("ERR_DIR_DIR", file)
+      printHint("Automatically fixed")
 
       removeDir(file)
       createSymlink(getRealDot(dotDir, homeDir, file), file)
     elif dirLength(real) == 0:
-      echoStatus("ERR_DIR_DIR", file)
-      echoPoint("Automatically fixed")
+      printStatus("ERR_DIR_DIR", file)
+      printHint("Automatically fixed")
 
       removeDir(real)
       runDirNull(file, real)
     else:
-      echoStatus("ERR_DIR_DIR", file)
-      echoPoint(fmt"{file} (directory)")
-      echoPoint(fmt"{file} (directory)")
-      echoPoint("(not fixable)")
+      printStatus("ERR_DIR_DIR", file)
+      printHint(fmt"{file} (directory)")
+      printHint(fmt"{file} (directory)")
+      printHint("(not fixable)")
 
   proc runNullAny(file: string, real: string) =
     createSymlink(getRealDot(dotDir, homeDir, file), file)
@@ -355,7 +355,7 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
     dotDir,
     homeDir,
     options,
-    dotFiles,
+    dotfiles,
     runSymlinkSymlink,
     runSymlinkFile,
     runSymlinkDir,

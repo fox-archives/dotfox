@@ -19,13 +19,13 @@ declare -r home="$HOME"
 declare -r cfg="${XDG_CONFIG_HOME:-$HOME/.config}"
 declare -r data="${XDG_DATA_HOME:-$HOME/.local/share}"
 
-declare -ra dotFiles=(
+declare -ra dotfiles=(
 	"$home/.bashrc"
 	"$home/.bash_logout"
 )
 
-for dotFile in "${dotFiles[@]}"; do
-	printf "%s\n" "$dotFile"
+for dotfile in "${dotfiles[@]}"; do
+	printf "%s\n" "$dotfile"
 done
 ```
 

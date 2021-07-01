@@ -12,9 +12,136 @@ type
     isRoot*: bool
     action*: string
     configFile*: string
-    files*: seq[string]  
+    tags*: seq[string]
 
-proc writeHelp*() =
+proc logError*(str: string): void =
+  echo fmt"{ansiForegroundColorCode(fgRed)}Error: {str}"
+  resetAttributes()
+
+proc logWarn*(str: string): void =
+  echo fmt"{ansiForegroundColorCode(fgYellow)}Info: {str}"
+  resetAttributes()
+
+proc logInfo*(str: string): void =
+  echo fmt"{ansiForegroundColorCode(fgGreen)}Info: {str}"
+  resetAttributes()
+
+proc die*(str: string): void {.noReturn.} =
+  logError(fmt"{str}. Exiting")
+  quit QuitFailure
+
+proc printStatus*(status: string, file: string): void =
+  # Print the status code for the particular file
+  let s = fmt"[{status}]"
+  echo fmt"{s:<16}" & file
+
+proc printHint*(str: string): void =
+  # Print a hint for a particular file, but indented so the output is more clear
+  echo fmt"                -> {str}"  
+
+proc hasAllRootFiles*(parentDir: string): bool =
+  # Determine if all child files and subdirectories of the particular directory are owned by root.
+  # We use this as a security precaution when operating on `sudo` mode. This is because we don't want
+  # to copy files that are user-writable to a root level location
+  proc fileOwnedByRoot(path: string): bool =
+    var info: Stat
+    let code = stat(path, info)
+    if code != 0:
+      logError fmt"Could not stat {path}"
+      return false
+
+    # skip group check
+    let fileUsername = getpwuid(info.st_uid).pw_name
+    return fileUsername == "root"
+
+  var allRootFiles = true
+  proc walk(path: string) =
+    for kind, file in walkDir(path):
+      if not fileOwnedByRoot(file):
+        echo file
+        allRootFiles = false
+
+      if kind == PathComponent.pcDir:
+        walk(file)
+
+  # ensure we check root parent
+  if not fileOwnedByRoot(parentDir):
+    echo parentDir
+    allRootFiles = false
+
+  walk(parentDir)
+  return allRootFiles
+
+proc getDotfileList*(files: seq[string]): seq[string] =
+  # Execute all dotfiles, returning all their standard output, concatonated
+  var dotfiles = newSeq[string]()
+
+  for file in files:
+    let cfg = file
+
+    if not fileExists(cfg):
+      die fmt"File '{cfg}' not found"
+
+    let cmdResult = execCmdEx(cfg)
+    if cmdResult.exitCode != 0:
+      stdout.write cmdResult.output
+      die fmt"Executing {cfg} failed"
+
+    for str in filter(cmdResult.output.split('\n'), proc(
+        str: string): bool = not isEmptyOrWhitespace(str)):
+      dotfiles.add(str)
+
+  return dotfiles
+
+
+proc rts*(str: string): string =
+  # Remove trailing slash
+  if endsWith(str, '/'):
+    return str[0 .. ^2]
+
+  return str
+
+proc getRel*(homeDir: string, dotfile: string): string =
+  # From dotfile (in homeDir), get relative path
+  return dotfile[len(homeDir) .. ^1]
+
+proc getRealDot*(dotDir: string, homeDir: string, dotfile: string): string =
+  # From dotfile (in homeDir), get the real path that's in dotDir
+  return joinPath(dotDir, getRel(homeDir, dotfile))
+
+proc symlinkCreatedByDotty*(dotDir: string, homeDir: string,
+    symlinkFile: string): bool =
+  # Determine if the symlink has been created by us. We it is if it points to somewhere in `dotDir`
+  if startsWith(symlinkFile, dotDir):
+    return true
+  return false
+
+proc symlinkResolvedProperly*(dotDir: string, homeDir: string,
+    dotfile: string): bool =
+  # Test if the symlink in homeDir actually points to corresponding one in dotfile. This
+  # assumes the symlink exists
+  if rts(expandSymlink(dotfile)) == joinPath(dotDir, getRel(homeDir, dotfile)):
+    return true
+  else:
+    return false
+
+proc dirLength*(dir: string): int =
+  # Determine how many files or folders are contained are in a directory
+  var len = 0
+  for kind, path in walkDir(dir):
+    len = len + 1
+
+  return len
+
+proc parseBoolFlag*(flag: string): bool =
+  if(flag == "true"):
+    return true
+  elif(flag == "false"):
+    return false
+  else:
+    die fmt"Value '{flag}' not understood. Use 'true' or 'false'"
+
+proc writeHelp*() = 
   echo """Dotty
 
 Usage: dotty [flags] [subcommand]
@@ -41,126 +168,3 @@ Usage:
   dotty --show-ok=false status
   sudo dotty reconcile --root
 """
-
-proc writeVersion*() =
-  # TODO
-  echo "0.5.0"
-
-proc logError*(str: string): void =
-  echo fmt"{ansiForegroundColorCode(fgRed)}Error: {str}"
-  resetAttributes()
-
-proc logWarn*(str: string): void =
-  echo fmt"{ansiForegroundColorCode(fgYellow)}Info: {str}"
-  resetAttributes()
-
-proc logInfo*(str: string): void =
-  echo fmt"{ansiForegroundColorCode(fgGreen)}Info: {str}"
-  resetAttributes()
-
-proc die*(str: string): void {.noReturn.} =
-  logError(fmt"{str}. Exiting")
-  quit QuitFailure
-
-proc echoStatus*(status: string, file: string): void =
-  let s = fmt"[{status}]"
-  echo fmt"{s:<16}" & file
-
-proc echoPoint*(str: string): void =
-  echo fmt"                -> {str}"  
-
-proc hasAllRootFiles*(dotDir: string): bool =
-  proc fileOwnedByRoot(path: string): bool =
-    var info: Stat
-    let code = stat(path, info)
-    if code != 0:
-      logError fmt"Could not stat {path}"
-      return false
-
-    # skip group check
-    let fileUsername = getpwuid(info.st_uid).pw_name
-    return fileUsername == "root"
-
-  var allRootFiles = true
-  proc walk(path: string) =
-    for kind, file in walkDir(path):
-      if not fileOwnedByRoot(file):
-        echo file
-        allRootFiles = false
-
-      if kind == PathComponent.pcDir:
-        walk(file)
-
-  # ensure we check root parent
-  if not fileOwnedByRoot(dotDir):
-    echo dotDir
-    allRootFiles = false
-
-  walk(dotDir)
-  return allRootFiles
-
-proc getDotFiles*(files: seq[string]): seq[string] =
-  var dotFiles = newSeq[string]()
-
-  for file in files:
-    let cfg = file
-
-    if not fileExists(cfg):
-      die fmt"File '{cfg}' not found"
-
-    let cmdResult = execCmdEx(cfg)
-    if cmdResult.exitCode != 0:
-      stdout.write cmdResult.output
-      die fmt"Executing {cfg} failed"
-
-    for str in filter(cmdResult.output.split('\n'), proc(
-        str: string): bool = not isEmptyOrWhitespace(str)):
-      dotFiles.add(str)
-
-  return dotFiles
-
-# remove trailing slash
-proc rts*(str: string): string =
-  if endsWith(str, '/'):
-    return str[0 .. ^2]
-  return str
-
-# from dotfile (in homeDir), get rel path
-proc getRel*(homeDir: string, dotFile: string): string =
-  let rel = dotFile[len(homeDir) .. ^1]
-  return rel
-
-# from dotFile (in homeDir), get real path that's in dotDir
-proc getRealDot*(dotDir: string, homeDir: string, dotFile: string): string =
-  return joinPath(dotDir, getRel(homeDir, dotFile))
-
-# determine if the symlink is created by us (explanation in getRealDot())
-proc symlinkCreatedByDotty*(dotDir: string, homeDir: string,
-    symlinkFile: string): bool =
-  if startsWith(symlinkFile, dotDir):
-    return true
-  return false
-
-# test if the symlink in homeDir actually points to corresponding one in dotFile
-# assumes the symlink exists
-proc symlinkResolvedProperly*(dotDir: string, homeDir: string,
-    dotFile: string): bool =
-  if rts(expandSymlink(dotFile)) == joinPath(dotDir, getRel(homeDir, dotFile)):
-    return true
-  else:
-    return false
-
-proc dirLength*(dir: string): int =
-  var len = 0
-  for kind, path in walkDir(dir):
-    len = len + 1
-  return len
-
-proc parseCategories*(categories: string): seq[string] =
-  if categories == "":
-    logError "No files was specified. Please specify a category"
-    quit QuitFailure
-  elif categories.contains(","):
-    return categories.split(",")
-  else:
-    return @[categories]
