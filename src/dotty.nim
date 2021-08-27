@@ -21,30 +21,29 @@ for kind, key, val in p.getopt():
       quit QuitSuccess
     of "show-ok":
       options.showOk = parseBoolFlag(val)
-    of "config":
-      options.configFile = val
+    of "config-dir":
+      options.configDir = val
     of "root":
       options.isRoot = parseBoolFlag(val)
     of "deployment":
       options.deployment = val
-  of cmdArgument:
-    case key:
-    of "status":
-      options.action = "status"
-    of "reconcile":
-      options.action = "reconcile"
     else:
-      die fmt"Subcommand '{key}' not recognized"
+      die fmt"Flag '{key}' not recognized"
+  of cmdArgument:
+    options.action = key
   of cmdEnd:
     break
 
-if options.configFile == "":
-  options.configFile = joinPath(getConfigDir(), "dotty", "config.toml")
 
-if not fileExists(options.configFile):
-  die fmt"Config file '{options.configFile}' not found"
+if options.configDir == "":
+  options.configDir = joinPath(getConfigDir(), "dotty")
 
-let toml = parsetoml.parseFile(options.configFile)
+if not isAbsolute(options.configDir):
+  die fmt"Directory '{options.configDir}' is not an absolute path"
+if not dirExists(options.configDir):
+  die fmt"Config directory '{options.configDir}' is not a directory"
+
+let toml = parsetoml.parseFile(joinPath(options.configDir, "config.toml"))
 let dotDir = expandTilde(toml["config"]["dotDir"].getStr())
 let homeDir = expandTilde(toml["config"]["destDir"].getStr())
 
@@ -54,22 +53,24 @@ if options.isRoot:
 
   if not hasAllRootFiles(dotDir):
     die fmt"Not all files in '{dotDir}' are owned by root. Fix this"
-
-  if options.deployment == "":
-    options.deployment = joinPath(getConfigDir(), "dotty", "deployments", "defaultRoot.sh")
 else:
   if geteuid() == 0:
     die "Must NOT be running as root"
 
-  if options.deployment == "":
-    options.deployment = joinPath(getConfigDir(), "dotty", "deployments", "default.sh")
+if options.deployment == "":
+  die "No deployment specified"
+
+if options.action == "":
+  die "Must pass a subcommand"
 
 case options.action:
 of "status":
-  doStatus(dotDir, homeDir, options, getDotfileList(options.deployment))
+  doStatus(dotDir, homeDir, options, getDotfileList(options))
 of "reconcile":
-  doReconcile(dotDir, homeDir, options, getDotfileList(options.deployment))
+  doReconcile(dotDir, homeDir, options, getDotfileList(options))
+of "debug":
+  doDebug(dotDir, homeDir, options, getDotfileList(options))
 else:
-  logError "Subcommand expected, but none given"
+  logError fmt"Subcommand '{options.action}' not recognized"
   writeHelp()
   quit QuitFailure

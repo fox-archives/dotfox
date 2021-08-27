@@ -11,7 +11,7 @@ proc doAbstract(
   dotDir: string,
   homeDir: string,
   options: Options,
-  dotfiles: seq[string],
+  dotfiles: seq[array[2, string]],
   runSymlinkSymlink: proc (dotfile: string, real: string, options: Options),
   runSymlinkFile: proc (dotfile: string, real: string, options: Options),
   runSymlinkDir: proc (dotfile: string, real: string, options: Options),
@@ -26,9 +26,12 @@ proc doAbstract(
   runNullDir: proc(dotfile: string, real: string),
   runNullNull: proc(dotfile: string, real: string)
 ) =
-  for i, file in dotfiles:
+  for i, files in dotfiles:
+    let srcFile = files[0]
+    let destFile = files[1]
+
     try:
-      createDir(parentDir(file))
+      createDir(parentDir(destFile))
 
       # 'file' and 'dotfile' are synonymous
       # If the dotfile is a symlink, it could mean the symlink was created by dotty,
@@ -44,52 +47,52 @@ proc doAbstract(
       # "rts(expandSymlink(dotfile))" so we can test the "real" path (rather than defaulting
       # to a ERR_SYM_NULL error with "joinPath(dotDir, getRel(homeDir, dotfile))")
       var real = ""
-      if symlinkExists(file):
+      if symlinkExists(destFile):
         # If the symlink expands to a folder, it will append a slash,
         # causing symlinkExists() to fail. rts() rectifies this
-        real = rts(expandSymlink(file))
+        real = rts(expandSymlink(destFile))
       else:
-        real = getRealDot(dotDir, homeDir, file)
+        real = srcFile
 
-      if symlinkExists(file):
+      if symlinkExists(destFile):
         if symlinkExists(real):
-          runSymlinkSymlink(file, real, options)
+          runSymlinkSymlink(destFile, real, options)
         elif fileExists(real):
-          runSymlinkFile(file, real, options)
+          runSymlinkFile(destFile, real, options)
         elif dirExists(real):
-          runSymlinkDir(file, real, options)
+          runSymlinkDir(destFile, real, options)
         else:
-          runSymlinkNull(file, real)
+          runSymlinkNull(destFile, real)
 
-      elif fileExists(file):
+      elif fileExists(destFile):
         if fileExists(real):
-          runFileFile(file, real)
+          runFileFile(destFile, real)
         elif dirExists(real):
-          runFileDir(file, real)
+          runFileDir(destFile, real)
         else:
-          runFileNull(file, real)
+          runFileNull(destFile, real)
 
-      elif dirExists(file):
+      elif dirExists(destFile):
         if fileExists(real):
-          runDirFile(file, real)
+          runDirFile(destFile, real)
         elif dirExists(real):
-          runDirDir(file, real)
+          runDirDir(destFile, real)
         else:
-          runDirNull(file, real)
+          runDirNull(destFile, real)
 
       else:
         if fileExists(real):
-          runNullFile(file, real)
+          runNullFile(destFile, real)
         elif dirExists(real):
-          runNullDir(file, real)
+          runNullDir(destFile, real)
         else:
-          runNullNull(file, real)
+          runNullNull(destFile, real)
     except Exception:
       logError &"Unhandled exception raised\n{getCurrentExceptionMsg()}"
-      printStatus("SKIP", file)
+      printStatus("SKIP", destFile)
   echo "Done."
 
-proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[string]) =
+proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[array[2, string]]) =
   proc runSymlinkSymlink(file: string, real: string, options: Options): void =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
       # This is possible if dotty does it's thing correctly, but
@@ -232,7 +235,7 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[
 
 
 proc doReconcile*(dotDir: string, homeDir: string, options: Options,
-    dotfiles: seq[string]) =
+    dotfiles: seq[array[2, string]]) =
   proc runSymlinkSymlink(file: string, real: string, options: Options): void =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
       printStatus("ERR_SYM_SYM", file)
@@ -251,8 +254,8 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
         printStatus("ERR_SYM_FILE", file)
         printHint("(attempted fix)")
 
-        removeFile(file)
-        createSymlink(getRealDot(dotDir, homeDir, file), file)
+        # removeFile(file)
+        # createSymlink(getRealDot(dotDir, homeDir, file), file)
 
   proc runSymlinkDir(file: string, real: string, options: Options) =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
@@ -263,8 +266,11 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
           removeFile(file)
           createSymlink(rts(temp), file)
       else:
-        removeFile(file)
-        createSymlink(getRealDot(dotDir, homeDir, file), file)
+        printStatus("ERR_SYM_DIR", file)
+        printHint("(attempted fix)")
+
+        # removeFile(file)
+        # createSymlink(getRealDot(dotDir, homeDir, file), file)
 
   proc runSymlinkNull(file: string, real: string) =
     if symlinkCreatedByDotty(dotDir, homeDir, real):
@@ -332,7 +338,7 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
       printHint("Automatically fixed")
 
       removeDir(file)
-      createSymlink(getRealDot(dotDir, homeDir, file), file)
+      createSymlink(real, file)
     elif dirLength(real) == 0:
       printStatus("ERR_DIR_DIR", file)
       printHint("Automatically fixed")
@@ -346,7 +352,7 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
       printHint("(not fixable)")
 
   proc runNullAny(file: string, real: string) =
-    createSymlink(getRealDot(dotDir, homeDir, file), file)
+    createSymlink(real, file)
 
   doAbstract(
     dotDir,
@@ -367,3 +373,8 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
     runNullAny,
     runNullAny
   )
+
+proc doDebug*(dotDir: string, homeDir: string, options: Options,
+    dotfiles: seq[array[2, string]]) =
+  for file in dotfiles:
+    echo file

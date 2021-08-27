@@ -11,7 +11,7 @@ type
     showOk*: bool
     isRoot*: bool
     action*: string
-    configFile*: string
+    configDir*: string
     deployment*: string
 
 proc logError*(str: string): void {.inline.} =
@@ -37,7 +37,7 @@ proc printStatus*(status: string, file: string): void {.inline.} =
 
 proc printHint*(str: string): void {.inline.} =
   # Print a hint for a particular file, but indented so the output is more clear
-  echo fmt"                -> {str}"  
+  echo fmt"                -> {str}"
 
 proc hasAllRootFiles*(parentDir: string): bool =
   # Determine if all child files and subdirectories of the particular directory are owned by root.
@@ -72,17 +72,17 @@ proc hasAllRootFiles*(parentDir: string): bool =
   walk(parentDir)
   return allRootFiles
 
-proc getDotfileList*(deploymentStr: string): seq[string] =
+proc getDotfileList*(options: Options): seq[array[2, string]] =
   # Execute deployment, returning all their standard output, concatenated
   let oldCurrentDir = getCurrentDir()
-  setCurrentDir(joinPath(getConfigDir(), "dotty", "deployments"))
+  setCurrentDir(joinPath(options.configDir, "deployments"))
 
   var deployment = ""
 
-  if not isAbsolute(deploymentStr):
-    deployment = joinPath(getConfigDir(), "dotty", "deployments", deploymentStr)
+  if not isAbsolute(options.deployment):
+    deployment = joinPath(options.configDir, "deployments", options.deployment)
   else:
-    deployment = deploymentStr
+    deployment = options.deployment
 
   if not fileExists(deployment):
     die fmt"Deployment file '{deployment}' not found"
@@ -92,10 +92,15 @@ proc getDotfileList*(deploymentStr: string): seq[string] =
     stdout.write cmdResult.output
     die fmt"Executing {deployment} failed"
 
-  var dotfiles = newSeq[string]()
-  for str in filter(cmdResult.output.split('\n'), proc(
-      str: string): bool = not isEmptyOrWhitespace(str)):
-    dotfiles.add(str)
+  var dotfiles = newSeq[array[2, string]]()
+  for line in filter(cmdResult.output.split('\n'), proc(line: string): bool = not isEmptyOrWhitespace(line)):
+    let lineParts = line.split(':')
+    if len(lineParts) == 0:
+      die fmt"Line '{line}' must have one colon, but none were found"
+    if len(lineParts) > 2:
+      die fmt"Line '{line}' must have one colon, but {len(lineParts)-1} were found"
+
+    dotfiles.add([lineParts[0], lineParts[1]])
 
   setCurrentDir(oldCurrentDir)
   return dotfiles
@@ -148,7 +153,7 @@ proc parseBoolFlag*(flag: string): bool =
   else:
     die fmt"Value '{flag}' not understood. Use 'true' or 'false'"
 
-proc writeHelp*() = 
+proc writeHelp*() =
   echo """Dotty
 
 Usage: dotty [flags] [subcommand]
@@ -165,14 +170,13 @@ Flags:
   --show-ok
     Only prints information associated with a file if there is an error
     associated with it when using the 'status' subcommand
-  --roots
+  --root
     Manage the dotfiles for the root user
   --deployment
     Specify specific deployment to read dotfiles from. This defaults to 'dotty.sh'
     in your config directory
-  --config
-    Set location of config file. This defaults to 'config.toml'
-    in your config directory
+  --config-dir
+    Set location of config directory. This defaults to '~/.config/dotty'
 
 Usage:
   dotty --show-ok=false status
