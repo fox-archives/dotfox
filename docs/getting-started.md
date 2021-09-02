@@ -1,5 +1,7 @@
 # Getting Started
 
+TODO (THIS IS OUT OF DATE)
+
 When setting up Dotty, you need two things: a dot directory (`dotDir`) and a destination directory (`destDir`). `dotDir` is a directory that your dotfiles tracked with your VCS of choice, such as `~/.dotfiles`. `destDir` is the location to deploy your dotfiles to, such as `~/`.
 
 Specify these two things in `~/.config/dotty/config.toml` (or with using the config directory of your choice with `XDG_CONFIG_HOME`)
@@ -90,4 +92,4 @@ lrwxrwxrwx 1 edwin edwin   34 Jun 29 21:36 /home/edwin/.bash_logout -> /home/edw
 lrwxrwxrwx 1 edwin edwin   29 Jun 29 21:36 /home/edwin/.bashrc -> /home/edwin/.dotfiles/.bashrc
 ```
 
-And they do have their correct target files! 
+And they do have their correct target files!
