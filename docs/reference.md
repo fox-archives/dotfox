@@ -26,7 +26,7 @@ A conflict exists. Dotty will attempt to automatically fix the problem. However,
 
 ### `destDirCode`
 
-The `destDirCode` represents status code of a particular dotfile with respect to its destination directory. The destination directory is the directory in which your dotfiles are deployed to and the directory the symlinks are created. Usually, this is located at `~/` For a healthy deployment, you would want these to have a value of either `SYM` or `USYM`
+The `destDirCode` represents status code of a particular dotfile with respect to its destination directory. The destination directory is the directory in which your dotfiles are deployed to and the directory the symlinks are created. Usually, this is located at `~/` For a healthy deployment, you would want these to have a value of `SYM`
 
 #### `SYM`
 
@@ -44,18 +44,13 @@ The particular dotfile has a corresponding directory in the destination director
 
 The particular dotfile has no corresponding file or directory in the destination directory. Dotty will try to automatically replace this with a symlink pointing to said target dotfile on reconcile
 
-#### `USYM`
-
-An unmanaged symlink. In other words, a symlink exists, but it's not managed by 'dotty'. This occurs when
-    a symlink's target destination is not inside the `dotDir` (ex. `~/.profile` -> `~/.config/profile/profile.sh`). All lines with `USYM` are `OK` because they are symlinks this tool does not manage, and cannot check for validity
-
 ### `dotDirCode`
 
 The `dotDirCode` represents status code of a particular dotfile with respect to its dotfile directory. The destination directory is the directory in which your dotfiles are held in version control. Most people choose to place this directory at `~/.dotfiles` or `~/.dots`. For a healthy deployment, you would want these to have a value of either `FILE`, `DIR`, or `SYM`
 
 ### `SYM`
 
-The particular dotfile has a corresponding symlink in the dot directory. This is possible, for example, if you wish to symlink a file like `~/.bashrc` to `~/.config/bash/bashrc.sh`. (We are not using a target directory of `~/.dots/.config/bash/bashrc.sh` because doing so would ensure Dotty would automatically reconcile it to `~/.dots/.bashrc`). In this (valid) case, the full status code would be `OK-USYM-SYM`
+The particular dotfile has a corresponding symlink in the dot directory. This is possible, for example, if you wish to symlink a file like `~/.bashrc` to `~/.config/bash/bashrc.sh`
 
 ### `FILE`
 

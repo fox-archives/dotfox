@@ -95,12 +95,18 @@ proc getDotfileList*(options: Options): seq[array[2, string]] =
   var dotfiles = newSeq[array[2, string]]()
   for line in filter(cmdResult.output.split('\n'), proc(line: string): bool = not isEmptyOrWhitespace(line)):
     let lineParts = line.split(':')
-    if len(lineParts) == 0:
+    if len(lineParts) < 1:
       die fmt"Line '{line}' must have one colon, but none were found"
-    if len(lineParts) > 2:
-      die fmt"Line '{line}' must have one colon, but {len(lineParts)-1} were found"
 
-    dotfiles.add([lineParts[0], lineParts[1]])
+    let prefix = lineParts[0]
+    if prefix == "symlink":
+      if len(lineParts) != 3:
+        die fmt"Symlink prefix on line '{line}' must have 3 elements"
+
+      dotfiles.add([lineParts[1], lineParts[2]])
+    else:
+        die fmt"Prefix  '{prefix}' in line '{line}' not supported"
+
 
   setCurrentDir(oldCurrentDir)
   return dotfiles
@@ -123,16 +129,15 @@ proc getRealDot*(dotDir: string, homeDir: string, dotfile: string): string =
 
 proc symlinkCreatedByDotty*(dotDir: string, homeDir: string,
     symlinkFile: string): bool =
-  # Determine if the symlink has been created by us. We it is if it points to somewhere in `dotDir`
+  # Determine if the symlink has been created by us. It is if it points to somewhere in `dotDir`
   if startsWith(symlinkFile, dotDir):
     return true
   return false
 
-proc symlinkResolvedProperly*(dotDir: string, homeDir: string,
-    dotfile: string): bool =
+proc symlinkResolvedProperly*(destFile: string, srcFile: string): bool =
   # Test if the symlink in homeDir actually points to corresponding one in dotfile. This
   # assumes the symlink exists
-  if rts(expandSymlink(dotfile)) == joinPath(dotDir, getRel(homeDir, dotfile)):
+  if rts(expandSymlink(destFile)) == rts(srcFile):
     return true
   else:
     return false
