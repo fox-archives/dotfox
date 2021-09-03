@@ -111,28 +111,12 @@ proc getDotfileList*(options: Options): seq[array[2, string]] =
   setCurrentDir(oldCurrentDir)
   return dotfiles
 
-
 proc rts*(str: string): string {.inline.} =
   # Remove trailing slash
   if endsWith(str, '/'):
     return str[0 .. ^2]
 
   return str
-
-proc getRel*(homeDir: string, dotfile: string): string {.inline.} =
-  # From dotfile (in homeDir), get relative path
-  return dotfile[len(homeDir) .. ^1]
-
-proc getRealDot*(dotDir: string, homeDir: string, dotfile: string): string =
-  # From dotfile (in homeDir), get the real path that's in dotDir
-  return joinPath(dotDir, getRel(homeDir, dotfile))
-
-proc symlinkCreatedByDotty*(dotDir: string, homeDir: string,
-    symlinkFile: string): bool =
-  # Determine if the symlink has been created by us. It is if it points to somewhere in `dotDir`
-  if startsWith(symlinkFile, dotDir):
-    return true
-  return false
 
 proc symlinkResolvedProperly*(destFile: string, srcFile: string): bool =
   # Test if the symlink in homeDir actually points to corresponding one in dotfile. This

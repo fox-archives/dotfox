@@ -104,16 +104,6 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[
     else:
       printStatus("ERR_SYM_DIR", file)
 
-      # Possibly fixable because when we have this:
-      # ~/.profile (file) -> ~/.dots/.config/profile/.profile (srcFile)
-      # it becomes this:
-      # ~/.profile (file) -> ~/.dots/.profile (srcFile)
-      # even though, it should be
-      # ~/.profile (file) -> ~/.config/profile/.profile (srcFile)
-      # This a user error symlinking inside dotDir, but nevertheless,
-      # still not necessarily fixable. we can't fix this
-      printHint("(possibly fixable)")
-
   proc runSymlinkNull(file: string, srcFile: string): void =
     printStatus("ERR_SYM_NULL", file)
     printHint(fmt"{file} (symlink)")
@@ -187,52 +177,30 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[
     runNullNull
   )
 
-
 proc doReconcile*(dotDir: string, homeDir: string, options: Options,
     dotfiles: seq[array[2, string]]) =
   proc runSymlinkSymlink(file: string, srcFile: string, options: Options): void =
-    if symlinkCreatedByDotty(dotDir, homeDir, srcFile):
-      printStatus("ERR_SYM_SYM", file)
-      printHint("(not fixable)")
+    discard # not fixable
 
   proc runSymlinkFile(file: string, srcFile: string, options: Options) =
-    if symlinkCreatedByDotty(dotDir, homeDir, srcFile):
-      if symlinkResolvedProperly(file, srcFile):
-        # If the destination has an extraneous forward slash,
-        # automatically remove it
-        if endsWith(expandSymlink(file), '/'):
-          let temp = expandSymlink(file)
-          removeFile(file)
-          createSymlink(rts(temp), file)
-      else:
-        printStatus("ERR_SYM_FILE", file)
-        printHint("(attempted fix)")
-
-        # removeFile(file)
-        # createSymlink(getsrcFileDot(dotDir, homeDir, file), file)
+    if symlinkResolvedProperly(file, srcFile):
+      # If the destination has an extraneous forward slash,
+      # automatically remove it
+      if endsWith(expandSymlink(file), '/'):
+        let temp = expandSymlink(file)
+        removeFile(file)
+        createSymlink(rts(temp), file)
 
   proc runSymlinkDir(file: string, srcFile: string, options: Options) =
-    if symlinkCreatedByDotty(dotDir, homeDir, srcFile):
-      if symlinkResolvedProperly(file, srcFile):
-        # If the destination has a spurious slash, automatically remove it
-        if endsWith(expandSymlink(file), '/'):
-          let temp = expandSymlink(file)
-          removeFile(file)
-          createSymlink(rts(temp), file)
-      else:
-        printStatus("ERR_SYM_DIR", file)
-        printHint("(attempted fix)")
-
-        # TODO?
-        # removeFile(file)
-        # createSymlink(getsrcFileDot(dotDir, homeDir, file), file)
+    if symlinkResolvedProperly(file, srcFile):
+      # If the destination has a spurious slash, automatically remove it
+      if endsWith(expandSymlink(file), '/'):
+        let temp = expandSymlink(file)
+        removeFile(file)
+        createSymlink(rts(temp), file)
 
   proc runSymlinkNull(file: string, srcFile: string) =
-    if symlinkCreatedByDotty(dotDir, homeDir, srcFile):
-      printStatus("ERR_SYM_NULL", file)
-      printHint(fmt"{file} (symlink)")
-      printHint(fmt"{srcFile} (nothing here)")
-      printHint("(not fixable)")
+    discard # not fixable
 
   proc runFileFile(file: string, srcFile: string) =
     let fileContents = readFile(file)
@@ -242,19 +210,14 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
       removeFile(file)
       createSymlink(srcFile, file)
     else:
-      printStatus("ERR_FILE_FILE", file)
-      printHint(fmt"{file} (file)")
-      printHint(fmt"{srcFile} (file)")
-      printHint("(not fixable)")
+      discard # not fixable
 
   proc runFileDir(file: string, srcFile: string) =
-    printStatus("ERR_FILE_DIR", file)
-    printHint(fmt"{file} (file)")
-    printHint(fmt"{srcFile} (directory)")
-    printHint("(not fixable)")
+    discard # not fixable
 
   proc runFileNull (file: string, srcFile: string) =
     printStatus("ERR_FILE_NULL", file)
+    # TODO: make auto fix more consistent
     printHint("Automatically fixed")
 
     createDir(parentDir(srcFile))
@@ -264,9 +227,7 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
     createSymlink(srcFile, file)
 
   proc runDirFile (file: string, srcFile: string) =
-    printStatus("ERR_DIR_FILE", file)
-    printHint(fmt"{file} (directory)")
-    printHint(fmt"{srcFile} (file)")
+    discard # not fixable
 
   # Swapped
   proc runDirNull (file: string, srcFile: string) =
@@ -284,6 +245,7 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
     except Exception:
       logError getCurrentExceptionMsg()
       printStatus("ERR_DIR_NULL", file)
+      # TODO: elaborate
       printHint("Error: Could not copy folder")
 
   # Swapped
@@ -301,13 +263,16 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
       removeDir(srcFile)
       runDirNull(file, srcFile)
     else:
-      printStatus("ERR_DIR_DIR", file)
-      printHint(fmt"{file} (directory)")
-      printHint(fmt"{file} (directory)")
-      printHint("(not fixable)")
+      discard # not fixable
 
-  proc runNullAny(file: string, srcFile: string) =
+  proc runNullFile(file: string, srcFile: string) =
     createSymlink(srcFile, file)
+
+  proc runNullDir(file: string, srcFile: string) =
+    createSymlink(srcFile, file)
+
+  proc runNullNull(file: string, srcFile: string) =
+    discard # not fixable
 
   doAbstract(
     dotDir,
@@ -324,9 +289,9 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
     runDirFile,
     runDirDir,
     runDirNull,
-    runNullAny,
-    runNullAny,
-    runNullAny
+    runNullFile,
+    runNullDir,
+    runNullNull
   )
 
 proc doDebug*(dotDir: string, homeDir: string, options: Options,
