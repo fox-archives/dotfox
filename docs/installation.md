@@ -3,10 +3,10 @@
 ## From Source
 
 ```sh
-git clone https://github.com/eankeen/dotty
-cd ./dotty
+git clone https://github.com/eankeen/dotfox
+cd ./dotfox
 nimble build
-./dotty --help
+./dotfox --help
 ```
 
 ## From Distribution

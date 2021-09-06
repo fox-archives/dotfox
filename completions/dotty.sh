@@ -1,7 +1,7 @@
 # shellcheck shell=bash
 
 # based on https://tylerthrailkill.com/2019-01-19/writing-bash-completion-script-with-subcommands/
-_dotty() {
+_dotfox() {
 	local i=1 cmd
 
 	# iterate over COMP_WORDS (ending at currently completed word)
@@ -20,22 +20,22 @@ _dotty() {
 		(( i++ ))
 	done
 
-	# check if we're completing 'dotty'
+	# check if we're completing 'dotfox'
 	if [[ "$i" -eq "$COMP_CWORD" ]]; then
 		local cur="${COMP_WORDS[COMP_CWORD]}"
 		# shellcheck disable=SC2207
-		COMPREPLY=($(compgen -W "status reconcile rootStatus rootReconcile --version --help" -- "$cur"))
+		COMPREPLY=($(compgen -W "status deploy rootStatus rootDeploy --version --help" -- "$cur"))
 		return
 	fi
 
-	# if we're not completing 'dotty', then we're completing a subcommand
+	# if we're not completing 'dotfox', then we're completing a subcommand
 	case "$cmd" in
 		status)
 			COMPREPLY=() ;;
-		reconcile)
+		deploy)
 			COMPREPLY=() ;;
 		*)
 			;;
 	esac
 
-} && complete -F _dotty dotty
+} && complete -F _dotfox dotfox

@@ -1,4 +1,4 @@
-# Dotty
+# DotFox
 
 🌎 Simple dotfile manager
 

@@ -27,8 +27,8 @@ proc doAbstract(
   runNullNull: proc(dotfile: string, srcFile: string)
 ) =
   for i, files in dotfiles:
-    let srcFile = files[0]
-    let destFile = files[1]
+    let srcFile = rts(files[0])
+    let destFile = rts(files[1])
 
     try:
       createDir(parentDir(destFile))
@@ -73,7 +73,9 @@ proc doAbstract(
 
 proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[array[2, string]]) =
   proc runSymlinkSymlink(file: string, srcFile: string, options: Options): void =
-    # This is possible if dotty does it's thing correctly, but
+    # TODO: check if the symlink points to a valid target
+
+    # This is possible if dotfox does it's thing correctly, but
     # the user replaces the file/directory in dotDir with a symlink
     # to something else. It is an error, even if the symlink resolves
     # properly, and it should not be possible in normal circumstances
@@ -90,8 +92,7 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[
           printStatus("OK", file)
     else:
       printStatus("ERR_SYM_FILE", file)
-      # Possibly fixable, see reasoning in runSymlinkDir()
-      printHint("(possibly fixable)")
+      printHint("(fixable)")
 
   proc runSymlinkDir(file: string, srcFile: string, options: Options): void =
     if symlinkResolvedProperly(file, srcFile):
@@ -103,6 +104,7 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[
           printStatus("OK", file)
     else:
       printStatus("ERR_SYM_DIR", file)
+      printHint("(fixable)")
 
   proc runSymlinkNull(file: string, srcFile: string): void =
     printStatus("ERR_SYM_NULL", file)
@@ -177,7 +179,7 @@ proc doStatus*(dotDir: string, homeDir: string, options: Options, dotfiles: seq[
     runNullNull
   )
 
-proc doReconcile*(dotDir: string, homeDir: string, options: Options,
+proc doDeploy*(dotDir: string, homeDir: string, options: Options,
     dotfiles: seq[array[2, string]]) =
   proc runSymlinkSymlink(file: string, srcFile: string, options: Options): void =
     discard # not fixable
@@ -190,6 +192,9 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
         let temp = expandSymlink(file)
         removeFile(file)
         createSymlink(rts(temp), file)
+    else:
+      removeFile(file)
+      createSymlink(srcFile, file)
 
   proc runSymlinkDir(file: string, srcFile: string, options: Options) =
     if symlinkResolvedProperly(file, srcFile):
@@ -198,6 +203,9 @@ proc doReconcile*(dotDir: string, homeDir: string, options: Options,
         let temp = expandSymlink(file)
         removeFile(file)
         createSymlink(rts(temp), file)
+    else:
+      removeFile(file)
+      createSymlink(srcFile, file)
 
   proc runSymlinkNull(file: string, srcFile: string) =
     discard # not fixable

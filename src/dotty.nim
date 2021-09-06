@@ -36,7 +36,7 @@ for kind, key, val in p.getopt():
 
 
 if options.configDir == "":
-  options.configDir = joinPath(getConfigDir(), "dotty")
+  options.configDir = joinPath(getConfigDir(), "dotfox")
 
 if not isAbsolute(options.configDir):
   die fmt"Directory '{options.configDir}' is not an absolute path"
@@ -66,8 +66,8 @@ if options.action == "":
 case options.action:
 of "status":
   doStatus(dotDir, homeDir, options, getDotfileList(options))
-of "reconcile":
-  doReconcile(dotDir, homeDir, options, getDotfileList(options))
+of "deploy":
+  doDeploy(dotDir, homeDir, options, getDotfileList(options))
 of "debug":
   doDebug(dotDir, homeDir, options, getDotfileList(options))
 else:

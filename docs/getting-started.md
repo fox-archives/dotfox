@@ -2,9 +2,9 @@
 
 TODO (THIS IS OUT OF DATE)
 
-When setting up Dotty, you need two things: a dot directory (`dotDir`) and a destination directory (`destDir`). `dotDir` is a directory that your dotfiles tracked with your VCS of choice, such as `~/.dotfiles`. `destDir` is the location to deploy your dotfiles to, such as `~/`.
+When setting up DotFox, you need two things: a dot directory (`dotDir`) and a destination directory (`destDir`). `dotDir` is a directory that your dotfiles tracked with your VCS of choice, such as `~/.dotfiles`. `destDir` is the location to deploy your dotfiles to, such as `~/`.
 
-Specify these two things in `~/.config/dotty/config.toml` (or with using the config directory of your choice with `XDG_CONFIG_HOME`)
+Specify these two things in `~/.config/dotfox/config.toml` (or with using the config directory of your choice with `XDG_CONFIG_HOME`)
 
 ```toml
 [config]
@@ -12,7 +12,7 @@ dotDir = "~/.dotfiles"
 destDir = "~"
 ```
 
-Now, specify the dotfiles you wish to automatically deploy. These dotfiles will have symlinks created in the `destDir`, pointing to their respective file or directory in `dotDir`. Specify the dotfiles using a shell script located at `~/.config/dotty/deployments/default.sh`
+Now, specify the dotfiles you wish to automatically deploy. These dotfiles will have symlinks created in the `destDir`, pointing to their respective file or directory in `dotDir`. Specify the dotfiles using a shell script located at `~/.config/dotfox/deployments/default.sh`
 
 ```bash
 #!/usr/bin/env bash
@@ -31,7 +31,7 @@ for dotfile in "${dotfiles[@]}"; do
 done
 ```
 
-Dotty will execute this script, and use every line of standad output as a separate dotfile to track. Standard output would look like the following in this case
+DotFox will execute this script, and use every line of standad output as a separate dotfile to track. Standard output would look like the following in this case
 
 ```txt
 /home/edwin/.bashrc
@@ -40,10 +40,10 @@ Dotty will execute this script, and use every line of standad output as a separa
 
 Note that with every line, there is always a prefix of the `destDir` (`/home/edwin` i.e. `~/`)
 
-Now, let's try running Dotty
+Now, let's try running DotFox
 
 ```sh
-$ dotty status
+$ dotfox status
 [ERR_NULL_NULL] /home/edwin/.bashrc
                 -> (not fixable)
                 -> Is there a file or directory at /home/edwin/.dotfiles/.bashrc?
@@ -63,7 +63,7 @@ echo 'clear' > ~/.dotfiles/.bash_logout
 Now, let's try running again
 
 ```sh
-$ dotty status
+$ dotfox status
 [ERR_NULL_FILE] /home/edwin/.bashrc
                 -> (fixable)
 [ERR_NULL_FILE] /home/edwin/.bash_logout
@@ -73,12 +73,12 @@ Done.
 
 As you can see, the `ERR_NULL_NULL` status codes changed to `ERR_NULL_FILE`. The last `NULL` changed to a file because we placed the correct files in the `dotDir` (destination directory)
 
-Now that the dotfiles are automatically fixable, let's run `dotty reconcile`
+Now that the dotfiles are automatically fixable, let's run `dotfox deploy`
 
 ```sh
-$ dotty reconcile
+$ dotfox deploy
 Done.
-$ dotty status
+$ dotfox status
 [OK]            /home/edwin/.bashrc
 [OK]            /home/edwin/.bash_logout
 Done.

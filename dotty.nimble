@@ -5,7 +5,7 @@ author        = "Edwin Kofler"
 description   = "Dotfile Manager"
 license       = "Apache-2.0"
 srcDir        = "src"
-bin           = @["dotty"]
+bin           = @["dotfox"]
 
 # Dependencies
 

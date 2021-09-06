@@ -42,7 +42,7 @@ proc printHint*(str: string): void {.inline.} =
 proc hasAllRootFiles*(parentDir: string): bool =
   # Determine if all child files and subdirectories of the particular directory are owned by root.
   # We use this as a security precaution when operating on `sudo` mode. This is because we don't want
-  # to copy files that are user-writable to a root level location
+  # to copy files that are user-writable to a root-level location
   proc fileOwnedByRoot(path: string): bool =
     var info: Stat
     let code = stat(path, info)
@@ -50,11 +50,18 @@ proc hasAllRootFiles*(parentDir: string): bool =
       logError fmt"Could not stat {path}"
       return false
 
-    # skip group check
+    # Skip group check
     let fileUsername = getpwuid(info.st_uid).pw_name
     return fileUsername == "root"
 
   var allRootFiles = true
+
+  # Check root
+  if not fileOwnedByRoot(parentDir):
+    echo parentDir
+    allRootFiles = false
+
+  # Check all children of root
   proc walk(path: string) =
     for kind, file in walkDir(path):
       if not fileOwnedByRoot(file):
@@ -63,11 +70,6 @@ proc hasAllRootFiles*(parentDir: string): bool =
 
       if kind == PathComponent.pcDir:
         walk(file)
-
-  # ensure we check root parent
-  if not fileOwnedByRoot(parentDir):
-    echo parentDir
-    allRootFiles = false
 
   walk(parentDir)
   return allRootFiles
@@ -143,14 +145,14 @@ proc parseBoolFlag*(flag: string): bool =
     die fmt"Value '{flag}' not understood. Use 'true' or 'false'"
 
 proc writeHelp*() =
-  echo """Dotty
+  echo """DotFox
 
-Usage: dotty [flags] [subcommand]
+Usage: dotfox [flags] [subcommand]
 
 Subcommands:
   status
     Views the status of user dotfiles
-  reconcile
+  deploy
     Symlinks dotfiles to proper location and attempts to autofix mismatches
 
 Flags:
@@ -162,12 +164,12 @@ Flags:
   --root
     Manage the dotfiles for the root user
   --deployment
-    Specify specific deployment to read dotfiles from. This defaults to 'dotty.sh'
+    Specify specific deployment to read dotfiles from. This defaults to 'dotfox.sh'
     in your config directory
   --config-dir
-    Set location of config directory. This defaults to '~/.config/dotty'
+    Set location of config directory. This defaults to '~/.config/dotfox'
 
 Usage:
-  dotty --show-ok=false status
-  sudo dotty reconcile --root
+  dotfox --show-ok=false status
+  sudo dotfox deploy --root
 """

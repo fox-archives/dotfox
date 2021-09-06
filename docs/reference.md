@@ -18,11 +18,11 @@ The symlink correctly points to the target file or directory
 
 #### `OK/`
 
-The symlink correctly points to the target file or directory, with the caveat that the target name has an extraneous suffix slash. On `dotty reconcile`, this will automatically be normalized
+The symlink correctly points to the target file or directory, with the caveat that the target name has an extraneous suffix slash. On `dotfox deploy`, this will automatically be normalized
 
 #### `ERR`
 
-A conflict exists. Dotty will attempt to automatically fix the problem. However, if dotty is unable to, you will need to fix it yourself
+A conflict exists. DotFox will attempt to automatically fix the problem. However, if dotfox is unable to, you will need to fix it yourself
 
 ### `destDirCode`
 
@@ -34,15 +34,15 @@ The particular dotfile has a corresponding symlink in the destination directory
 
 #### `FILE`
 
-The particular dotfile has a corresponding file in the destination directory. Dotty will try to automatically replace this with a symlink pointing to said target dotfile on reconcile
+The particular dotfile has a corresponding file in the destination directory. DotFox will try to automatically replace this with a symlink pointing to said target dotfile on deploy
 
 #### `DIR`
 
-The particular dotfile has a corresponding directory in the destination directory. Dotty will try to automatically replace this with a symlink pointing to said target dotfile on reconcile
+The particular dotfile has a corresponding directory in the destination directory. DotFox will try to automatically replace this with a symlink pointing to said target dotfile on deploy
 
 #### `NULL`
 
-The particular dotfile has no corresponding file or directory in the destination directory. Dotty will try to automatically replace this with a symlink pointing to said target dotfile on reconcile
+The particular dotfile has no corresponding file or directory in the destination directory. DotFox will try to automatically replace this with a symlink pointing to said target dotfile on deploy
 
 ### `dotDirCode`
 
