@@ -96,6 +96,9 @@ proc getDotfileList*(options: Options): seq[array[2, string]] =
 
   var dotfiles = newSeq[array[2, string]]()
   for line in filter(cmdResult.output.split('\n'), proc(line: string): bool = not isEmptyOrWhitespace(line)):
+    if line[0] == '#':
+      continue
+
     let lineParts = line.split(':')
     if len(lineParts) < 1:
       die fmt"Line '{line}' must have one colon, but none were found"
