@@ -17,7 +17,7 @@ for kind, key, val in p.getopt():
       writeHelp()
       quit QuitSuccess
     of "version", "v":
-      echo "v0.5.0"
+      echo "v0.6.1"
       quit QuitSuccess
     of "show-ok":
       options.showOk = parseBoolFlag(val)
