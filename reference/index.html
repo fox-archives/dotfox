@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://example.com/reference/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Reference - dotfox</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Reference";
+        var mkdocs_page_input_path = "reference.md";
+        var mkdocs_page_url = "/reference/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> dotfox
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../getting-started/">Getting Started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Reference</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#status-codes">Status Codes</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#generalcode">generalCode</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#ok">OK</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#ok_1">OK/</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#err">ERR</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#destdircode">destDirCode</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#sym">SYM</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#file">FILE</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#dir">DIR</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#null">NULL</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#dotdircode">dotDirCode</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#sym_1">SYM</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#file_1">FILE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#dir_1">DIR</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#null_1">NULL</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">dotfox</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>Reference</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="reference">Reference</h1>
+<h2 id="status-codes">Status Codes</h2>
+<p>The status code is in the format of</p>
+<pre><code class="language-txt">&lt;generalCode&gt;-&lt;destDirCode&gt;-&lt;dotDirCode&gt;
+</code></pre>
+<h3 id="generalcode"><code>generalCode</code></h3>
+<p>The general status code shows the general validity of the symlink (whether it points to the correct location)</p>
+<h4 id="ok"><code>OK</code></h4>
+<p>The symlink correctly points to the target file or directory</p>
+<h4 id="ok_1"><code>OK/</code></h4>
+<p>The symlink correctly points to the target file or directory, with the caveat that the target name has an extraneous suffix slash. On <code>dotfox deploy</code>, this will automatically be normalized</p>
+<h4 id="err"><code>ERR</code></h4>
+<p>A conflict exists. DotFox will attempt to automatically fix the problem. However, if dotfox is unable to, you will need to fix it yourself</p>
+<h3 id="destdircode"><code>destDirCode</code></h3>
+<p>The <code>destDirCode</code> represents status code of a particular dotfile with respect to its destination directory. The destination directory is the directory in which your dotfiles are deployed to and the directory the symlinks are created. Usually, this is located at <code>~/</code> For a healthy deployment, you would want these to have a value of <code>SYM</code></p>
+<h4 id="sym"><code>SYM</code></h4>
+<p>The particular dotfile has a corresponding symlink in the destination directory</p>
+<h4 id="file"><code>FILE</code></h4>
+<p>The particular dotfile has a corresponding file in the destination directory. DotFox will try to automatically replace this with a symlink pointing to said target dotfile on deploy</p>
+<h4 id="dir"><code>DIR</code></h4>
+<p>The particular dotfile has a corresponding directory in the destination directory. DotFox will try to automatically replace this with a symlink pointing to said target dotfile on deploy</p>
+<h4 id="null"><code>NULL</code></h4>
+<p>The particular dotfile has no corresponding file or directory in the destination directory. DotFox will try to automatically replace this with a symlink pointing to said target dotfile on deploy</p>
+<h3 id="dotdircode"><code>dotDirCode</code></h3>
+<p>The <code>dotDirCode</code> represents status code of a particular dotfile with respect to its dotfile directory. The destination directory is the directory in which your dotfiles are held in version control. Most people choose to place this directory at <code>~/.dotfiles</code> or <code>~/.dots</code>. For a healthy deployment, you would want these to have a value of either <code>FILE</code>, <code>DIR</code>, or <code>SYM</code></p>
+<h3 id="sym_1"><code>SYM</code></h3>
+<p>The particular dotfile has a corresponding symlink in the dot directory. This is possible, for example, if you wish to symlink a file like <code>~/.bashrc</code> to <code>~/.config/bash/bashrc.sh</code></p>
+<h3 id="file_1"><code>FILE</code></h3>
+<p>The particular dotfile has a corresponding file in the dot directory</p>
+<h3 id="dir_1"><code>DIR</code></h3>
+<p>The particular dotfile has a corresponding directory in the dot directory</p>
+<h3 id="null_1"><code>NULL</code></h3>
+<p>The particular dotfile has a no corresponding file or directory in the dot directory.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../installation/" class="btn btn-neutral float-left" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../troubleshooting/" class="btn btn-neutral float-right" title="Troubleshooting">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../installation/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../troubleshooting/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
