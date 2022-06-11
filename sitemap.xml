@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://example.com/getting-started/</loc>
+         <loc>https://hyperupcall.github.io/dotfox/getting-started/</loc>
          <lastmod>2022-06-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/installation/</loc>
+         <loc>https://hyperupcall.github.io/dotfox/installation/</loc>
          <lastmod>2022-06-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/reference/</loc>
+         <loc>https://hyperupcall.github.io/dotfox/reference/</loc>
          <lastmod>2022-06-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://example.com/troubleshooting/</loc>
+         <loc>https://hyperupcall.github.io/dotfox/troubleshooting/</loc>
          <lastmod>2022-06-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
