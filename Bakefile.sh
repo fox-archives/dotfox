@@ -2,9 +2,9 @@
 # shellcheck shell=bash
 
 task.build() {
-	nimble build dotfox
+	nimble build dotfox "$@"
 }
 
 task.run() {
-	nimble run dotfox
+	nimble run dotfox "$@"
 }

@@ -1,0 +1,9 @@
+[project]
+ecosystem = 'nim'
+form = 'app'
+for = 'anyone'
+status = 'dogfooding'
+
+[discovery]
+categories = []
+tags = []
