@@ -6,7 +6,7 @@ import posix
 import "./do"
 import "./util"
 
-var options = Options(showOk: true, isRoot: false)
+var options = Options(showOk: false, isRoot: false)
 
 var p = initOptParser(commandLineParams())
 for kind, key, val in p.getopt():
