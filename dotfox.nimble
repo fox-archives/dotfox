@@ -1,4 +1,4 @@
-version       = "0.6.1"
+version       = "0.6.2"
 author        = "Edwin Kofler"
 description   = "Dotfile Manager"
 license       = "MPL-2.0"
