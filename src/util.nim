@@ -2,7 +2,7 @@ import os
 import osproc
 import sequtils
 import strutils
-import terminal
+import std/terminal
 import strformat
 import posix
 
@@ -15,16 +15,15 @@ type
     deployment*: string
 
 proc logError*(str: string): void {.inline.} =
-  echo fmt"{ansiForegroundColorCode(fgRed)}Error: {str}"
-  resetAttributes()
+  writeLine stderr, fmt"{ansiForegroundColorCode(fgRed)}Error:{ansiResetCode} {str}"
+  flushFile stderr
 
 proc logWarn*(str: string): void {.inline.} =
-  echo fmt"{ansiForegroundColorCode(fgYellow)}Info: {str}"
-  resetAttributes()
+  writeLine stderr, fmt"{ansiForegroundColorCode(fgYellow)}Info:{ansiResetCode} {str}"
+  flushFile stderr
 
 proc logInfo*(str: string): void {.inline.} =
-  echo fmt"{ansiForegroundColorCode(fgGreen)}Info: {str}"
-  resetAttributes()
+  echo fmt"{ansiForegroundColorCode(fgGreen)}Info:{ansiResetCode} {str}"
 
 proc die*(str: string): void {.noReturn.} =
   logError(fmt"{str}. Exiting")
