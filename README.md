@@ -1,4 +1,4 @@
-# DotFox
+# dotfox
 
 A simple dotfile manager
 

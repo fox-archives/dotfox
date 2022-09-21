@@ -147,7 +147,7 @@ proc parseBoolFlag*(flag: string): bool =
     die fmt"Value '{flag}' not understood. Use 'true' or 'false'"
 
 proc writeHelp*() =
-  echo """DotFox
+  echo """dotfox
 
 Usage: dotfox [flags] [subcommand]
 

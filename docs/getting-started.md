@@ -2,7 +2,7 @@
 
 TODO (THIS IS OUT OF DATE)
 
-When setting up DotFox, you need two things: a dot directory (`dotDir`) and a destination directory (`destDir`). `dotDir` is a directory that your dotfiles tracked with your VCS of choice, such as `~/.dotfiles`. `destDir` is the location to deploy your dotfiles to, such as `~/`.
+When setting up dotfox, you need two things: a dot directory (`dotDir`) and a destination directory (`destDir`). `dotDir` is a directory that your dotfiles tracked with your VCS of choice, such as `~/.dotfiles`. `destDir` is the location to deploy your dotfiles to, such as `~/`.
 
 Specify these two things in `~/.config/dotfox/config.toml` (or with using the config directory of your choice with `XDG_CONFIG_HOME`)
 
@@ -31,7 +31,7 @@ for dotfile in "${dotfiles[@]}"; do
 done
 ```
 
-DotFox will execute this script, and use every line of standad output as a separate dotfile to track. Standard output would look like the following in this case
+Dotfox will execute this script, and use every line of standad output as a separate dotfile to track. Standard output would look like the following in this case
 
 ```txt
 /home/edwin/.bashrc
@@ -40,7 +40,7 @@ DotFox will execute this script, and use every line of standad output as a separ
 
 Note that with every line, there is always a prefix of the `destDir` (`/home/edwin` i.e. `~/`)
 
-Now, let's try running DotFox
+Now, let's try running Dotfox
 
 ```sh
 $ dotfox status
